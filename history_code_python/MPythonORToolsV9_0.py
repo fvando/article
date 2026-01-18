@@ -353,7 +353,7 @@ def solve_shift_schedule(
     # ]
     
     constraints = []
-    msgResult = []
+    msg: list[str] = []   # ✅ garante contrato estável
     num_periods = len(need)
     Y = {}
     
@@ -853,7 +853,7 @@ def solve_shift_schedule(
         else:
             print(f"Invalid indices for add_multiple_rows operation: row1={row1}, row2={row2}")
 
-    msgResult = None        
+    # msgResult = None        
 
     solver.EnableOutput()
 
@@ -992,7 +992,7 @@ def solve_shift_schedule(
         
     save_data(constraints_coefficients, 'constraints_coefficients.json')
 
-    return solver, status, total_workers, workers_schedule, constraints_coefficients, initialDensity, finalDensity, statisticsResult, msgResult, iterations_data, allocation
+    return solver, status, total_workers, workers_schedule, constraints_coefficients, initialDensity, finalDensity, statisticsResult, msg, iterations_data, allocation
 
 # Adicionando a restrição de pausa fracionada (divisão da pausa)
 def verifica_divisao_pausa(i, j, num_periods):
@@ -1312,7 +1312,7 @@ multiply_row = None
 add_multiple_rows = None
 
 
-msgResult = []
+# msgResult = []
 iterations_dataResult = []
 try:
     need = list(map(int, need_input.split(',')))
@@ -1340,7 +1340,7 @@ try:
                         and not add_multiple_rows_c
                         and not add_multiple_rows_c_auto):
                         constraints_coefficients = load_data('constraints_coefficients.json') 
-                        solver, status, total_workers, workers_schedule, constraints_coefficients, initialDensity, finalDensity, statisticsResult, msgResult, iterations_dataResult, matrixAllocation = solve_shift_schedule(solverParamType, need, variable_type, constraints_coefficients, selected_restrictions, swap_rows=None, multiply_row=None, add_multiple_rows=None,densidadeAceitavel=acceptable_percentage,limit_Workers=limit_Workers,limit_Iteration=limit_Iteration,limit_Level_Relaxation=limit_Level_Relaxation, max_demands_per_driver=max_demands_per_driver,tolerance_Demands=tolerance_Demands, penalty=penalty)
+                        solver, status, total_workers, workers_schedule, constraints_coefficients, initialDensity, finalDensity, statisticsResult, msg, iterations_dataResult, matrixAllocation = solve_shift_schedule(solverParamType, need, variable_type, constraints_coefficients, selected_restrictions, swap_rows=None, multiply_row=None, add_multiple_rows=None,densidadeAceitavel=acceptable_percentage,limit_Workers=limit_Workers,limit_Iteration=limit_Iteration,limit_Level_Relaxation=limit_Level_Relaxation, max_demands_per_driver=max_demands_per_driver,tolerance_Demands=tolerance_Demands, penalty=penalty)
                 else:
                     if swap_rows_c:
                         with col_resultsItIOpI:

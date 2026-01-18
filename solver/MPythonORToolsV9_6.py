@@ -1,6 +1,15 @@
 # Caminho absoluto para a pasta "simulator"
 
 # Altura padrão graficos
+# import streamlit as st
+# from pathlib import Path
+
+
+# # ------------------------------------------------------------
+# # Secrets / Config
+# # ------------------------------------------------------------
+# DEMO_MODE = st.secrets.get("DEMO_MODE", True)
+# MAX_TIME = st.secrets.get("MAX_TIME_SECONDS", 30)
 
 FIG_HEIGHT = 4.5
 
@@ -30,20 +39,29 @@ import plotly.graph_objects as go
 import altair as alt
 import io, contextlib
 
-from heuristic import greedy_initial_allocation
-from lns import run_lns
+# from heuristic import greedy_initial_allocation
+# from lns import run_lns
 from ml.ml_guidance import assignment_scorer, neighborhood_scorer
-from dataset_builder import build_f1_rows, build_f2_rows, save_datasets
+# from dataset_builder import build_f1_rows, build_f2_rows, save_datasets
 from ml.trainer import train_all_models
 import traceback
 import time
+# from kpis import compute_kpis
+# from charts import (
+#     plot_heatmap_safety,
+#     plot_heatmap_coverage,
+#     plot_kpi_radar,
+# )
+
+from heuristic import greedy_initial_allocation
 from kpis import compute_kpis
 from charts import (
     plot_heatmap_safety,
     plot_heatmap_coverage,
     plot_kpi_radar,
 )
-
+from lns import run_lns
+from dataset_builder import build_f1_rows, build_f2_rows, save_datasets
 
 import html
 # Habilitar a largura total da página
@@ -1154,87 +1172,6 @@ def plot_demand_vs_capacity_with_violations(df):
     ax.legend()
 
     return fig
-
-# def plot_comparative_capacity_analysis(df):
-#     """
-#     Painel comparativo:
-#       (1) Demand vs Capacity com marcação de violação
-#       (2) Gap (Capacity - Demand) por slot
-#     """
-
-#     fig, (ax1, ax2) = plt.subplots(
-#         2, 1, figsize=(11, 7),
-#         gridspec_kw={"height_ratios": [2, 1]},
-#         sharex=True
-#     )
-
-#     # -------------------------------
-#     # Gráfico 1: Demand vs Capacity
-#     # -------------------------------
-#     ax1.bar(
-#         df["Slot"],
-#         df["Motoristas"],
-#         color="steelblue",
-#         alpha=0.85,
-#         label="Assigned Drivers (Capacity)"
-#     )
-
-#     ax1.bar(
-#         df["Slot"],
-#         df["Demanda"],
-#         color="salmon",
-#         alpha=0.85,
-#         label="Required Drivers (Demand)"
-#     )
-
-#     violated = df[df["Motoristas"] < df["Demanda"]]
-
-#     ax1.scatter(
-#         violated["Slot"],
-#         violated["Demanda"],
-#         color="red",
-#         s=35,
-#         zorder=5,
-#         label="Demand Deficit"
-#     )
-
-#     ax1.set_ylabel("Drivers")
-#     ax1.set_title("Demand vs. Assigned Capacity")
-#     ax1.grid(axis="y", linestyle=":", alpha=0.6)
-#     ax1.legend()
-
-#     # -------------------------------
-#     # Gráfico 2: Gap por slot
-#     # -------------------------------
-#     gap = df["Motoristas"] - df["Demanda"]
-#     colors = gap.apply(lambda x: "red" if x < 0 else "steelblue")
-
-#     ax2.bar(
-#         df["Slot"],
-#         gap,
-#         color=colors,
-#         alpha=0.85
-#     )
-
-#     ax2.axhline(0, color="black", linestyle="--", linewidth=1.5)
-
-#     ax2.set_xlabel("Time Slot")
-#     ax2.set_ylabel("Gap (Capacity − Demand)")
-#     ax2.set_title("Capacity Gap per Slot")
-#     ax2.grid(axis="y", linestyle=":", alpha=0.6)
-
-#     worst = df.loc[df["Gap"].idxmin()]
-    
-#     ax2.annotate(
-#         f"Max Deficit = {worst['Gap']}",
-#         xy=(worst["Slot"], worst["Gap"]),
-#         xytext=(worst["Slot"], worst["Gap"] - 0.5),
-#         arrowprops=dict(arrowstyle="->", color="red")
-#     )
-
-
-#     plt.tight_layout()
-#     return fig
 
 
 def plot_demand_vs_capacity_2(df):
@@ -4785,5 +4722,3 @@ if st.button("Run Optimization"):
         st.error(f"Ocorreu um erro: {e}")
         st.code(traceback.format_exc())
     
-
-
