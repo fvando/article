@@ -1,0 +1,82 @@
+@startuml
+' ================================
+' Estilo Premium Figma/Miro Soft
+' ================================
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam dpi 100
+
+' ======= Cores Suaves ========
+!define SoftBlue #dce9f9
+!define SoftGreen #d9f2d9
+!define SoftYellow #fff2cc
+!define SoftRed #f8d0d0
+
+!define LineSoft #7fa6c9
+!define FontDark #333333
+
+skinparam defaultFontColor FontDark
+skinparam ArrowColor LineSoft
+skinparam ArrowThickness 1
+skinparam ParticipantBorderColor #AAAAAA
+skinparam ParticipantPadding 30
+skinparam RoundCorner 18
+
+' ==== Estilização por participante ====
+skinparam participant {
+	BackgroundColor SoftBlue
+	BorderColor #8fb2d9
+}
+' Aplicar cores individuais por coluna
+participant "Usuário\n" as User <<blue>> #dce9f9
+participant "Interface Streamlit\n(Python)" as UI <<green>> #d9f2d9
+participant "Camada de Modelagem\n(Python)" as Model <<green>> #d9f2d9
+participant "Solver OR-Tools\n(CP-SAT)" as Solver <<red>> #f8d0d0
+participant "Análise e Visualização" as Analise <<blue>> #dce9f9
+
+' Adiciona margens e espaçamentos
+skinparam SequenceParticipantPadding 40
+skinparam SequenceMessageAlignment left
+skinparam LifelineStrategy solid
+
+' =============================
+' Fluxo baseado no teu diagrama
+' =============================
+
+== Etapas Iniciais ==
+
+User -> UI : <b>1.</b> Configurar Parâmetros
+User -> UI : <b>2.</b> Inserir Demanda
+User -> UI : <b>3.</b> Ativar/Desativar Restrições
+User -> UI : <b>4.</b> Executar Simulação
+
+UI -> Model : Parâmetros configurados
+
+== Processamento de Dados ==
+
+User -> Model : Iniciar Processamento de Dados
+
+Model -> Model : <b>5.</b> Iniciar Estruturas de Dados
+Model -> Model : <b>6.</b> Gerar Estruturas de Dados
+Model -> Model : <b>7.</b> Construir Variáveis do Modelo
+Model -> Model : <b>8.</b> Aplicar Restrições Legais
+Model -> Model : <b>9.</b> Aplicar Restrições Operacionais
+
+Model -> Solver : Enviar Modelo e Restrições
+
+== Execução do Solver ==
+
+Solver -> Solver : Executar Algoritmo de Otimização
+Solver --> Model : <b>10.</b> Retornar Solução Ótima (ou Status)
+
+== Pós-Processamento ==
+
+Model -> Analise : Enviar Solução para Análise
+
+Analise -> Analise : Gerar Gráficos
+Analise -> Analise : Comparar com Demanda
+Analise -> Analise : Produzir Indicadores
+
+Analise -> User : Exibir Resultados, Comparações e Indicadores
+@enduml

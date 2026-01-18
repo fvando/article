@@ -1,0 +1,50 @@
+@startuml
+title Pipeline Híbrido de Escalonamento (Greedy → LNS → MILP)
+
+actor Usuario
+participant "Simulador" as SO
+participant "Heurística Construtiva\n(Greedy Allocation)" as Greedy
+participant "Avaliador de Densidade" as Density
+participant "LNS Guiado" as LNS
+participant "Solver MILP\n(solve_shift_schedule)" as MILP
+
+== Entrada da Demanda ==
+Usuario -> SO: Fornece demanda (96 períodos)
+SO -> Greedy: gerarSolucaoInicial(demanda)
+
+Greedy --> SO: soluçãoInicial
+
+== Avaliação de Densidade ==
+SO -> Density: calcularDensidade(soluçãoInicial)
+Density --> SO: densidade
+
+alt densidade aceitável
+    SO --> Usuario: retornar solução\n(sem otimização adicional)
+    return
+else densidade alta
+    SO -> LNS: iniciarLNS(soluçãoInicial)
+end
+
+== Ciclo LNS + MILP ==
+loop até convergência
+    LNS -> SO: selecionarBlocosParaDestruir()
+    SO --> LNS: blocosSelecionados
+
+    LNS -> MILP: reconstruirVizinhança(blocosSelecionados)
+    MILP --> LNS: soluçãoLocal
+
+    LNS -> SO: soluçãoLocal
+    SO -> Density: calcularDensidade(soluçãoLocal)
+    Density --> SO: densidadeAtual
+
+    alt solução melhora
+        SO -> LNS: aceitarMelhoria()
+    else manter solução anterior
+        SO -> LNS: rejeitarMelhoria()
+    end
+end
+
+== Resultado ==
+SO --> Usuario: soluçãoFinalOtimizada
+
+@enduml

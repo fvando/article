@@ -1,0 +1,10 @@
+LightGBM
+streamlit
+ortools
+seaborn
+matplotlib
+pandas
+altair
+plotly
+scikit-learn==1.3.2
+numpy

@@ -1,0 +1,161 @@
+! Problema de Staff Scheduling
+! Universidade de Fortaleza - Curso: CiÃªncia da ComputaÃ§Ã£o 
+! Modelagem em ProgramaÃ§Ã£o MatemÃ¡tica - Notas de Aula
+! Modelagem para execuÃ§Ã£o no Software LINGO
+! Autor: Prof. Placido Rogerio Pinheiro; 
+! Ajustado para:
+
+4 horas e 30 minutos de trabalho equivalem a 18 períodos de 15 minutos.
+45 minutos de descanso equivalem a 3 períodos de 15 minutos.
+O turno completo será composto por 18 períodos de trabalho + 3 períodos de descanso + 18 períodos de trabalho, totalizando 39 períodos de 15 minutos.
+
+Novos turnos
+
+Primeira parte do turno: 4 horas e 30 minutos de trabalho (18 períodos de 15 minutos).
+Primeiro descanso: 15 minutos de descanso (1 período de 15 minutos).
+Segunda parte do turno: 4 horas e 30 minutos de trabalho (18 períodos de 15 minutos).
+Segundo descanso: 30 minutos de descanso (2 períodos de 15 minutos).
+O turno total será composto por 18 + 1 + 18 + 2 = 39 períodos de 15 minutos.
+
+
+Explicação das Modificações:
+Turno de Trabalho:
+
+SHIFT/1..39/: Define um turno completo que agora consiste em 39 períodos de 15 minutos, incluindo 4h30 de trabalho (18 períodos), seguido por 15 minutos de descanso (1 período), depois mais 4h30 de trabalho (18 períodos) e finalmente 30 minutos de descanso (2 períodos).
+Restrições:
+
+@SUM(SHIFT(J) | J #NE# 19 #AND# J #NE# 38 #AND# J #NE# 39 : X(@WRAP((I-J+1),96))) >= NEED(I);
+!Essa restrição garante que em cada período I, o número de trabalhadores disponíveis, excluindo os períodos de descanso (19, 38, e 39), seja suficiente para atender à necessidade (NEED).
+Período 19 é o descanso de 15 minutos após a primeira parte do turno.
+Períodos 38 e 39 correspondem ao descanso de 30 minutos ao final do turno.
+Descanso de 11 horas:
+
+@SUM(SHIFT(K) | K <= 39 : X(@WRAP((I-K+1),96))) + @SUM(SHIFT(K) | K > 39 : X(@WRAP((I+44-K+1),96))) <= 1;
+!Esta restrição assegura que, após completar um turno de 39 períodos, o trabalhador tenha pelo menos 11 horas de descanso (44 períodos) antes de iniciar outro turno.
+
+;
+
+MODEL:
+SETS:                  ! 24 hour shift scheduling, with each shift being: 4h30 minutes on, 45 min (15 min + 30 min) off, 4 hours and 30min on;
+	rangePeriods/1..96/: ShiftIni, Need, WORKERS; !Conjunto de 96 períodos de 15 minutos ao longo do dia;
+	SHIFT/1..39/:; !       ! Conjunto de turnos de 39 períodos (4h30 de trabalho + 15 min de descanso + 4h30 de trabalho + 30 min de descanso);
+ENDSETS
+DATA:
+	Need = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+             	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+             	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 
+             	3, 3, 3, 3, 3, 3, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6,
+             	6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+             	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3;
+
+
+	WORKERS = 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 
+             	8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+             	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 
+             	3, 3, 3, 3, 3, 3, 3, 3, 6, 6, 6, 6, 6, 6, 6, 6,
+             	6, 6, 6, 6, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+             	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3;
+
+
+ENDDATA
+MIN = @SUM( rangePeriods: ShiftIni); ! ! Minimizar o número total de trabalhadores;
+
+
+!#01 - Esta restrição garante que, para cada período I, a soma dos trabalhadores disponíveis (excluindo os períodos de descanso 19, 20 e 21) seja pelo menos igual à necessidade.
+	@WRAP((I-J+1),96): Ajusta a contagem dos períodos para envolver o ciclo de 24 horas corretamente. 
+
+	Explicação da Restrição:
+	Objetivo da Restrição:
+
+		Garantir que, para cada período I, a soma dos trabalhadores disponíveis seja pelo menos igual à necessidade (Need(I)), excluindo os períodos de descanso (especificamente, períodos 19, 20 e 21).
+		@FOR(rangePeriods(I):
+
+	Itera sobre cada período do dia, onde I é o índice do período corrente.
+		HOURS(I) representa cada um dos 96 períodos de 15 minutos ao longo do dia.
+		@SUM(SHIFT(J) | J #NE# 19 #AND# J #NE# 38 #AND# J #NE# 39 : X(@WRAP((I-J+1),96))):
+
+		@SUM(SHIFT(J) | J #NE# 19 #AND# J #NE# 38 #AND# J #NE# 39 : X(@WRAP((I-J+1),96))):
+		@SUM(SHIFT(J) | J #NE# 19 #AND# J #NE# 38 #AND# J #NE# 39: Esta soma considera todos os turnos J, excluindo aqueles que incluem os períodos de descanso 19, 20 e 21.
+
+	Períodos 19, 20, e 21 são os períodos de descanso no turno, que não devem ser contados quando se calcula a quantidade de trabalhadores disponíveis.
+	X(@WRAP((I-J+1),96)): A função @WRAP ajusta a contagem de períodos de trabalho de forma cíclica ao longo das 24 horas.
+	@WRAP((I-J+1),96) é usada para lidar com a continuidade do ciclo de 24 horas, ajustando os índices dos períodos de trabalho ao longo do dia.
+	>= Need(I):
+
+	>= Need(I): Garante que, para cada período I, a soma dos trabalhadores disponíveis (excluindo os períodos de descanso) seja ao menos igual à necessidade especificada para esse período (NEED(I)).
+	Em Resumo:
+	Esta restrição assegura que em cada período I ao longo do dia, a quantidade total de trabalhadores disponíveis seja suficiente para atender à demanda especificada (NEED(I)), descontando os períodos que estão alocados para descanso (19, 20 e 21).
+
+	O uso de @WRAP((I-J+1),96) garante que a contagem seja ajustada corretamente ao longo das 24 horas, considerando a ciclicidade da escala de trabalho e garantindo que a necessidade de trabalhadores seja atendida mesmo ao longo dos períodos de descanso.
+;
+@FOR(rangePeriods(I):
+  @SUM(SHIFT(J) | J #NE# 19 #AND# J #NE# 38 #AND# J #NE# 39 : 
+		ShiftIni(@WRAP((I-J+1),96))) >= Need(I);
+    );
+
+
+!#02 - Restrição para garantir que a cobertura dos turnos seja adequada	
+	Restrição: Garantir a Cobertura Adequada dos Turnos
+	Código da Restrição
+	LINGO
+	Copy code
+	! Restrição para garantir que a cobertura dos turnos seja adequada;
+	!@FOR(rangePeriods(I):
+	  @SUM(SHIFT(J):
+	    X(@WRAP(I - J + 1, 96))) >= NEED(I);
+	!);
+	!Descrição da Restrição
+		Esta restrição é usada para garantir que a necessidade de trabalhadores em cada período do dia seja atendida, dado o modelo de turnos.
+
+	Objetivo da Restrição:
+		Garantir a Cobertura das Necessidades: Para cada período I do dia, a quantidade de trabalhadores alocados deve ser suficiente para atender à necessidade especificada nesse período.
+		Componentes da Restrição:
+		@FOR(HOURS(I): Para cada período I no conjunto HOURS (que vai de 1 a 96, representando 96 períodos de 15 minutos ao longo de um dia de 24 horas).
+		@SUM(SHIFT(J): Para cada turno J no conjunto SHIFT (representando diferentes turnos de trabalho).
+		X(@WRAP(I - J + 1, 96)): Esta parte calcula a alocação de trabalhadores para o período I, considerando o impacto dos turnos J. O uso de @WRAP ajusta a contagem para considerar o ciclo de 96 períodos, permitindo que os turnos se ajustem corretamente aos períodos ao longo do dia.
+		>= NEED(I): A soma dos trabalhadores alocados para o período I deve ser pelo menos igual à necessidade de trabalhadores NEED(I) nesse período.
+
+;
+!@FOR(rangePeriods(I):
+  @SUM(SHIFT(J):
+ 	ShiftIni(@WRAP(I - J + 1, 96))) >= Need(I);
+!);
+
+
+!#03 - Garantir que o trabalhador tenha 11h de descanso após a jornada de trabalho;
+! Objetivo da Restrição:
+	Garantir que, após a conclusão de uma jornada de trabalho, o trabalhador tenha um período mínimo de 11 horas (44 períodos de 15 minutos) de descanso antes de iniciar outra jornada.
+	Primeiro @FOR (Iteração sobre as horas):
+
+	@FOR(rangePeriods(I) | I #EQ# 96:
+		Esse loop iterativo atua apenas para o último período do dia (período 96), garantindo que a restrição seja verificada na transição do dia para o próximo.
+		Segundo @FOR (Iteração sobre os turnos):
+
+	@FOR(SHIFT(J) | J #LE# 39:
+		Esse loop itera sobre todos os turnos possíveis, limitando o ciclo aos turnos que consistem em 39 períodos (4h30 de trabalho, 15 minutos de descanso, 4h30 de trabalho, 30 minutos de descanso).
+		Primeira Parte da Soma:
+
+	@SUM(SHIFT(K) | K #LE# 39: X(@WRAP((I-K+1),96)))
+		Essa parte da soma assegura que, durante o turno atual (até 39 períodos), o trabalhador está sendo contabilizado corretamente para cada período K.
+		@WRAP((I-K+1),96) permite que a contagem de turnos seja cíclica dentro das 24 horas (96 períodos de 15 minutos).
+	
+	Segunda Parte da Soma:
+
+	@SUM(SHIFT(K) | K #GT# 39: X(@WRAP((I+44-K+1),96)))
+		Esta parte da soma verifica se, após um turno completo, o trabalhador tem um descanso de pelo menos 11 horas (44 períodos).
+		K #GT# 39 indica que estamos considerando os períodos subsequentes, e @WRAP((I+44-K+1),96) garante que o cálculo considera a ciclicidade do dia, ajustando o índice para considerar o descanso de 11 horas.
+
+	Restrição Principal:
+	<= 1 A soma das duas partes deve ser menor ou igual a 1, garantindo que um trabalhador não pode ser escalado para outro turno até que o período de descanso de 11 horas seja completo. ;
+
+!@FOR(rangePeriods(I) | I #EQ# 96:
+  @FOR(SHIFT(J) | J #LE# 39:
+    @SUM(SHIFT(K) | K #LE# 39: ShiftIni(@WRAP((I-K+1),96))) 
+    + @SUM(SHIFT(K) | K #GT# 39: ShiftIni(@WRAP((I+44-K+1),96))) <= 1;
+!  )
+);
+
+
+@FOR (rangePeriods: @GIN (X));
+END
+ 
