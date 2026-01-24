@@ -168,6 +168,340 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+def build_timeseries_demand_served(
+    need,
+    tasks_schedule,
+    slot_minutes: int = 15
+):
+    import numpy as np
+    import pandas as pd
+
+    demand = np.asarray(need, dtype=float)
+    served = np.asarray(tasks_schedule, dtype=float)
+
+    slots = np.arange(len(demand))
+    time_hours = slots * (slot_minutes / 60.0)
+
+    gap = np.maximum(0.0, demand - served)
+
+    return pd.DataFrame({
+        "slot": slots,
+        "time_hours": time_hours,
+        "demand_tasks": demand,
+        "served_tasks": served,
+        "gap_tasks": gap,
+    })
+
+
+def build_timeseries_capacity_utilization(
+    workers_schedule,
+    tasks_schedule,
+    cap_tasks_per_driver_per_slot: int,
+    slot_minutes: int = 15
+):
+    import numpy as np
+    import pandas as pd
+
+    workers = np.asarray(workers_schedule, dtype=float)
+    served  = np.asarray(tasks_schedule, dtype=float)
+
+    slots = np.arange(len(workers))
+    time_hours = slots * (slot_minutes / 60.0)
+
+    capacity = workers * cap_tasks_per_driver_per_slot
+
+    utilization = np.divide(
+        served, capacity,
+        out=np.zeros_like(served),
+        where=capacity > 0
+    )
+
+    return pd.DataFrame({
+        "slot": slots,
+        "time_hours": time_hours,
+        "capacity_tasks": capacity,
+        "served_tasks": served,
+        "utilization": utilization,
+    })
+
+def build_timeseries_gap(
+    need,
+    tasks_schedule,
+    slot_minutes: int = 15
+):
+    import numpy as np
+    import pandas as pd
+
+    demand = np.asarray(need, dtype=float)
+    served = np.asarray(tasks_schedule, dtype=float)
+
+    slots = np.arange(len(demand))
+    time_hours = slots * (slot_minutes / 60.0)
+
+    gap = np.maximum(0.0, demand - served)
+
+    return pd.DataFrame({
+        "slot": slots,
+        "time_hours": time_hours,
+        "gap_tasks": gap,
+    })
+
+def plot_demand_gap(
+    demanda,
+    tasks_schedule,
+    slot_minutes: int = 15,
+    title: str = "Déficit de Demanda por Período"
+):
+    """
+    Gráfico do gap (déficit) por período.
+    Mostra explicitamente onde a demanda não foi atendida.
+    """
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    demanda = np.asarray(demanda, dtype=float).reshape(-1)
+    served  = np.asarray(tasks_schedule, dtype=float).reshape(-1)
+
+    if len(demanda) != len(served):
+        raise ValueError("demanda e tasks_schedule devem ter o mesmo tamanho")
+
+    slots = np.arange(len(demanda))
+    time_hours = slots * (slot_minutes / 60.0)
+
+    gap = np.maximum(0.0, demanda - served)
+
+    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+    ax.bar(
+        time_hours,
+        gap,
+        width=slot_minutes / 60.0 * 0.9,
+        alpha=0.85
+    )
+
+    ax.set_title(title)
+    ax.set_xlabel("Tempo (horas)")
+    ax.set_ylabel("Déficit (tarefas)")
+
+    ax.grid(True, axis="y", linestyle="--", alpha=0.35)
+
+    # Métricas-chave no gráfico (muito útil para banca)
+    total_gap = gap.sum()
+    max_gap   = gap.max()
+    slots_gap = int((gap > 0).sum())
+
+    ax.text(
+        0.01, 0.98,
+        f"Slots com déficit: {slots_gap}\n"
+        f"Déficit total: {total_gap:.1f}\n"
+        f"Pior slot: {max_gap:.1f}",
+        transform=ax.transAxes,
+        va="top",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.85)
+    )
+
+    return fig
+
+
+def plot_demand_vs_served(
+    demanda,
+    tasks_schedule,
+    slot_minutes: int = 15,
+    title: str = "Demanda vs Atendimento Real (por período)"
+):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    demanda = np.asarray(demanda, dtype=float).reshape(-1)
+    served  = np.asarray(tasks_schedule, dtype=float).reshape(-1)
+
+    if len(demanda) != len(served):
+        raise ValueError("demanda e tasks_schedule devem ter o mesmo tamanho")
+
+    slots = np.arange(len(demanda))
+    time_hours = slots * (slot_minutes / 60.0)
+
+    deficit = np.maximum(0.0, demanda - served)
+    viol = deficit > 1e-9
+
+    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+    ax.plot(time_hours, demanda, linewidth=2, label="Demanda (tarefas)")
+    ax.plot(time_hours, served,  linewidth=2, linestyle="--", label="Atendimento real (tarefas)")
+
+    # marca violações (onde served < demanda)
+    ax.scatter(time_hours[viol], demanda[viol], s=30, label="Déficit", zorder=5)
+
+    ax.set_title(title)
+    ax.set_xlabel("Tempo (horas)")
+    ax.set_ylabel("Tarefas")
+    ax.grid(True, linestyle="--", alpha=0.35)
+    ax.legend(loc="upper left")
+
+    # texto curto com métricas
+    ax.text(
+        0.01, 0.98,
+        f"Slots com déficit: {int(viol.sum())}\nDéficit total: {deficit.sum():.1f}\nPior déficit: {deficit.max():.1f}",
+        transform=ax.transAxes, va="top",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.85)
+    )
+
+    return fig
+
+def plot_capacity_vs_utilization(
+    workers_schedule,
+    tasks_schedule,
+    cap_tasks_per_driver_per_slot: int,
+    slot_minutes: int = 15,
+    title: str = "Capacidade Alocada vs Utilização (por período)"
+):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    workers = np.asarray(workers_schedule, dtype=float).reshape(-1)
+    served  = np.asarray(tasks_schedule, dtype=float).reshape(-1)
+
+    if len(workers) != len(served):
+        raise ValueError("workers_schedule e tasks_schedule devem ter o mesmo tamanho")
+
+    slots = np.arange(len(workers))
+    time_hours = slots * (slot_minutes / 60.0)
+
+    capacity_tasks = workers * float(cap_tasks_per_driver_per_slot)
+
+    utilization = np.divide(
+        served, capacity_tasks,
+        out=np.zeros_like(served, dtype=float),
+        where=capacity_tasks > 1e-12
+    )
+
+    fig, ax1 = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+    # eixo esquerdo: capacidade em tarefas
+    ax1.plot(time_hours, capacity_tasks, linewidth=2, label="Capacidade alocada (tarefas)")
+    ax1.plot(time_hours, served, linewidth=2, linestyle="--", label="Atendimento real (tarefas)")
+    ax1.set_xlabel("Tempo (horas)")
+    ax1.set_ylabel("Tarefas")
+    ax1.grid(True, linestyle="--", alpha=0.35)
+
+    # eixo direito: utilização (0-1)
+    ax2 = ax1.twinx()
+    ax2.plot(time_hours, utilization, linewidth=2, linestyle=":", label="Utilização (0–1)")
+    ax2.set_ylabel("Utilização")
+    ax2.set_ylim(0, 1.05)
+    ax2.axhline(1.0, linestyle="--", alpha=0.5)
+
+    # legenda combinada
+    h1, l1 = ax1.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax1.legend(h1 + h2, l1 + l2, loc="upper left")
+
+    ax1.set_title(title)
+
+    return fig
+
+
+
+def plot_demand_curve(
+    need,
+    slot_minutes: int = 15,
+    title: str = "Curva de Demanda ao Longo do Horizonte"
+):
+    """
+    Gráfico da demanda por slot (input do modelo).
+
+    Eixo X: tempo (slots ou horas)
+    Eixo Y: demanda requerida
+    """
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    demanda = np.asarray(need, dtype=float)
+
+    slots = np.arange(len(demanda))
+    horas = slots * (slot_minutes / 60.0)
+
+    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+    ax.plot(
+        horas,
+        demanda,
+        linewidth=2,
+        color="steelblue"
+    )
+
+    ax.set_xlabel("Tempo (horas)")
+    ax.set_ylabel("Demanda requerida")
+    ax.set_title(title)
+
+    ax.grid(True, linestyle="--", alpha=0.4)
+
+    return fig
+
+def plot_demand_coverage(
+    demanda,
+    workers_schedule,
+    slot_minutes: int = 15,
+    title: str = "Cobertura da Demanda por Período"
+):
+    """
+    Gráfico de cobertura:
+    - Demanda requerida
+    - Motoristas alocados (capacidade)
+    """
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    demanda = np.asarray(demanda, dtype=float)
+    workers_schedule = np.asarray(workers_schedule, dtype=float)
+
+    if len(demanda) != len(workers_schedule):
+        raise ValueError("demanda e workers_schedule devem ter o mesmo comprimento")
+
+    slots = np.arange(len(demanda))
+    horas = slots * (slot_minutes / 60.0)
+
+    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+    ax.plot(
+        horas,
+        demanda,
+        label="Demanda requerida",
+        linewidth=2
+    )
+
+    ax.plot(
+        horas,
+        workers_schedule,
+        label="Motoristas alocados (capacidade)",
+        linewidth=2
+    )
+
+    # Marca violações
+    viol = workers_schedule < demanda
+    ax.scatter(
+        horas[viol],
+        demanda[viol],
+        color="red",
+        s=30,
+        label="Déficit de cobertura",
+        zorder=5
+    )
+
+    ax.set_xlabel("Tempo (horas)")
+    ax.set_ylabel("Quantidade")
+    ax.set_title(title)
+
+    ax.legend()
+    ax.grid(True, linestyle="--", alpha=0.4)
+
+    return fig
+
+
 def plot_panel_a_driving(driving_hours_active):
     import numpy as np
     import matplotlib.pyplot as plt
@@ -308,9 +642,22 @@ def plot_demand_capacity_utilization(
     import numpy as np
     import matplotlib.pyplot as plt
 
-    demanda = np.asarray(demanda, dtype=float)
-    workers_schedule = np.asarray(workers_schedule, dtype=float)
-    tasks_schedule = np.asarray(tasks_schedule, dtype=float)
+    # demanda = np.asarray(demanda, dtype=float)
+    # workers_schedule = np.asarray(workers_schedule, dtype=float)
+    # tasks_schedule = np.asarray(tasks_schedule, dtype=float)
+
+    demanda = np.asarray(demanda, dtype=float).reshape(-1)
+    workers_schedule = np.asarray(workers_schedule, dtype=float).reshape(-1)
+    # tasks_schedule = np.asarray(tasks_schedule, dtype=float).reshape(-1)
+    
+    n = len(demanda)
+
+    if len(workers_schedule) != n:
+        raise ValueError("workers_schedule length mismatch")
+
+    if len(tasks_schedule) != n:
+        raise ValueError("tasks_schedule length mismatch")
+
 
     slots = np.arange(len(demanda))
 
@@ -1947,6 +2294,8 @@ def run_solver_with_mode(
         total_active_drivers=0,
         total_assigned_slots=0,        
         workers_schedule=None,
+        tasks_schedule=None,                
+        driving_hours_per_driver=None,              
         constraints_coeffs=None,
         initial_density=None,
         final_density=None,
@@ -2056,12 +2405,22 @@ def run_solver_with_mode(
                 max_demands_per_driver=max_demands_per_driver
             )
 
+        # 🔒 Garantir X agregada por slot
+        if tasks_schedule is None and matrix_allocation is not None:
+            tasks_schedule = np.sum(matrix_allocation, axis=1)
+
+        # fallback seguro
+        if tasks_schedule is None:
+            tasks_schedule = np.zeros(len(need), dtype=float)
+
         return make_return(
             solver,
             status,
             total_active_drivers,
             total_assigned_slots,
             workers_schedule,
+            tasks_schedule,                
+            driving_hours_per_driver,  
             constraints_coefficients_out,
             initial_density,
             final_density,
@@ -2106,6 +2465,19 @@ def run_solver_with_mode(
             matrix_allocation=matrix_allocation
         )
 
+        # # 🔒 Normalização FINAL — contrato estável
+        # if driving_hours_per_driver is None:
+        #     driving_hours_per_driver = {}
+
+        # # garante TODAS as chaves esperadas
+        # for t in range(limit_workers):
+        #     driving_hours_per_driver.setdefault(t, 0.0)
+
+        # if tasks_schedule is None:
+        #     tasks_schedule = np.zeros(len(need), dtype=float)
+
+        # if tasks_schedule is None and matrix_allocation is not None:
+        #     tasks_schedule = np.sum(matrix_allocation, axis=1)
 
         return make_return(
             solver=None,
@@ -2113,6 +2485,8 @@ def run_solver_with_mode(
             total_active_drivers=total_active_drivers,
             total_assigned_slots=total_assigned_slots,
             workers_schedule=workers_schedule,
+            # tasks_schedule=tasks_schedule,                
+            # driving_hours_per_driver=None,                   
             constraints_coeffs=constraints_coefficients,
             initial_density=None,
             final_density=None,
@@ -2128,9 +2502,25 @@ def run_solver_with_mode(
     # ======================================================
    
     if mode == "LNS":
-        matrix_allocation = None
+        
+        # ==================================================
+        # LNS SEMPRE parte de uma solução 2D válida
+        # ==================================================
+        # 🔒 Inicializações obrigatórias (escopo local)
+        driving_hours_per_driver = None
+        tasks_schedule = None
+
+        base_solution = np.asarray(initial_allocation, dtype=int)
+
+        if base_solution.ndim != 2:
+            raise ValueError(
+                f"LNS requer solução inicial 2D (periods x drivers), "
+                f"mas recebeu shape={base_solution.shape}"
+        )
+            
+        # matrix_allocation = None
         best_solution, info = run_lns(
-            initial_solution=initial_allocation,
+            initial_solution=base_solution,
             need=need,
             variable_type=variable_type,
             constraints_coefficients=constraints_coefficients,
@@ -2182,12 +2572,30 @@ def run_solver_with_mode(
         if matrix_allocation is None:
             matrix_allocation = initial_allocation.copy()
     
+        # 🔒 Normalização FINAL — contrato estável
+        if driving_hours_per_driver is None:
+            driving_hours_per_driver = {}
+
+        # garante TODAS as chaves esperadas
+        for t in range(limit_workers):
+            driving_hours_per_driver.setdefault(t, 0.0)
+
+        # 🔒 Garantir X agregada por slot
+        if tasks_schedule is None and matrix_allocation is not None:
+            tasks_schedule = np.sum(matrix_allocation, axis=1)
+
+        # fallback seguro
+        if tasks_schedule is None:
+            tasks_schedule = np.zeros(len(need), dtype=float)
+
         return make_return(
             solver=None,
             status="LNS",
             total_active_drivers=total_active_drivers,
             total_assigned_slots=total_assigned_slots,
             workers_schedule=workers_schedule,
+            tasks_schedule=tasks_schedule,                
+            driving_hours_per_driver=driving_hours_per_driver,                        
             constraints_coeffs=constraints_coefficients,
             initial_density=None,
             final_density=None,
@@ -2435,13 +2843,20 @@ def solve_shift_schedule(
                 BIG_Z     = 10_000
                 REWARD_X = 1.0
 
+                T = max(1, num_periods - 1)
+                LAMBDA_TIME = 0.3  # 0.1 a 0.5 (0.3 é um ótimo default)
+                w = [1.0 + LAMBDA_TIME * (d / T) for d in range(num_periods)]
+
+
+
                 # -------------------------
                 # FASE 1: minimizar U e Z
                 # -------------------------
                 # FASE 1: prioridade absoluta = cobrir demanda (U)
                 # depois = minimizar motoristas (Z)
                 solver.Minimize(
-                    BIG_UNMET * solver.Sum(U[d] for d in range(num_periods))
+                    # BIG_UNMET * solver.Sum(U[d] for d in range(num_periods))
+                    BIG_UNMET * solver.Sum(w[d] * U[d] for d in range(num_periods))
                 + BIG_Z     * solver.Sum(Z[t] for t in range(limit_workers))
                 - REWARD_X  * solver.Sum(X[d, t] for d in range(num_periods) for t in range(limit_workers))
                 )
@@ -3827,8 +4242,40 @@ if st.button("Run Optimization"):
                 
                 if (not swap_rows_c and not multiply_row_c and not add_multiple_rows_c and not add_multiple_rows_c_auto):
                         constraints_coefficients = load_data('constraints_coefficients.json')                        
-                        (solver, status, total_active_drivers, total_assigned_slots, workers_schedule, tasks_schedule, driving_hours_per_driver, constraints_coefficients, initial_density, final_density, statistics_result, msg, iterations_data_result, matrix_allocation, solver_logs
-                        ) = run_solver_with_mode(optimization_mode, needNew, variable_type, constraints_coefficients, selected_restrictions, solver_param_type, acceptable_percentage, limit_workers, limit_iteration, limit_level_relaxation, cap_tasks_per_driver_per_slot, tolerance_demands, penalty, swap_rows=None, multiply_row=None, add_multiple_rows=None, radio_selection_object=radio_selection_object)                               
+                        (solver, 
+                         status, 
+                         total_active_drivers, 
+                         total_assigned_slots, 
+                         workers_schedule, 
+                         tasks_schedule, 
+                         driving_hours_per_driver, 
+                         constraints_coefficients, 
+                         initial_density, 
+                         final_density, 
+                         statistics_result, 
+                         msg, 
+                         iterations_data_result, 
+                         matrix_allocation, 
+                         solver_logs
+                        ) = run_solver_with_mode(
+                            optimization_mode, 
+                            needNew, 
+                            variable_type, 
+                            constraints_coefficients, 
+                            selected_restrictions, 
+                            solver_param_type, 
+                            acceptable_percentage, 
+                            limit_workers, 
+                            limit_iteration, 
+                            limit_level_relaxation, 
+                            cap_tasks_per_driver_per_slot, 
+                            tolerance_demands, 
+                            penalty, 
+                            swap_rows=None, 
+                            multiply_row=None, 
+                            add_multiple_rows=None, 
+                            radio_selection_object=radio_selection_object
+                            )                               
                 else:
                     if swap_rows_c:
                         with col_resultsItIOpI:
@@ -4032,6 +4479,62 @@ if st.button("Run Optimization"):
                     except ValueError:
                         st.error("Por favor, insira os valores da demanda separados por vírgula e espaço.")
                         demanda = []                              
+
+                with st.expander("Initial", expanded=True):
+                    col_A, col_B, col_C  = st.columns(3)
+                    with col_A:
+                        # st.subheader("Perfil da Demanda")
+                        # st.pyplot(plot_demand_curve(need))
+                        st.pyplot(plot_demand_vs_served(need, tasks_schedule))
+
+                    with col_B:
+                        # st.subheader("Cobertura da Demanda")
+                        # st.pyplot(plot_demand_coverage(need, workers_schedule))
+                        st.pyplot(plot_demand_gap(need, tasks_schedule))
+                        
+                    with col_C:
+                        st.pyplot(plot_capacity_vs_utilization(
+                            workers_schedule,
+                            tasks_schedule,
+                            cap_tasks_per_driver_per_slot
+                        ))
+                        
+
+                    # Série A — Demanda vs Atendimento vs Gap
+                    df_demand_served = build_timeseries_demand_served(
+                        need=need,
+                        tasks_schedule=tasks_schedule,
+                        slot_minutes=15
+                    )
+
+                    # Série B — Capacidade vs Utilização
+                    df_capacity_util = build_timeseries_capacity_utilization(
+                        workers_schedule=workers_schedule,
+                        tasks_schedule=tasks_schedule,
+                        cap_tasks_per_driver_per_slot=cap_tasks_per_driver_per_slot,
+                        slot_minutes=15
+                    )
+
+                    # Série C — Déficit isolado
+                    df_gap = build_timeseries_gap(
+                        need=need,
+                        tasks_schedule=tasks_schedule,
+                        slot_minutes=15
+                    )
+
+
+                    import pandas as pd
+
+                    with pd.ExcelWriter("timeseries_results.xlsx") as writer:
+                        df_demand_served.to_excel(writer, sheet_name="Demand_vs_Served", index=False)
+                        df_gap.to_excel(writer, sheet_name="Gap", index=False)
+                        df_capacity_util.to_excel(writer, sheet_name="Capacity_Utilization", index=False)
+
+
+
+
+
+
                 #-----------------------------------
                 # Tabela de Resultados
                 # ----------------------------------            
@@ -4198,6 +4701,44 @@ if st.button("Run Optimization"):
                             if matrix_allocation[:, t].sum() > 0
                         ]
 
+                        # 🔒 Normalização FINAL — camada de consumo
+                        if driving_hours_per_driver is None:
+                            driving_hours_per_driver = {}
+                            
+                        # 🔒 Garantir tipo dict (alguns modos podem devolver lista)
+                        if driving_hours_per_driver is None:
+                            driving_hours_per_driver = {}
+
+                        elif isinstance(driving_hours_per_driver, list):
+                            # Converte lista para dict: índice do motorista -> horas
+                            driving_hours_per_driver = {
+                                i: float(v) for i, v in enumerate(driving_hours_per_driver)
+                            }
+
+                        elif not isinstance(driving_hours_per_driver, dict):
+                            # fallback seguro
+                            driving_hours_per_driver = {}                            
+
+
+                        # 🔒 Garantir tipo dict (alguns modos podem devolver lista)
+                        if driving_hours_per_driver is None:
+                            driving_hours_per_driver = {}
+
+                        elif isinstance(driving_hours_per_driver, list):
+                            # Converte lista para dict: índice do motorista -> horas
+                            driving_hours_per_driver = {
+                                i: float(v) for i, v in enumerate(driving_hours_per_driver)
+                            }
+
+                        elif not isinstance(driving_hours_per_driver, dict):
+                            # fallback seguro
+                            driving_hours_per_driver = {}
+
+
+                        for t in range(limit_workers):
+                            driving_hours_per_driver.setdefault(t, 0.0)
+
+
                         # ---- Painel A: Condução (X) ----
                         driving_hours_active = [
                             driving_hours_per_driver[t]
@@ -4225,13 +4766,20 @@ if st.button("Run Optimization"):
                 # ---------------------------------------------------------
                 # Gráficos Demanda and Gaps
                 # ---------------------------------------------------------
-                with st.expander("Gráficos Demanda and Gaps", expanded=True):     
+                with st.expander("Demand and Gaps Charts", expanded=True):     
                     col_A, col_B = st.columns(2) 
                     with col_A:
+                        
+                        # matrix_allocation: shape (n_slots, n_drivers)
+                        if matrix_allocation is not None:
+                            tasks_schedule_slot = np.sum(matrix_allocation, axis=1)
+                        else:
+                            tasks_schedule_slot = np.zeros(len(demanda), dtype=float)
+
                         fig = plot_demand_capacity_utilization(
                             demanda=need,
                             workers_schedule=workers_schedule,
-                            tasks_schedule=tasks_schedule,          # <<< X agregado
+                            tasks_schedule=tasks_schedule_slot,          # <<< X agregado
                             cap_tasks_per_driver_per_slot=cap_tasks_per_driver_per_slot
                         )
                         st.pyplot(fig)
@@ -4517,27 +5065,16 @@ if st.button("Run Optimization"):
 
                             stability = kpis.get("temporal_stability")
                             st.metric("Temporal Stability", f"{stability:.3f}" if stability is not None else "N/A")                    
-                        
-                # ---------------------------------------------------------
-                # Matrix
-                # ---------------------------------------------------------
-                with st.expander("Matrix", expanded=True): 
-                    col_resultsIniI, col_resultsIniII = st.columns(2)
-                    with col_resultsIniI:
-                        if msg is not None:    
-                            if initial_density_matrix is not None:
-                                # Exibir a densidade
-                                st.write(f"Density: {initial_density_matrix:.4f}")
-                                fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
-                                sns.heatmap(initial_constraints_coefficients, cmap="Blues", cbar=False, annot=False, fmt="d", annot_kws={"size": 7})
-                                plt.title('Constraint Matrix')
-                                plt.xlabel('X')
-                                plt.ylabel('Period')
-                                st.pyplot(fig)
-                            
-                            # Converter dados para DataFrame
+                  
+                  
+                with st.expander("LNS", expanded=True): 
+                    # col_A__ = st.columns(1)
+                    # with col_A__:
+                    col_A, col_B, col_C = st.columns(3)
+                    with col_A:
+                        # Converter dados para DataFrame
                         if iterations_data_result != []:
-                            st.subheader("Convergence Progress")
+                            # st.subheader("Convergence Progress")
                             df_iterationsResult = pd.DataFrame(iterations_data_result)
                             
                             # 🔒 Garantir colunas mínimas esperadas
@@ -4576,7 +5113,8 @@ if st.button("Run Optimization"):
                             
                             # Exibir o gráfico no Streamlit
                             st.pyplot(fig)    
-
+                    with col_B:
+                        if iterations_data_result != []:
                             if "improved" in df_iterationsResult.columns:
                                 fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
 
@@ -4587,15 +5125,21 @@ if st.button("Run Optimization"):
                                     df_iterationsResult["improved_int"],
                                     color=["green" if x == 1 else "lightgray" for x in df_iterationsResult["improved_int"]]
                                 )
-                                st.subheader("LNS – Improvement")
+                                
+                                # st.subheader("LNS – Improvement")
                                 ax.set_title("LNS – Improvement per Iteration")
                                 ax.set_xlabel("Iteration")
                                 ax.set_ylabel("Improved (1 = Yes)")
                                 ax.set_yticks([0, 1])
                                 ax.grid(True)
 
-                                st.pyplot(fig)
-                                
+                                st.pyplot(fig)                         
+                    
+                    with col_C:
+                        if iterations_data_result != []:
+                            #----------------------        
+                            # Relaxation Progress
+                            #---------------------- 
                             if "total_workers" in df_iterationsResult.columns:
                                 fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
 
@@ -4616,6 +5160,139 @@ if st.button("Run Optimization"):
                                 ax.legend()
 
                                 st.pyplot(fig)
+                        
+                            #----------------------        
+                            # Relaxation Progress
+                            #---------------------- 
+                            if iterations_data_result != []:
+                                # st.subheader("Relaxation Progress")
+                                fig_relax, ax_relax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                                df_iterationsResult.plot(x="iteration", y="relaxation_level", ax=ax_relax, marker="x", color="red", label="Relaxation Level")
+                                ax_relax.set_title("Relaxation Progress")
+                                ax_relax.set_xlabel("Iteration")
+                                ax_relax.set_ylabel("Relaxation Level")
+                                ax_relax.grid(True)
+                                ax_relax.legend()
+
+                                # Exibir o gráfico no Streamlit
+                                st.pyplot(fig_relax)   
+                    
+                    # with col_B__:
+                    if iterations_data_result != []:            
+                        st.table(df_iterationsResult)  
+                        # if iterations_data_result != []:
+                        #                 st.subheader("Relaxation Progress")
+                        #                 fig_relax, ax_relax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                        #                 df_iterationsResult.plot(x="iteration", y="relaxation_level", ax=ax_relax, marker="x", color="red", label="Relaxation Level")
+                        #                 ax_relax.set_title("Relaxation Progress")
+                        #                 ax_relax.set_xlabel("Iteration")
+                        #                 ax_relax.set_ylabel("Relaxation Level")
+                        #                 ax_relax.grid(True)
+                        #                 ax_relax.legend()
+
+                        #                 # Exibir o gráfico no Streamlit
+                        #                 st.pyplot(fig_relax)                    
+                    
+                                          
+                # ---------------------------------------------------------
+                # Matrix
+                # ---------------------------------------------------------
+                with st.expander("Matrix", expanded=True): 
+                    col_resultsIniI, col_resultsIniII = st.columns(2)
+                    with col_resultsIniI:
+                        if msg is not None:    
+                            if initial_density_matrix is not None:
+                                # Exibir a densidade
+                                st.write(f"Density: {initial_density_matrix:.4f}")
+                                fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                                sns.heatmap(initial_constraints_coefficients, cmap="Blues", cbar=False, annot=False, fmt="d", annot_kws={"size": 7})
+                                plt.title('Constraint Matrix')
+                                plt.xlabel('X')
+                                plt.ylabel('Period')
+                                st.pyplot(fig)
+                            
+                        #     # Converter dados para DataFrame
+                        # if iterations_data_result != []:
+                        #     st.subheader("Convergence Progress")
+                        #     df_iterationsResult = pd.DataFrame(iterations_data_result)
+                            
+                        #     # 🔒 Garantir colunas mínimas esperadas
+                        #     if "objective_value" not in df_iterationsResult.columns:
+                        #         df_iterationsResult["objective_value"] = np.nan
+
+                        #     if "iteration" not in df_iterationsResult.columns:
+                        #         df_iterationsResult["iteration"] = range(len(df_iterationsResult))
+                            
+                        #     if "relaxation_level" not in df_iterationsResult.columns:
+                        #         df_iterationsResult["relaxation_level"] = range(len(df_iterationsResult))
+
+                        #     # # Gráfico de convergência do objetivo
+                        #     fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                        #     if not df_iterationsResult.empty and df_iterationsResult["objective_value"].notna().any():
+                        #         df_iterationsResult.plot(
+                        #             x="iteration",
+                        #             y="objective_value",
+                        #             ax=ax,
+                        #             marker="o",
+                        #             label="Goal Value"
+                        #         )
+                        #     else:
+                        #         ax.text(
+                        #             0.5, 0.5,
+                        #             "No objective values recorded",
+                        #             ha="center", va="center",
+                        #             transform=ax.transAxes
+                        #         )
+
+                        #     ax.set_title("Convergence of Result")
+                        #     ax.set_xlabel("Iteration")
+                        #     ax.set_ylabel("Goal Value")
+                        #     ax.grid(True)
+                        #     ax.legend()
+                            
+                        #     # Exibir o gráfico no Streamlit
+                        #     st.pyplot(fig)    
+
+                            # if "improved" in df_iterationsResult.columns:
+                            #     fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+                            #     df_iterationsResult["improved_int"] = df_iterationsResult["improved"].astype(int)
+
+                            #     ax.bar(
+                            #         df_iterationsResult["iteration"],
+                            #         df_iterationsResult["improved_int"],
+                            #         color=["green" if x == 1 else "lightgray" for x in df_iterationsResult["improved_int"]]
+                            #     )
+                            #     st.subheader("LNS – Improvement")
+                            #     ax.set_title("LNS – Improvement per Iteration")
+                            #     ax.set_xlabel("Iteration")
+                            #     ax.set_ylabel("Improved (1 = Yes)")
+                            #     ax.set_yticks([0, 1])
+                            #     ax.grid(True)
+
+                            #     st.pyplot(fig)
+                                
+                            # if "total_workers" in df_iterationsResult.columns:
+                            #     fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+
+                            #     df_iterationsResult.plot(
+                            #         x="iteration",
+                            #         y="total_workers",
+                            #         ax=ax,
+                            #         marker="s",
+                            #         color="purple",
+                            #         label="Total Workers"
+                            #     )
+
+                            #     st.subheader("LNS – Workers Evolution")
+                            #     ax.set_title("LNS – Total Workers Evolution")
+                            #     ax.set_xlabel("Iteration")
+                            #     ax.set_ylabel("Total Workers")
+                            #     ax.grid(True)
+                            #     ax.legend()
+
+                            #     st.pyplot(fig)
+
                     with col_resultsIniII:
                         if msg is not None:
                             if final_density is not None:
@@ -4630,21 +5307,21 @@ if st.button("Run Optimization"):
                             plt.ylabel('Period')
                             st.pyplot(fig)
                                 
-                        if iterations_data_result != []:
-                                        st.subheader("Relaxation Progress")
-                                        fig_relax, ax_relax = plt.subplots(figsize=(14, FIG_HEIGHT))
-                                        df_iterationsResult.plot(x="iteration", y="relaxation_level", ax=ax_relax, marker="x", color="red", label="Relaxation Level")
-                                        ax_relax.set_title("Relaxation Progress")
-                                        ax_relax.set_xlabel("Iteration")
-                                        ax_relax.set_ylabel("Relaxation Level")
-                                        ax_relax.grid(True)
-                                        ax_relax.legend()
+                        # if iterations_data_result != []:
+                        #                 st.subheader("Relaxation Progress")
+                        #                 fig_relax, ax_relax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                        #                 df_iterationsResult.plot(x="iteration", y="relaxation_level", ax=ax_relax, marker="x", color="red", label="Relaxation Level")
+                        #                 ax_relax.set_title("Relaxation Progress")
+                        #                 ax_relax.set_xlabel("Iteration")
+                        #                 ax_relax.set_ylabel("Relaxation Level")
+                        #                 ax_relax.grid(True)
+                        #                 ax_relax.legend()
 
-                                        # Exibir o gráfico no Streamlit
-                                        st.pyplot(fig_relax)                    
+                        #                 # Exibir o gráfico no Streamlit
+                        #                 st.pyplot(fig_relax)                    
                     
-                    if iterations_data_result != []:            
-                        st.table(df_iterationsResult)
+                    # if iterations_data_result != []:            
+                    #     st.table(df_iterationsResult)
                     if msg is not None:
                         # Criando o DataFrame a partir da lista msgResult
                         results_msg_result = {

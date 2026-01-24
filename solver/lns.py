@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Tuple
-
 import numpy as np
-
 from ml.ml_guidance import neighborhood_scorer
 
 
@@ -20,13 +18,13 @@ def select_best_neighborhood(
 
     for periods_to_free in candidate_neighborhoods:
         if neighborhood_scorer_fn is not None:
-                score = call_neighborhood_scorer(
-                neighborhood_scorer_fn=neighborhood_scorer_fn,
-                current_solution=current_solution,
-                periods_to_free=periods_to_free,
-                need=need,
-                best_total_active_drivers=best_total_active_drivers,
-                best_total_assigned_slots=best_total_assigned_slots,
+            score = call_neighborhood_scorer(
+            neighborhood_scorer_fn=neighborhood_scorer_fn,
+            current_solution=current_solution,
+            periods_to_free=periods_to_free,
+            need=need,
+            best_total_active_drivers=best_total_active_drivers,
+            best_total_assigned_slots=best_total_assigned_slots,
             )
         else:
             # fallback heurístico simples
@@ -237,7 +235,28 @@ def run_lns(
     rng = np.random.default_rng(random_seed)
 
     num_periods = len(need)
-    best_solution = initial_solution.copy()
+    # best_solution = initial_solution.copy()
+    
+    
+    best_solution = np.asarray(initial_solution)
+
+    # Garante shape 2D: (num_periods, num_workers)
+    if best_solution.ndim == 1:
+        # Tentativa 1: se for coverage por slot (len == num_periods),
+        # não dá para reconstruir matriz sem num_workers -> erro claro.
+        raise ValueError(
+            f"LNS espera initial_solution 2D (periods x drivers), "
+            f"mas recebeu 1D shape={best_solution.shape}. "
+            f"Passe matrix_allocation (2D) como initial_solution."
+        )
+
+    if best_solution.ndim != 2:
+        raise ValueError(
+            f"LNS espera initial_solution 2D, mas recebeu ndim={best_solution.ndim}, "
+            f"shape={best_solution.shape}"
+        )
+
+    best_solution = best_solution.copy()    
     
     best_total_assigned_slots = int(best_solution.sum())
     best_total_active_drivers = int(np.sum(np.any(best_solution > 0, axis=0)))
@@ -298,21 +317,42 @@ def run_lns(
         )
 
         # 5) Resolver subproblema (MILP com variáveis fixadas)
-        (
-            solver,
-            status,
-            total_active_drivers,      # ← decisão
-            total_assigned_slots,      # ← esforço
-            workers_schedule,
-            new_constraints,
-            initial_density,
-            final_density,
-            statistics_result,
-            msg,
-            iterations_data,
-            matrix_allocation,
-            solver_logs
-        ) = solve_fn(
+        # (
+        #     solver,
+        #     status,
+        #     total_active_drivers,      # ← decisão
+        #     total_assigned_slots,      # ← esforço
+        #     workers_schedule,
+        #     new_constraints,
+        #     initial_density,
+        #     final_density,
+        #     statistics_result,
+        #     msg,
+        #     iterations_data,
+        #     matrix_allocation,
+        #     solver_logs
+        # ) = solve_fn(
+        #     solver_param_type,
+        #     need,
+        #     variable_type,
+        #     constraints_coefficients,
+        #     selected_restrictions,
+        #     swap_rows=None,
+        #     multiply_row=None,
+        #     add_multiple_rows=None,
+        #     densidade_aceitavel=None,
+        #     limit_workers=limit_workers,
+        #     limit_iteration=limit_iteration,
+        #     limit_level_relaxation=limit_level_relaxation,
+        #     cap_tasks_per_driver_per_slot=max_demands_per_driver,
+        #     tolerance_demands=tolerance_demands,
+        #     penalty=penalty,
+        #     initial_allocation=None,
+        #     fixed_assignments=fixed_assignments,
+        #     mode="LNS",
+        # )
+
+        result = solve_fn(
             solver_param_type,
             need,
             variable_type,
@@ -325,7 +365,7 @@ def run_lns(
             limit_workers=limit_workers,
             limit_iteration=limit_iteration,
             limit_level_relaxation=limit_level_relaxation,
-            max_demands_per_driver=max_demands_per_driver,
+            cap_tasks_per_driver_per_slot=max_demands_per_driver,
             tolerance_demands=tolerance_demands,
             penalty=penalty,
             initial_allocation=None,
@@ -333,20 +373,63 @@ def run_lns(
             mode="LNS",
         )
 
+        # ---- unpack defensivo (compatível com solver evoluído) ----
+        solver               = result[0]
+        status               = result[1]
+        total_active_drivers = result[2]
+        total_assigned_slots = result[3]
+        workers_schedule     = result[4]
+        new_constraints      = result[5]
+        initial_density      = result[6]
+        final_density        = result[7]
+        statistics_result    = result[8]
+        msg                  = result[9]
+        iterations_data      = result[10]
+        matrix_allocation    = result[11]
+        solver_logs          = result[12]
+
         last_solver_logs = solver_logs if isinstance(solver_logs, dict) else last_solver_logs
 
         # 6) Avaliar melhoria
         if matrix_allocation is None:
             history.append({
                 "iteration": it,
-                "total_active_drivers": new_total_active_drivers,
-                "total_assigned_slots": new_total_assigned_slots,
+                "total_active_drivers": int(total_active_drivers) if total_active_drivers is not None else None,
+                "total_assigned_slots": int(total_assigned_slots) if total_assigned_slots is not None else None,
                 "improved": False,
                 "status": status
             })
             continue
 
-        new_solution = np.asarray(matrix_allocation, dtype=int)
+        # new_solution = np.asarray(matrix_allocation, dtype=int)
+        
+        # --------------------------------------------------
+        # VALIDAÇÃO CRÍTICA: LNS só aceita solução 2D
+        # --------------------------------------------------
+        if matrix_allocation is None:
+            history.append({
+                "iteration": it,
+                "status": status,
+                "improved": False,
+                "reason": "matrix_allocation is None"
+            })
+            continue
+
+        new_solution = np.asarray(matrix_allocation)
+
+        if new_solution.ndim != 2:
+            history.append({
+                "iteration": it,
+                "status": status,
+                "improved": False,
+                "reason": f"invalid solution shape {new_solution.shape}"
+            })
+            continue
+
+        new_solution = new_solution.astype(int)
+        
+        
+        
 
         new_total_assigned_slots = int(new_solution.sum())
         new_total_active_drivers = int(np.sum(np.any(new_solution > 0, axis=0)))
@@ -380,12 +463,13 @@ def run_lns(
         })
 
         if improved:
-            best_total_workers = new_total_active_drivers
             best_solution = new_solution
+            best_total_active_drivers = new_total_active_drivers
+            best_total_assigned_slots = new_total_assigned_slots
 
     info = {
-        "total_active_drivers": new_total_active_drivers,
-        "total_assigned_slots": new_total_assigned_slots,
+        "total_active_drivers": int(best_total_active_drivers),
+        "total_assigned_slots": int(best_total_assigned_slots),
         "history": history,
         "last_solver_logs": last_solver_logs
     }
