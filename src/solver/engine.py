@@ -346,7 +346,8 @@ def solve_shift_schedule(
             for t in range(limit_workers): solver.Add(L[t] <= Lmax)
 
             S, E = {}, {}
-            SHIFT_MIN = min(16, num_periods)  # RELAXADO: 4h (16 slots) para viabilidade e hint acceptance
+            # Ajuste solicitado: 4h30min = 18 slots de 15 min
+            SHIFT_MIN = min(18, num_periods)  # Era 16 (4h), agora 18 (4.5h) conforme regulamento
             SHIFT_MAX = min(52, num_periods)
             for t in range(limit_workers):
                 for d in range(num_periods):
@@ -405,9 +406,11 @@ def solve_shift_schedule(
             if selected_restrictions.get("limite_diario", False):
                 max_daily_driving = 36  # 9 horas (36 períodos de 15 minutos)
                 periods_per_day = 96  # 24 horas
-                for day in range(num_periods // periods_per_day):
+                # FIX: Handle partial days (ceil division)
+                num_days = (num_periods + periods_per_day - 1) // periods_per_day
+                for day in range(num_days):
                     day_start = day * periods_per_day
-                    day_end = (day + 1) * periods_per_day
+                    day_end = min((day + 1) * periods_per_day, num_periods)
                     for t in range(limit_workers):
                         solver.Add(solver.Sum([X[d, t] for d in range(day_start, day_end)]) <= float(max_daily_driving))
             

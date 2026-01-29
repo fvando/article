@@ -71,72 +71,66 @@ def greedy_initial_allocation(
     assignment_scorer_fn: Optional[Callable[..., Any]] = None
 ) -> np.ndarray:
     """
-    Gera uma alocação inicial (num_periods x limit_workers) usando:
-      - score ML/externo (se assignment_scorer_fn existir e retornar algo)
-      - fallback heurístico (capacidade restante do motorista)
-
-    Observação: esta heurística aloca 0/1 por (period, driver).
+    Gera uma alocação inicial baseada em BLOCOS (Janelas Deslizantes).
+    Objetivo: Criar turnos contínuos (ex: 4h) para respeitar SHIFT_MIN,
+    facilitando o trabalho do LNS/Solver.
     """
     num_periods = len(need)
     allocation = np.zeros((num_periods, limit_workers), dtype=int)
-
-    # Ordenar períodos por demanda descrescente
-    sorted_periods = np.argsort(need)[::-1]
+    current_coverage = np.zeros(num_periods, dtype=int)
     
+    # Bloco mínimo de 4h30 (18 slots) para alinhar com SHIFT_MIN e regulamento
+    BLOCK_SIZE = 18
+    run_len = min(BLOCK_SIZE, num_periods)
     
-    # Ordena por demanda, mas com leve viés para atender slots mais tarde também
-    # T = max(1, num_periods - 1)
-    # lambda_time = 0.25  # ajuste pequeno; 0.1–0.5 costuma bastar
-    # scores = np.array([need[p] + lambda_time * (p / T) for p in range(num_periods)], dtype=float)
-    # sorted_periods = np.argsort(scores)[::-1]
+    # Se a capacidade do motorista for menor que o bloco, ajusta
+    actual_len = min(run_len, max_demands_per_driver)
+    if actual_len <= 0:
+        return allocation
 
-
-    # Quantas vezes cada motorista já foi utilizado (capacidade)
-    drivers_demand_count = np.zeros(limit_workers, dtype=int)
-
-    for period in sorted_periods:
-        required = int(need[period])
-        scored_workers: List[tuple[int, float]] = []
-
-        for driver in range(limit_workers):
-            # 1) score via ML/externo (se houver)
-            ml_score = call_assignment_scorer(
-                assignment_scorer_fn,
-                driver=driver,
-                period=int(period),
-                allocation_matrix=allocation,
-                need_vector=need,
-                max_demands_per_driver=max_demands_per_driver,
-                limit_workers=limit_workers,
-            )
-
-            # 2) fallback heurístico (capacidade remanescente)
-            base_score = float(max(0, max_demands_per_driver - int(drivers_demand_count[driver])))
-
-            final_score = float(ml_score) if ml_score is not None else base_score
-            scored_workers.append((driver, final_score))
-
-        # Ordena por score descrescente
-        scored_workers.sort(key=lambda x: x[1], reverse=True)
-        ordered_drivers = [d for d, _ in scored_workers]
-
-        # Primeira passagem
-        for driver in ordered_drivers:
-            if required <= 0:
-                break
-            if drivers_demand_count[driver] < max_demands_per_driver:
-                allocation[period, driver] = 1
-                drivers_demand_count[driver] += 1
-                required -= 1
-
-        # Segunda passagem (mantida para compatibilidade; hoje tende a ser redundante)
-        for driver in ordered_drivers:
-            if required <= 0:
-                break
-            if drivers_demand_count[driver] < max_demands_per_driver:
-                allocation[period, driver] = 1
-                drivers_demand_count[driver] += 1
-                required -= 1
+    # Para cada motorista, buscamos o melhor bloco disponível
+    for driver in range(limit_workers):
+        best_start = -1
+        best_gain = -1
+        
+        # Otimização: Passo de 4 slots (1h) para busca rápida
+        step = 1
+        scores = []
+        
+        # Varredura (Sliding Window)
+        for t in range(0, num_periods - actual_len + 1, step):
+            # Ganho = Soma da Demanda Não Atendida neste bloco
+            # Se need[k] > current[k], ganhamos 1 ponto.
+            gain = 0
+            for k in range(t, t + actual_len):
+                if need[k] > current_coverage[k]:
+                    gain += 1
+            
+            if gain > best_gain:
+                best_gain = gain
+                best_start = t
+        
+        # Se encontrou um bloco útil (ganho > 0), aloca
+        if best_start >= 0 and best_gain > 0:
+            allocation[best_start : best_start + actual_len, driver] = 1
+            current_coverage[best_start : best_start + actual_len] += 1
+            
+            # --- TENTATIVA DE EXTENSÃO (Opcional) ---
+            # Se sobrar capacidade, estendemos para a direita até max_demands ou fim da demanda
+            remaining_cap = max_demands_per_driver - actual_len
+            cursor = best_start + actual_len
+            
+            while remaining_cap > 0 and cursor < num_periods:
+                # Só estende se houver demanda não atendida
+                if need[cursor] > current_coverage[cursor]:
+                    allocation[cursor, driver] = 1
+                    current_coverage[cursor] += 1
+                    remaining_cap -= 1
+                    cursor += 1
+                else:
+                    # Se não tem demanda, para (evita desperdício) ou continua? 
+                    # Para warm start, melhor parar e manter bloco compacto.
+                    break
 
     return allocation
 

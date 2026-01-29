@@ -2884,7 +2884,7 @@ if btn_bench:
                 (solver, status, total_active, total_slots, ws, ts, _, _, _, _, _, _, iterations_data_result, alloc, logs) = run_solver_with_mode(
                     mode, need, variable_type, constraints_coefficients, selected_restrictions,
                     solver_param_type, acceptable_percentage, limit_workers, limit_iteration,
-                    limit_level_relaxation, cap_tasks_per_driver_per_slot, tolerance_demands, penalty,
+                    limit_level_relaxation, num_periods, tolerance_demands, penalty,
                     swap_rows=None, multiply_row=None, add_multiple_rows=None,
                     radio_selection_object="Minimize Total Number of Drivers", # FORCE MINIMIZATION FOR BENCHMARK
                     enable_symmetry_breaking=enable_symmetry_breaking,
@@ -3157,7 +3157,7 @@ if btn_run:
                             limit_workers, 
                             limit_iteration, 
                             limit_level_relaxation, 
-                            cap_tasks_per_driver_per_slot, 
+                            num_periods, # max_demands_per_driver 
                             tolerance_demands, 
                             penalty, 
                             swap_rows=None, 
@@ -3207,7 +3207,7 @@ if btn_run:
                                     limit_workers,
                                     limit_iteration,
                                     limit_level_relaxation,
-                                    cap_tasks_per_driver_per_slot,
+                                    num_periods, # max_demands_per_driver
                                     tolerance_demands,
                                     penalty,
                                     swap_rows=swap_rows, 
@@ -3254,7 +3254,7 @@ if btn_run:
                                         limit_workers,
                                         limit_iteration,
                                         limit_level_relaxation,
-                                        cap_tasks_per_driver_per_slot,
+                                        num_periods, # max_demands_per_driver
                                         tolerance_demands,
                                         penalty,
                                         swap_rows=None, 
@@ -3302,7 +3302,7 @@ if btn_run:
                                     limit_workers,
                                     limit_iteration,
                                     limit_level_relaxation,
-                                    cap_tasks_per_driver_per_slot,
+                                    num_periods, # max_demands_per_driver
                                     tolerance_demands,
                                     penalty,
                                     swap_rows=None, 
@@ -3354,7 +3354,7 @@ if btn_run:
                                 limit_workers,
                                 limit_iteration,
                                 limit_level_relaxation,
-                                cap_tasks_per_driver_per_slot,
+                                num_periods, # max_demands_per_driver
                                 tolerance_demands,
                                 penalty,
                                 swap_rows=None, 
