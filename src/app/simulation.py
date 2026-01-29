@@ -11,6 +11,38 @@
 # DEMO_MODE = st.secrets.get("DEMO_MODE", True)
 # MAX_TIME = st.secrets.get("MAX_TIME_SECONDS", 30)
 
+import matplotlib
+matplotlib.use('Agg')
+
+# 🔒 CRITICAL: Threading lock for matplotlib operations
+# Matplotlib is not thread-safe, and Streamlit runs in multiple threads.
+# This lock serializes all matplotlib operations to prevent race conditions.
+import threading
+_MPL_LOCK = threading.Lock()
+
+def safe_render_figure(fig, container=None):
+    """
+    Safely render a matplotlib figure to Streamlit using st.image().
+    This avoids asyncio event loop conflicts that occur with st.pyplot().
+    
+    Args:
+        fig: matplotlib Figure object
+        container: optional Streamlit container (column, expander, etc). If None, uses st directly.
+    """
+    import io
+    import matplotlib.pyplot as plt
+    import streamlit as st
+    
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=100, bbox_inches='tight', facecolor='white')
+    buf.seek(0)
+    
+    target = container if container is not None else st
+    target.image(buf, width='stretch')
+    
+    buf.close()
+    plt.close(fig)
+
 FIG_HEIGHT = 4.5
 
 import os
@@ -31,17 +63,7 @@ if BASE_SIMULATOR_DIR not in sys.path:
     sys.path.append(BASE_SIMULATOR_DIR)
 
 import html
-# ... imports ...
-
-
-# ... (rest of imports)
-
-
-
-import html
 import math
-import streamlit as st
-
 import streamlit as st
 
 # Language Selector handled in src.vis.ui
@@ -49,7 +71,6 @@ import streamlit as st
 
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
 import pandas as pd
 import json
 from math import ceil
@@ -73,7 +94,7 @@ import time
 # )
 
 from src.solver.heuristic import greedy_initial_allocation
-from src.solver.kpis import compute_kpis
+from src.solver.kpis import compute_kpis, calculate_gini
 from src.vis.charts import (
     plot_heatmap_safety,
     plot_heatmap_coverage,
@@ -312,12 +333,10 @@ def plot_demand_gap(
     Gráfico do gap (déficit) por período.
     Mostra explicitamente onde a demanda não foi atendida.
     """
+    from matplotlib.figure import Figure
 
     if title is None:
-        title = t("chart_gap_title")
-
-    import numpy as np
-    import matplotlib.pyplot as plt
+        title = "Demand Deficit per Period"
 
     demanda = np.asarray(demanda, dtype=float).reshape(-1)
     served  = np.asarray(tasks_schedule, dtype=float).reshape(-1)
@@ -330,7 +349,8 @@ def plot_demand_gap(
 
     gap = np.maximum(0.0, demanda - served)
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.bar(
         time_hours,
@@ -340,21 +360,21 @@ def plot_demand_gap(
     )
 
     ax.set_title(title)
-    ax.set_xlabel(t("axis_time_hours"))
-    ax.set_ylabel(t("chart_gap_yaxis"))
+    ax.set_xlabel("Time (hours)")
+    ax.set_ylabel("Deficit (tasks)")
 
     ax.grid(True, axis="y", linestyle="--", alpha=0.35)
 
-    # Métricas-chave no gráfico (muito útil para banca)
+    # Métricas-chave no gráfico
     total_gap = gap.sum()
     max_gap   = gap.max()
     slots_gap = int((gap > 0).sum())
 
     ax.text(
         0.01, 0.98,
-        f"{t('chart_gap_slots')}: {slots_gap}\n"
-        f"{t('chart_gap_total')}: {total_gap:.1f}\n"
-        f"{t('chart_gap_max')}: {max_gap:.1f}",
+        f"Slots with deficit: {slots_gap}\n"
+        f"Total deficit: {total_gap:.1f}\n"
+        f"Max deficit: {max_gap:.1f}",
         transform=ax.transAxes,
         va="top",
         bbox=dict(boxstyle="round", facecolor="white", alpha=0.85)
@@ -369,11 +389,9 @@ def plot_demand_vs_served(
     slot_minutes: int = 15,
     title: str = None
 ):
+    from matplotlib.figure import Figure
     if title is None:
         title = t("chart_demand_served_title")
-
-    import numpy as np
-    import matplotlib.pyplot as plt
 
     demanda = np.asarray(demanda, dtype=float).reshape(-1)
     served  = np.asarray(tasks_schedule, dtype=float).reshape(-1)
@@ -387,12 +405,13 @@ def plot_demand_vs_served(
     deficit = np.maximum(0.0, demanda - served)
     viol = deficit > 1e-9
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.plot(time_hours, demanda, linewidth=2, label=t("chart_demand_label"))
     ax.plot(time_hours, served,  linewidth=2, linestyle="--", label=t("chart_served_label"))
 
-    # marca violações (onde served < demanda)
+    # marca violações
     ax.scatter(time_hours[viol], demanda[viol], s=30, label=t("chart_deficit_label"), zorder=5)
 
     ax.set_title(title)
@@ -401,10 +420,12 @@ def plot_demand_vs_served(
     ax.grid(True, linestyle="--", alpha=0.35)
     ax.legend(loc="upper left")
 
-    # texto curto com métricas
+    # texto informativo
     ax.text(
         0.01, 0.98,
-        f"{t('chart_gap_slots')}: {int(viol.sum())}\n{t('chart_gap_total')}: {deficit.sum():.1f}\n{t('chart_gap_max')}: {deficit.max():.1f}",
+        f"{t('chart_gap_slots')}: {int(viol.sum())}\n"
+        f"{t('chart_gap_total')}: {deficit.sum():.1f}\n"
+        f"{t('chart_gap_max')}: {deficit.max():.1f}",
         transform=ax.transAxes, va="top",
         bbox=dict(boxstyle="round", facecolor="white", alpha=0.85)
     )
@@ -418,11 +439,9 @@ def plot_capacity_vs_utilization(
     slot_minutes: int = 15,
     title: str = None
 ):
+    from matplotlib.figure import Figure
     if title is None:
         title = t("chart_cap_util_title")
-
-    import numpy as np
-    import matplotlib.pyplot as plt
 
     workers = np.asarray(workers_schedule, dtype=float).reshape(-1)
     served  = np.asarray(tasks_schedule, dtype=float).reshape(-1)
@@ -441,21 +460,22 @@ def plot_capacity_vs_utilization(
         where=capacity_tasks > 1e-12
     )
 
-    fig, ax1 = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax1 = fig.subplots()
 
-    # eixo esquerdo: capacidade em tarefas
+    # eixo esquerdo
     ax1.plot(time_hours, capacity_tasks, linewidth=2, label=t("chart_cap_alloc_label"))
     ax1.plot(time_hours, served, linewidth=2, linestyle="--", label=t("chart_served_label"))
     ax1.set_xlabel(t("axis_time_hours"))
     ax1.set_ylabel(t("axis_tasks"))
     ax1.grid(True, linestyle="--", alpha=0.35)
 
-    # eixo direito: utilização (0-1)
+    # eixo direito
     ax2 = ax1.twinx()
-    ax2.plot(time_hours, utilization, linewidth=2, linestyle=":", label=t("chart_util_label"))
+    ax2.plot(time_hours, utilization, linewidth=2, linestyle=":", label=t("chart_util_label"), color="orange")
     ax2.set_ylabel(t("chart_util_yaxis"))
     ax2.set_ylim(0, 1.05)
-    ax2.axhline(1.0, linestyle="--", alpha=0.5)
+    ax2.axhline(1.0, linestyle="--", alpha=0.5, color="red")
 
     # legenda combinada
     h1, l1 = ax1.get_legend_handles_labels()
@@ -479,19 +499,18 @@ def plot_demand_curve(
     Eixo X: tempo (slots ou horas)
     Eixo Y: demanda requerida
     """
+    from matplotlib.figure import Figure
 
     if title is None:
         title = t("chart_demand_curve_title")
-
-    import numpy as np
-    import matplotlib.pyplot as plt
 
     demanda = np.asarray(need, dtype=float)
 
     slots = np.arange(len(demanda))
     horas = slots * (slot_minutes / 60.0)
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.plot(
         horas,
@@ -573,17 +592,16 @@ def plot_demand_coverage(
 
 
 def plot_panel_a_driving(driving_hours_active):
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+    from matplotlib.figure import Figure
     x = np.sort(np.asarray(driving_hours_active))
     y = np.arange(1, len(x)+1) / len(x)
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    axes = fig.subplots(1, 2)
 
     # ECDF
     axes[0].plot(x, y, linewidth=2)
-    axes[0].axvline(9.0, linestyle="--")
+    axes[0].axvline(9.0, linestyle="--", color="red")
     axes[0].set_title(t("chart_driv_ecdf_title"))
     axes[0].set_xlabel(t("chart_driv_xaxis"))
     axes[0].set_ylabel(t("axis_prob"))
@@ -591,25 +609,25 @@ def plot_panel_a_driving(driving_hours_active):
 
     # Boxplot
     axes[1].boxplot(x, vert=True)
-    axes[1].axhline(9.0, linestyle="--")
+    axes[1].axhline(9.0, linestyle="--", color="red")
     axes[1].set_title(t("chart_driv_box_title"))
     axes[1].set_ylabel(t("axis_hours"))
     axes[1].grid(alpha=0.3)
 
+    fig.tight_layout()
     return fig
 
 def plot_panel_b_shift(shift_hours_active, SHIFT_MAX=13):
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+    from matplotlib.figure import Figure
     x = np.sort(np.asarray(shift_hours_active))
     y = np.arange(1, len(x)+1) / len(x)
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    axes = fig.subplots(1, 2)
 
     # ECDF
     axes[0].plot(x, y, linewidth=2)
-    axes[0].axvline(SHIFT_MAX, linestyle="--")
+    axes[0].axvline(SHIFT_MAX, linestyle="--", color="red")
     axes[0].set_title(t("chart_shift_ecdf_title"))
     axes[0].set_xlabel(t("chart_shift_xaxis"))
     axes[0].set_ylabel(t("axis_prob"))
@@ -617,11 +635,12 @@ def plot_panel_b_shift(shift_hours_active, SHIFT_MAX=13):
 
     # Boxplot
     axes[1].boxplot(x, vert=True)
-    axes[1].axhline(SHIFT_MAX, linestyle="--")
+    axes[1].axhline(SHIFT_MAX, linestyle="--", color="red")
     axes[1].set_title(t("chart_shift_box_title"))
     axes[1].set_ylabel(t("axis_hours"))
     axes[1].grid(alpha=0.3)
 
+    fig.tight_layout()
     return fig
 
 def compute_coverage_kpis(
@@ -664,6 +683,7 @@ def plot_gap_chart(demanda, workers_schedule):
     Negativo  → Violação
     Positivo  → Folga
     """
+    from matplotlib.figure import Figure
 
     df = pd.DataFrame({
         "Slot": np.arange(1, len(demanda) + 1),
@@ -673,7 +693,8 @@ def plot_gap_chart(demanda, workers_schedule):
 
     df["Gap"] = df["Motoristas"] - df["Demanda"]
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.axhline(0, color="black", linewidth=1)
     ax.bar(
@@ -687,7 +708,7 @@ def plot_gap_chart(demanda, workers_schedule):
     ax.set_xlabel(t("axis_slot"))
     ax.set_ylabel(t("chart_gap_cov_yaxis"))
 
-    # Métricas auxiliares (úteis para o texto)
+    # Métricas auxiliares
     violations = (df["Gap"] < 0).sum()
     min_gap = df["Gap"].min()
 
@@ -709,16 +730,10 @@ def plot_demand_capacity_utilization(
     tasks_schedule,                   # <<< atendimento real (X agregada)
     cap_tasks_per_driver_per_slot
 ):
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    # demanda = np.asarray(demanda, dtype=float)
-    # workers_schedule = np.asarray(workers_schedule, dtype=float)
-    # tasks_schedule = np.asarray(tasks_schedule, dtype=float)
+    from matplotlib.figure import Figure
 
     demanda = np.asarray(demanda, dtype=float).reshape(-1)
     workers_schedule = np.asarray(workers_schedule, dtype=float).reshape(-1)
-    # tasks_schedule = np.asarray(tasks_schedule, dtype=float).reshape(-1)
     
     n = len(demanda)
 
@@ -742,7 +757,8 @@ def plot_demand_capacity_utilization(
         where=capacidade_por_slot > 0
     )
 
-    fig, ax1 = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax1 = fig.subplots()
 
     ax1.plot(slots, demanda, label="Demanda (tarefas)", linewidth=2)
     ax1.plot(
@@ -770,11 +786,12 @@ def plot_demand_capacity_utilization(
         utilizacao,
         label=t("chart_util_cap_label"),
         linestyle=":",
-        linewidth=2
+        linewidth=2,
+        color="orange"
     )
     ax2.set_ylabel(t("chart_util_yaxis"))
     ax2.set_ylim(0, 1.05)
-    ax2.axhline(1.0, linestyle="--", alpha=0.5)
+    ax2.axhline(1.0, linestyle="--", alpha=0.5, color="red")
 
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
@@ -790,9 +807,7 @@ def plot_demand_vs_capacity(
     tasks_schedule,                   # atendimento real (X agregado)
     cap_tasks_per_driver_per_slot
 ):
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+    from matplotlib.figure import Figure
     demanda = np.asarray(demanda, dtype=float)
     workers_schedule = np.asarray(workers_schedule, dtype=float)
     tasks_schedule = np.asarray(tasks_schedule, dtype=float)
@@ -800,7 +815,8 @@ def plot_demand_vs_capacity(
     capacidade = workers_schedule * cap_tasks_per_driver_per_slot
     slots = np.arange(len(demanda))
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.plot(slots, demanda, label=t("chart_demand_label"), linewidth=2)
     ax.plot(slots, capacidade, label=t("chart_cap_alloc_label"), linewidth=2)
@@ -815,9 +831,7 @@ def plot_demand_vs_capacity(
     return fig
 
 def plot_capacity_utilization(demanda, matrix_allocation, cap_tasks_per_driver_per_slot):
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+    from matplotlib.figure import Figure
     demanda = np.asarray(demanda, dtype=float)
     matrix_allocation = np.asarray(matrix_allocation, dtype=int)
 
@@ -834,7 +848,8 @@ def plot_capacity_utilization(demanda, matrix_allocation, cap_tasks_per_driver_p
 
     slots = np.arange(len(demanda))
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.plot(slots, utilizacao, linestyle="--", linewidth=2)
     ax.axhline(1.0, color="gray", linestyle=":", alpha=0.7)
@@ -848,13 +863,15 @@ def plot_capacity_utilization(demanda, matrix_allocation, cap_tasks_per_driver_p
     return fig
 
 def plot_demand_vs_drivers_line(demanda, workers_schedule):
+    from matplotlib.figure import Figure
     df = pd.DataFrame({
         "Slot": np.arange(1, len(demanda) + 1),
         "Demanda": demanda,
         "Motoristas": workers_schedule
     })
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.plot(df["Slot"], df["Demanda"], label="Demanda", linewidth=2)
     ax.plot(df["Slot"], df["Motoristas"], label="Motoristas Alocados", linewidth=2)
@@ -876,51 +893,34 @@ def plot_operational_effort_per_driver(
 ):
     """
     Gráfico 1 — Esforço Operacional por Motorista
-
-    Interpretação:
-    - NÃO é objetivo do modelo
-    - Representa esforço operacional total
-    - Usado para análise de eficiência e coerência regulatória
     """
+    from matplotlib.figure import Figure
 
     if title is None:
         title = t("chart_op_effort_title")
 
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import streamlit as st
-
     if matrix_allocation is None:
-        st.info(t("msg_chart_unavailable_matrix"))
-        return
+        return None
 
     mat = np.asarray(matrix_allocation, dtype=int)
 
     if mat.ndim != 2 or mat.size == 0:
-        st.info(t("msg_chart_invalid_matrix"))
-        return
+        return None
 
     # -----------------------------
     # Cálculos
     # -----------------------------
     slot_hours = slot_minutes / 60.0
-
     slots_per_driver = mat.sum(axis=0)
-    
-    # 🔥 AJUSTE FUNDAMENTAL: filtrar apenas motoristas ativos
     active_mask = slots_per_driver > 0
-    slots_active_drivers = slots_per_driver[active_mask]
-
-    hours_per_driver = slots_active_drivers * slot_hours    
-    total_assigned_slots = int(slots_per_driver.sum())
-    total_hours = total_assigned_slots * slot_hours
-
+    hours_per_driver = slots_per_driver[active_mask] * slot_hours    
     avg_hours = float(hours_per_driver.mean()) if len(hours_per_driver) else 0.0
 
     # -----------------------------
     # Gráfico
     # -----------------------------
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.bar(
         range(1, len(hours_per_driver) + 1),
@@ -951,7 +951,16 @@ def plot_operational_effort_per_driver(
     ax.grid(axis="y", alpha=0.3)
     ax.legend()
 
-    st.pyplot(fig)
+    # Retorna o fig e os dados para o st.caption
+    resumo = {
+        "total_assigned_slots": int(slots_per_driver.sum()),
+        "total_hours": float(slots_per_driver.sum() * slot_hours),
+        "avg_hours": avg_hours,
+        "slot_minutes": slot_minutes,
+        "daily_limit_hours": daily_limit_hours
+    }
+
+    return fig, resumo
 
     # -----------------------------
     # Texto interpretativo
@@ -983,22 +992,8 @@ def plot_operational_effort_per_driver_active(
 ):
     """
     Plota o esforço operacional considerando APENAS os motoristas ativos.
-
-    Parâmetros
-    ----------
-    matrix_allocation : np.ndarray
-        Matriz binária [períodos x motoristas]
-    slot_minutes : int
-        Duração de cada slot (padrão = 15 minutos)
-    limite_diario_horas : float
-        Limite diário legal de condução (padrão = 9h – Reg. 561/2006)
-
-    Retorno
-    -------
-    fig : matplotlib.figure.Figure
-    resumo : dict
-        Métricas consolidadas para análise e dissertação
     """
+    from matplotlib.figure import Figure
 
     if matrix_allocation is None or matrix_allocation.size == 0:
         raise ValueError(t("msg_chart_invalid_matrix"))
@@ -1008,7 +1003,6 @@ def plot_operational_effort_per_driver_active(
     # ------------------------------------------------
     slots_por_motorista = matrix_allocation.sum(axis=0)
 
-    # 🔴 AJUSTE FUNDAMENTAL:
     # considerar APENAS motoristas ativos
     slots_motoristas_ativos = slots_por_motorista[slots_por_motorista > 0]
 
@@ -1028,10 +1022,9 @@ def plot_operational_effort_per_driver_active(
     # ------------------------------------------------
     # 3) Gráfico
     # ------------------------------------------------
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
     
-    horas_por_motorista = horas_por_motorista #np.sort(horas_por_motorista)
-
     ax.bar(
         range(1, total_motoristas_ativos + 1),
         horas_por_motorista,
@@ -1049,7 +1042,6 @@ def plot_operational_effort_per_driver_active(
         label=f"{t('legend_limit_daily')} ({limite_diario_horas}h)"
     )
 
-
     ax.axhline(
         media_horas,
         color="orange",
@@ -1057,7 +1049,6 @@ def plot_operational_effort_per_driver_active(
         linewidth=2,
         label=f"{t('legend_avg_observed')} ({media_horas:.2f}h)"
     )
-    
     
     ax.set_xlabel(t("axis_active_drivers_sorted"))
     ax.set_ylabel(t("axis_workload_hours"))
@@ -1067,33 +1058,18 @@ def plot_operational_effort_per_driver_active(
     ax.grid(axis="y", linestyle=":", alpha=0.6)
 
     # ------------------------------------------------
-    # 4) Texto explicativo (essencial para a dissertação)
+    # 4) Resumo Métrica
     # ------------------------------------------------
-    texto = (
-        f"{t('eff_total_slots').format(total_slots_atribuidos)}\n"
-        f"{t('eff_total_hours_simple').format(total_horas)}\n"
-        f"{t('eff_active_drivers').format(total_motoristas_ativos)}\n"
-        f"{t('eff_avg_effort').format(media_horas)}\n\n"
-        f"{t('eff_note_short')}"
-    )
+    resumo = {
+        "total_slots_atribuidos": total_slots_atribuidos,
+        "total_horas": total_horas,
+        "total_motoristas_ativos": total_motoristas_ativos,
+        "media_horas": media_horas,
+        "slot_minutes": slot_minutes,
+        "limite_diario_horas": limite_diario_horas
+    }
     
-    st.pyplot(fig)
-    
-    
-    # -----------------------------
-    # Texto interpretativo
-    # -----------------------------
-    st.caption(
-        f"""
-        {t('eff_total_slots').format(total_assigned_slots)}  
-        {t('eff_slot_duration').format(slot_minutes)}  
-        {t('eff_total_hours_bold').format(total_hours)}
-
-        {t('eff_avg_desc').format(media_horas)}
-
-        {t('eff_warning')}
-        """
-    )
+    return fig, resumo
     
 #---------------------------------
 # Interpretador de resultados
@@ -1226,6 +1202,8 @@ def plot_painel_esforco_operacional(
         Métricas consolidadas para relatório/dissertação
     """
 
+    from matplotlib.figure import Figure
+
     if horas_por_motorista is None or len(horas_por_motorista) == 0:
         raise ValueError("Vetor horas_por_motorista inválido ou vazio.")
 
@@ -1242,17 +1220,18 @@ def plot_painel_esforco_operacional(
     minimo = float(np.min(horas))
     maximo = float(np.max(horas))
 
-    # Gini
+    gini = calculate_gini(horas_por_motorista)
+
+    # Vetores para a curva de Lorenz
     horas_acum = np.cumsum(horas)
     horas_acum = np.insert(horas_acum, 0, 0)
     horas_acum_norm = horas_acum / horas_acum[-1]
     proporcao_motoristas = np.linspace(0, 1, len(horas_acum_norm))
-    gini = float(1 - 2 * np.trapz(horas_acum_norm, proporcao_motoristas))
 
     # ------------------------------------------------
     # Layout do painel
     # ------------------------------------------------
-    fig = plt.figure(figsize=(12, 7))
+    fig = Figure(figsize=(12, 7))
     gs = fig.add_gridspec(2, 2, height_ratios=[1, 1.1])
 
     ax_ecdf = fig.add_subplot(gs[0, 0])
@@ -1322,7 +1301,7 @@ def plot_painel_esforco_operacional(
         y=0.98
     )
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
 
     # ------------------------------------------------
     # Resumo estruturado
@@ -1363,8 +1342,10 @@ def plot_demand_vs_capacity_with_violations(df):
     """
     Gráfico Demand vs Capacity com marcação automática dos slots violados.
     """
+    from matplotlib.figure import Figure
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     # Barras: capacidade alocada
     ax.bar(
@@ -1413,8 +1394,10 @@ def plot_demand_vs_capacity_2(df):
       Demand vs Assigned Capacity
       com marcação visual de violação (déficit)
     """
+    from matplotlib.figure import Figure
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     # Capacity (Assigned Drivers)
     ax.bar(
@@ -1448,7 +1431,7 @@ def plot_demand_vs_capacity_2(df):
     ax.grid(axis="y", linestyle=":", alpha=0.6)
     ax.legend()
 
-    plt.tight_layout()
+    fig.tight_layout()
     return fig
 
 def plot_capacity_gap(df):
@@ -1456,11 +1439,13 @@ def plot_capacity_gap(df):
     Gráfico:
       Gap entre capacidade e demanda por slot
     """
+    from matplotlib.figure import Figure
 
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     gap = df["Motoristas"] - df["Demanda"]
-    colors = gap.apply(lambda x: "red" if x < 0 else "steelblue")
+    # colors = gap.apply(lambda x: "red" if x < 0 else "steelblue")
 
     ax.bar(
         df["Slot"],
@@ -1476,23 +1461,26 @@ def plot_capacity_gap(df):
     ax.grid(axis="y", linestyle=":", alpha=0.6)
 
     # Worst deficit annotation
-    worst = df.loc[gap.idxmin()]
+    if not df.empty:
+        idx_min = gap.idxmin()
+        worst = df.loc[idx_min]
+        ax.annotate(
+            f"{t('annot_max_deficit')} = {worst['Motoristas'] - worst['Demanda']:.1f}",
+            xy=(worst["Slot"], worst["Motoristas"] - worst["Demanda"]),
+            xytext=(worst["Slot"], (worst["Motoristas"] - worst["Demanda"]) - 0.5),
+            arrowprops=dict(arrowstyle="->", color="red")
+        )
 
-    ax.annotate(
-        f"{t('annot_max_deficit')} = {worst['Motoristas'] - worst['Demanda']}",
-        xy=(worst["Slot"], worst["Motoristas"] - worst["Demanda"]),
-        xytext=(worst["Slot"], (worst["Motoristas"] - worst["Demanda"]) - 0.5),
-        arrowprops=dict(arrowstyle="->", color="red")
-    )
-
-    plt.tight_layout()
+    fig.tight_layout()
     return fig
 
 
 import matplotlib.pyplot as plt
 
 def plot_carga_motoristas_ativos_vs_inativos(ativos, inativos):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, FIG_HEIGHT), sharey=True)
+    from matplotlib.figure import Figure
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    (ax1, ax2) = fig.subplots(1, 2, sharey=True)
 
     # Inativos
     ax1.hist(inativos, bins=1, color="lightgray", edgecolor="black")
@@ -1507,14 +1495,14 @@ def plot_carga_motoristas_ativos_vs_inativos(ativos, inativos):
     ax2.set_xlabel(t("axis_assigned_slots"))
 
     fig.suptitle(t("chart_load_dist_title"))
-    plt.tight_layout()
+    fig.tight_layout()
 
     return fig
 
 def plot_carga_motoristas_ativos(ativos):
-    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
-
-    ax.hist(ativos, bins=15, color="steelblue", edgecolor="black")
+    from matplotlib.figure import Figure
+    fig = Figure(figsize=(14, FIG_HEIGHT))
+    ax = fig.subplots()
 
     ax.hist(ativos, bins=15, color="steelblue", edgecolor="black")
 
@@ -1523,13 +1511,14 @@ def plot_carga_motoristas_ativos(ativos):
     ax.set_title(t("chart_workload_dist_active_title"))
 
     # Estatísticas-chave
-    ax.axvline(ativos.mean(), color="orange", linestyle="--", label=f"Média = {ativos.mean():.1f}")
-    ax.axvline(np.median(ativos), color="green", linestyle=":", label=f"Mediana = {np.median(ativos):.1f}")
+    if len(ativos) > 0:
+        ax.axvline(ativos.mean(), color="orange", linestyle="--", label=f"Média = {ativos.mean():.1f}")
+        ax.axvline(np.median(ativos), color="green", linestyle=":", label=f"Mediana = {np.median(ativos):.1f}")
 
     ax.legend()
     ax.grid(axis="y", linestyle=":", alpha=0.6)
 
-    plt.tight_layout()
+    fig.tight_layout()
     return fig
 
 # Inicializar flags
@@ -3088,11 +3077,18 @@ if btn_bench:
 
             # --- 4. Summary ---
             st.markdown("#### 4. Summary for Paper")
+            
+            # Defensive checks for division by zero
+            exact_drivers = exact.get('Active Drivers', 0) or 1  # Avoid division by zero
+            lns_drivers = lns.get('Active Drivers', 0) or 0
+            lns_vs_exact_pct = (lns_drivers / exact_drivers * 100) if exact_drivers > 0 else 0
+            time_pct = (1 / time_gain_vs_exact * 100) if time_gain_vs_exact > 0 else 0
+            
             summary_text = (
                 f"The computational results demonstrate that the proposed LNS algorithm successfully balances solution quality and execution time. "
                 f"It outperformed the constructive heuristic by reducing active drivers by {drivers_saved_pct:.1f}% and improving efficiency by {eff_gain:.1f}pp. "
-                f"Compared to the exact method, LNS achieved {lns['Active Drivers']/exact['Active Drivers']*100:.1f}% of the optimal quality "
-                f"while requiring only {1/time_gain_vs_exact*100:.1f}% of the computational time."
+                f"Compared to the exact method, LNS achieved {lns_vs_exact_pct:.1f}% of the optimal quality "
+                f"while requiring only {time_pct:.1f}% of the computational time."
             )
             st.info(summary_text)
 
@@ -3377,6 +3373,7 @@ if btn_run:
                                 break
 
                 # 🔧 Normalização para modos Heuristic/LNS
+                print("DEBUG: POST-SOLVER - Starting normalization")
                 if "workers_schedule" in locals() and "matrix_allocation" in locals():
                     if workers_schedule is None and matrix_allocation is not None:
                         try:
@@ -3384,74 +3381,124 @@ if btn_run:
                         except Exception:
                             workers_schedule = []
                             
-                            
+                print("DEBUG: POST-SOLVER - Normalization complete")
+                
+                print("DEBUG: POST-SOLVER - Checking msg")
                 if msg is not None:
+                    print("DEBUG: POST-SOLVER - msg is not None, parsing demanda")
                     # Converter a entrada de texto para uma lista de números
                     try:
                         demanda = list(map(int, need_input.split(',')))
                     except ValueError:
                         st.error("Por favor, insira os valores da demanda separados por vírgula e espaço.")
                         demanda = []
+                
+                print("DEBUG: POST-SOLVER - About to create Initial expander")        
                 with st.expander("Initial", expanded=True):
-                    col_A, col_B, col_C  = st.columns(3)
-                    with col_A:
-                        # st.subheader("Perfil da Demanda")
-                        # st.pyplot(plot_demand_curve(need))
-                        st.pyplot(plot_demand_vs_served(need, tasks_schedule))
-
-                    with col_B:
-                        # st.subheader("Cobertura da Demanda")
-                        # st.pyplot(plot_demand_coverage(need, workers_schedule))
-                        st.pyplot(plot_demand_gap(need, tasks_schedule))
+                    print("DEBUG: POST-SOLVER - Inside Initial expander")
+                    try:
+                        import matplotlib.pyplot as plt
+                        import io
                         
-                    with col_C:
-                        st.pyplot(plot_capacity_vs_utilization(
-                            workers_schedule,
-                            tasks_schedule,
-                            cap_tasks_per_driver_per_slot
-                        ))
+                        print("DEBUG: INITIAL - Creating all figures BEFORE rendering")
                         
+                        # 🔒 Create ALL figures first (matplotlib only, no Streamlit)
+                        with _MPL_LOCK:
+                            print("DEBUG: INITIAL - Lock acquired for figure creation")
+                            
+                            # Chart A
+                            print("DEBUG: INITIAL - Creating Chart A")
+                            fig_A = plot_demand_vs_served(need, tasks_schedule)
+                            buf_A = io.BytesIO()
+                            fig_A.savefig(buf_A, format='png', dpi=100, bbox_inches='tight', facecolor='white')
+                            buf_A.seek(0)
+                            plt.close(fig_A)
+                            print("DEBUG: INITIAL - Chart A saved to buffer")
+                            
+                            # Chart B
+                            print("DEBUG: INITIAL - Creating Chart B")
+                            fig_B = plot_demand_gap(need, tasks_schedule)
+                            buf_B = io.BytesIO()
+                            fig_B.savefig(buf_B, format='png', dpi=100, bbox_inches='tight', facecolor='white')
+                            buf_B.seek(0)
+                            plt.close(fig_B)
+                            print("DEBUG: INITIAL - Chart B saved to buffer")
+                            
+                            # Chart C
+                            print("DEBUG: INITIAL - Creating Chart C")
+                            fig_C = plot_capacity_vs_utilization(
+                                workers_schedule,
+                                tasks_schedule,
+                                cap_tasks_per_driver_per_slot
+                            )
+                            buf_C = io.BytesIO()
+                            fig_C.savefig(buf_C, format='png', dpi=100, bbox_inches='tight', facecolor='white')
+                            buf_C.seek(0)
+                            plt.close(fig_C)
+                            print("DEBUG: INITIAL - Chart C saved to buffer")
+                            
+                            print("DEBUG: INITIAL - Lock released, all figures created")
+                        
+                        # 🖼️ Now display ALL images (no matplotlib, just Streamlit)
+                        print("DEBUG: INITIAL - Creating columns for display")
+                        col_A, col_B, col_C = st.columns(3)
+                        
+                        print("DEBUG: INITIAL - Displaying Chart A")
+                        col_A.image(buf_A, width='stretch')
+                        buf_A.close()
+                        
+                        print("DEBUG: INITIAL - Displaying Chart B")
+                        col_B.image(buf_B, width='stretch')
+                        buf_B.close()
+                        
+                        print("DEBUG: INITIAL - Displaying Chart C")
+                        col_C.image(buf_C, width='stretch')
+                        buf_C.close()
+                        
+                        print("DEBUG: INITIAL - All charts displayed successfully")
 
-                    # Série A — Demanda vs Atendimento vs Gap
-                    df_demand_served = build_timeseries_demand_served(
-                        need=need,
-                        tasks_schedule=tasks_schedule,
-                        slot_minutes=15
-                    )
+                            
 
-                    # Série B — Capacidade vs Utilização
-                    df_capacity_util = build_timeseries_capacity_utilization(
-                        workers_schedule=workers_schedule,
-                        tasks_schedule=tasks_schedule,
-                        cap_tasks_per_driver_per_slot=cap_tasks_per_driver_per_slot,
-                        slot_minutes=15
-                    )
+                        # Série A — Demanda vs Atendimento vs Gap
+                        df_demand_served = build_timeseries_demand_served(
+                            need=need,
+                            tasks_schedule=tasks_schedule,
+                            slot_minutes=15
+                        )
 
-                    # Série C — Déficit isolado
-                    df_gap = build_timeseries_gap(
-                        need=need,
-                        tasks_schedule=tasks_schedule,
-                        slot_minutes=15
-                    )
+                        # Série B — Capacidade vs Utilização
+                        df_capacity_util = build_timeseries_capacity_utilization(
+                            workers_schedule=workers_schedule,
+                            tasks_schedule=tasks_schedule,
+                            cap_tasks_per_driver_per_slot=cap_tasks_per_driver_per_slot,
+                            slot_minutes=15
+                        )
 
-
-                    import pandas as pd
-
-                    with pd.ExcelWriter("timeseries_results.xlsx") as writer:
-                        df_demand_served.to_excel(writer, sheet_name="Demand_vs_Served", index=False)
-                        df_gap.to_excel(writer, sheet_name="Gap", index=False)
-                        df_capacity_util.to_excel(writer, sheet_name="Capacity_Utilization", index=False)
+                        # Série C — Déficit isolado
+                        df_gap = build_timeseries_gap(
+                            need=need,
+                            tasks_schedule=tasks_schedule,
+                            slot_minutes=15
+                        )
 
 
+                        import pandas as pd
 
+                        with pd.ExcelWriter("timeseries_results.xlsx") as writer:
+                            df_demand_served.to_excel(writer, sheet_name="Demand_vs_Served", index=False)
+                            df_gap.to_excel(writer, sheet_name="Gap", index=False)
+                            df_capacity_util.to_excel(writer, sheet_name="Capacity_Utilization", index=False)
+                    except Exception as e:
+                        st.error(f"Error rendering Initial charts: {e}")
 
-
-
+                print("DEBUG: POST-INITIAL - About to render Results expander")
                 #-----------------------------------
                 # Tabela de Resultados
                 # ----------------------------------            
                 with st.expander("Results", expanded=True):
+                    print("DEBUG: RESULTS - Inside expander")
                     col_A, col_B  = st.columns([5,2])
+                    print("DEBUG: RESULTS - Columns created")
                     with col_A:
                         # Processar statisticsResult para separar descrições e valores
                         results = {
@@ -3514,484 +3561,192 @@ if btn_run:
                         kpis, coverage, safety_margin = compute_kpis(
                             demanda,
                             workers_schedule=workers_schedule,
-                            matrix_allocation=matrix_allocation,
-                        )                                      
-                        def safe_value(x, default=0.0):
-                            return x if isinstance(x, (int, float)) else default
-
-                        def safe_invert(x, default=0.0):
-                            return 1 - x if isinstance(x, (int, float)) else default
-
-                        if optimization_mode in ["Exact", "Heuristic", "LNS"]:
-
-                            radar = plot_kpi_radar({
-                                "GlobalCoverage": safe_value(kpis.get("global_coverage", 0.0)),
-                                "Efficiency": safe_value(kpis.get("worker_efficiency", 0.0)),
-                                "Stability": safe_value(kpis.get("temporal_stability", 0.0)),
-                                "Risk": safe_invert(kpis.get("operational_risk", 0.0)),
-                            })
-                            
-                            # radar = plt.subplots(figsize=(14, FIG_HEIGHT))
-
-                            st.pyplot(radar)
-                #----------------------------------
-                # Interpretador
-                #----------------------------------         
-                with st.expander("Interpreter", expanded=False):      
-                    try:
-                        if callable(t) is False:
-                            st.error(f"FATAL: function 't' was overwritten by type {type(t)}. Variable name collision.")
+                        )
                         
+                        if optimization_mode in ["Exact", "Heuristic", "LNS"]:
+                            radar = plot_kpi_radar({
+                                "GlobalCoverage": kpis.get("global_coverage", 0.0),
+                                "Efficiency": kpis.get("worker_efficiency", 0.0),
+                                "Stability": kpis.get("temporal_stability", 0.0),
+                                "Risk": 1 - kpis.get("operational_risk", 0.0),
+                            })
+                            safe_render_figure(radar)
+
+                # ---------------------------------------------------------
+                # Interpreter Panel
+                # ---------------------------------------------------------
+                with st.expander("Solver Intelligence & Interpretation", expanded=True):
+                    try:
                         interp = interpret_solver_result(statistics_result)
                         
-                        st.markdown(f"## 🧠 {t('interp_title')}")
-                        st.success(interp.get("model_state", "Unknown State"))
+                        st.markdown(f"### 🧠 {t('interp_title')}")
+                        st.success(interp.get("model_state", t("eng_unknown")))
 
-                        st.markdown(f"### 📊 {t('interp_op_eff')}")
-                        st.json(interp.get("operational_metrics", {}))
-
-                        st.markdown(f"### ⚙️ {t('interp_model_struct')}")
-                        st.info(interp.get("model_structure", []))
+                        col_met, col_str = st.columns(2)
+                        with col_met:
+                            st.markdown(f"##### 📊 {t('interp_op_eff')}")
+                            st.json(interp.get("operational_metrics", {}))
+                        
+                        with col_str:
+                            st.markdown(f"##### ⚙️ {t('interp_model_struct')}")
+                            for line in interp.get("model_structure", []):
+                                st.info(line)
 
                         st.markdown(f"### 🧮 {t('interp_service_quality')}")
                         for q in interp.get("solution_quality", []):
                             st.write("•", q)
 
-                        st.markdown(f"### ⏱️ {t('sect_logs')}")
-                        st.warning(interp.get("solver_behavior", []))
+                        st.markdown(f"### ⚙️ {t('interp_solver_behavior')}")
+                        for line in interp.get("solver_behavior", []):
+                            st.warning(line)
+
                     except Exception as e:
                         st.error(f"Interpreter Error: {e}")
-                        import traceback
-                        st.code(traceback.format_exc())
-                    
-                    st.subheader(f"📐 {t('interp_model_struct')}")
-
-                    for line in interp["model_structure"]:
-                        st.info(line)
-                    
-                    st.subheader(f"⚙️ {t('interp_solver_behavior')}")
-
-                    for line in interp.get("solver_behavior", []):
-                        st.warning(line)
-                        
-                #--------------------------
-                # Esforço Operacional
-                #--------------------------                         
-                with st.expander(t("interp_op_effort"), expanded=True):     
-                    col_A,col_B, col_C = st.columns(3)                                        
-                    # ==========================================================
-                    # GRÁFICO 1 — ESFORÇO OPERACIONAL (OFICIAL)
-                    # ==========================================================
-                    with col_A:
-                        
-                        slots_por_motorista = matrix_allocation.sum(axis=0)
-                        slots_motoristas_ativos = slots_por_motorista[slots_por_motorista > 0]
-                        slot_minutes = 15  # ou o valor do seu modelo
-                        horas_por_motorista = slots_motoristas_ativos * (slot_minutes / 60.0)
-
-                        horas_por_motorista = slots_motoristas_ativos * (slot_minutes / 60.0)
-                        
-                        if len(horas_por_motorista) > 0:
-                            fig, resumo = plot_painel_esforco_operacional(horas_por_motorista)
-                            st.pyplot(fig)
-                        else:
-                            st.info(t("interp_no_effort"))
-                            resumo = {'motoristas_ativos': 0, 'media_horas': 0, 'mediana_horas': 0, 'percentil_90': 0, 'percentil_95': 0, 'indice_gini': 0}
-                            fig = None
-
-                        st.caption(
-                            t("interp_effort_caption").format(
-                                resumo['motoristas_ativos'],
-                                resumo['media_horas'],
-                                resumo['mediana_horas'],
-                                resumo['percentil_90'],
-                                resumo['percentil_95'],
-                                resumo['indice_gini']
-                            )
-                        )
-
-                    with col_B:
-                        if matrix_allocation.sum() > 0:
-                            plot_operational_effort_per_driver_active(
-                                matrix_allocation=matrix_allocation
-                            )
-                        else:
-                            st.info("Sem dados detalhados (0 motoristas).")
-
-                    with col_C:
-                        # se SHIFT_MAX no modelo está em slots (ex.: 52)
-                        SHIFT_MAX_HOURS = 13   # 13h
-
-                        # motoristas ativos (têm pelo menos 1 slot em Y)
-                        active_drivers_idx = [
-                            driver_idx for driver_idx in range(matrix_allocation.shape[1])
-                            if matrix_allocation[:, driver_idx].sum() > 0
-                        ]
-
-                        # 🔒 Normalização FINAL — camada de consumo
-                        if driving_hours_per_driver is None:
-                            driving_hours_per_driver = {}
-                            
-                        # 🔒 Garantir tipo dict (alguns modos podem devolver lista)
-                        if driving_hours_per_driver is None:
-                            driving_hours_per_driver = {}
-
-                        elif isinstance(driving_hours_per_driver, list):
-                            # Converte lista para dict: índice do motorista -> horas
-                            driving_hours_per_driver = {
-                                i: float(v) for i, v in enumerate(driving_hours_per_driver)
-                            }
-
-                        elif not isinstance(driving_hours_per_driver, dict):
-                            # fallback seguro
-                            driving_hours_per_driver = {}                            
-
-
-                        # 🔒 Garantir tipo dict (alguns modos podem devolver lista)
-                        if driving_hours_per_driver is None:
-                            driving_hours_per_driver = {}
-
-                        elif isinstance(driving_hours_per_driver, list):
-                            # Converte lista para dict: índice do motorista -> horas
-                            driving_hours_per_driver = {
-                                i: float(v) for i, v in enumerate(driving_hours_per_driver)
-                            }
-
-                        elif not isinstance(driving_hours_per_driver, dict):
-                            # fallback seguro
-                            driving_hours_per_driver = {}
-
-
-                        for driver_idx in range(limit_workers):
-                            driving_hours_per_driver.setdefault(driver_idx, 0.0)
-
-
-                        # ---- Painel A: Condução (X) ----
-                        driving_hours_active = [
-                            driving_hours_per_driver[driver_idx]
-                            for driver_idx in active_drivers_idx
-                        ]
-
-                        # ---- Painel B: Turno (Y) ----
-                        slot_hours = 0.25
-                        shift_hours_active = [
-                            matrix_allocation[:, driver_idx].sum() * slot_hours
-                            for driver_idx in active_drivers_idx
-                        ]
-                                                    
-                        fig_a = plot_panel_a_driving(driving_hours_active)
-                        st.pyplot(fig_a)
-
-                        st.divider()
-
-                        fig_b = plot_panel_b_shift(
-                            shift_hours_active,
-                            SHIFT_MAX=SHIFT_MAX_HOURS
-                        )
-                        st.pyplot(fig_b)
 
                 # ---------------------------------------------------------
-                # Gráficos Demanda and Gaps
+                # Operational Effort Panel
                 # ---------------------------------------------------------
-                with st.expander("Demand and Gaps Charts", expanded=True):     
-                    col_A, col_B = st.columns(2) 
-                    with col_A:
-                        
-                        # matrix_allocation: shape (n_slots, n_drivers)
-                        if matrix_allocation is not None:
-                            tasks_schedule_slot = np.sum(matrix_allocation, axis=1)
-                        else:
-                            tasks_schedule_slot = np.zeros(len(demanda), dtype=float)
-
-                        fig = plot_demand_capacity_utilization(
-                            demanda=need,
-                            workers_schedule=workers_schedule,
-                            tasks_schedule=tasks_schedule_slot,          # <<< X agregado
-                            cap_tasks_per_driver_per_slot=cap_tasks_per_driver_per_slot
-                        )
-                        st.pyplot(fig)
-                    with col_B:
-                            fig_gap = plot_gap_chart(demanda, workers_schedule)
-                            st.pyplot(fig_gap)
-                    # with col_C:
-                        
-                    #     # ---------------------------------------------------------
-                    #     # Radar chart
-                    #     # ---------------------------------------------------------
-                    #     kpis, coverage, safety_margin = compute_kpis(
-                    #         demanda,
-                    #         workers_schedule=workers_schedule,
-                    #         matrix_allocation=matrix_allocation,
-                    #     )                                      
-                    #     def safe_value(x, default=0.0):
-                    #         return x if isinstance(x, (int, float)) else default
-
-                    #     def safe_invert(x, default=0.0):
-                    #         return 1 - x if isinstance(x, (int, float)) else default
-
-                    #     if optimization_mode in ["Exact", "Heuristic", "LNS"]:
-
-                    #         radar = plot_kpi_radar({
-                    #             "GlobalCoverage": safe_value(kpis.get("global_coverage", 0.0)),
-                    #             "Efficiency": safe_value(kpis.get("worker_efficiency", 0.0)),
-                    #             "Stability": safe_value(kpis.get("temporal_stability", 0.0)),
-                    #             "Risk": safe_invert(kpis.get("operational_risk", 0.0)),
-                    #         })
-                            
-                    #         # radar = plt.subplots(figsize=(14, FIG_HEIGHT))
-
-                    #         st.pyplot(radar)                        
-
-                # ---------------------------------------------------------
-                # Analysis
-                # ---------------------------------------------------------
-                with st.expander("Analysis", expanded=True):                                                
-                    if msg is not None:
-                        col_A_, col_B_, col_C_ = st.columns(3)
-                        # Gerar DataFrame para os dados
-                        slots = list(range(1, len(demanda) + 1))  # Slots de 1 a 96
-                        df_comparacao = pd.DataFrame({
-                            "Slot": slots,
-                            "Demanda": demanda,
-                            "Motoristas": workers_schedule
-                        })
-                        df = df_comparacao.copy()
-
-                        # Evitar divisões inválidas
-                        df["Demanda_Pos"] = df["Demanda"].replace(0, np.nan)
-
-                        # Métricas fundamentais
-                        df["Coverage Ratio"] = df["Motoristas"] / df["Demanda_Pos"]
-                        df["Gap"] = df["Motoristas"] - df["Demanda"]
-
-                        # Severidade (sempre >= 0)
-                        df["Deficit"] = df["Gap"].apply(lambda x: -x if x < 0 else 0)
-                        df["Excess"] = df["Gap"].apply(lambda x: x if x > 0 else 0)
-
-                        # Flag binária
-                        df["Violation"] = df["Gap"] < 0
-                        
-                        with col_A_:
-                            fig2 = plot_demand_vs_capacity_2(df)
-                            st.pyplot(fig2)
-                        with col_B_:
-                            try:
-                                # Garantir tipos numéricos
-                                df_comparacao["Demanda"] = pd.to_numeric(df_comparacao["Demanda"], errors="coerce").fillna(0)
-                                df_comparacao["Motoristas"] = pd.to_numeric(df_comparacao["Motoristas"], errors="coerce").fillna(0)
-
-                                # Métricas novas por slot
-                                df_comparacao["Safety Margin"] = df_comparacao["Motoristas"] - df_comparacao["Demanda"]
-                                df_comparacao["Unmet Demand"] = (df_comparacao["Demanda"] - df_comparacao["Motoristas"]).clip(lower=0)
-                                df_comparacao["Overstaffing"] = (df_comparacao["Motoristas"] - df_comparacao["Demanda"]).clip(lower=0)
-
-                                total_unmet = float(df_comparacao["Unmet Demand"].sum())
-                                total_over = float(df_comparacao["Overstaffing"].sum())
-                                min_margin = float(df_comparacao["Safety Margin"].min()) if len(df_comparacao) else 0.0
-                            except Exception as _e:
-                                st.info(f"Gráficos adicionais (gap/risco) indisponíveis: {_e}")
-                                    
-                            # Carga por motorista em slots
-                            slots_por_motorista = matrix_allocation.sum(axis=0)
-
-                            # Separação conceitual
-                            ativos = slots_por_motorista[slots_por_motorista > 0]
-                            inativos = slots_por_motorista[slots_por_motorista == 0]
-
-                            fig = plot_carga_motoristas_ativos(ativos)
-                            st.pyplot(fig)
-
-                        with col_C_:
-                            if matrix_allocation is None:
-                                st.info("Indisponível: matrix_allocation é None.")
-                            else:
-                                try:
-                                    mat = np.asarray(matrix_allocation, dtype=int)
-                                    from matplotlib.colors import ListedColormap
-
-                                    cmap = ListedColormap(["white", "#1f78b4"])
-
-                                    fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
-
-                                    sns.heatmap(
-                                        mat.T,
-                                        ax=ax,
-                                        cmap=cmap,
-                                        cbar=True
-                                    )
-
-                                    ax.set_xlabel("Períodos (slots de 15 min)")
-                                    ax.set_ylabel("Motoristas")
-                                    ax.set_title("Mapa de Alocação Binária (recorte)")
-
-                                    st.pyplot(fig)
-                                        
-                                except Exception as _e:
-                                    st.info(f"Heatmap 2D indisponível: {_e}")
-                                                
-
-                with st.expander("Kpi Analysis", expanded=True):                                                
-                    if msg is not None:
-                        # Gerar DataFrame para os dados
-                        slots = list(range(1, len(demanda) + 1))  # Slots de 1 a 96
-                        df_comparacao = pd.DataFrame({
-                            "Slot": slots,
-                            "Demanda": demanda,
-                            "Motoristas": workers_schedule
-                        })
-                        df = df_comparacao.copy()
-
-                        # Evitar divisões inválidas
-                        df["Demanda_Pos"] = df["Demanda"].replace(0, np.nan)
-
-                        # Métricas fundamentais
-                        df["Coverage Ratio"] = df["Motoristas"] / df["Demanda_Pos"]
-                        df["Gap"] = df["Motoristas"] - df["Demanda"]
-
-                        # Severidade (sempre >= 0)
-                        df["Deficit"] = df["Gap"].apply(lambda x: -x if x < 0 else 0)
-                        df["Excess"] = df["Gap"].apply(lambda x: x if x > 0 else 0)
-
-                        # Flag binária
-                        df["Violation"] = df["Gap"] < 0
-                        
-                        slots_totais = len(df)
-                        slots_violados = int(df["Violation"].sum())
-
-                        # Estabilidade temporal
-                        coverage_std = float(np.nanstd(df["Coverage Ratio"]))
-
-                        # Severidade
-                        deficit_total = float(df["Deficit"].sum())
-                        deficit_max = float(df["Deficit"].max())
-
-                        # Cobertura ponderada pela demanda (métrica científica)
-                        weighted_coverage = (
-                            np.minimum(df["Motoristas"], df["Demanda"]).sum()
-                            / df["Demanda"].sum()
-                        )
-
-                        col_A, col_B, col_C, col_D, col_E = st.columns(5)
-                        kpis, coverage, safety_margin = compute_kpis(
-                            demanda,
-                            workers_schedule=workers_schedule,
-                            matrix_allocation=matrix_allocation,
-                        )
+                with st.expander("Driver Effort & Equity", expanded=True):
+                    try:
+                        col_A, col_B, col_C = st.columns([1.1, 1, 1])
                         
                         with col_A:
-                            st.metric(
-                                "Coverage Stability (σ)",
-                                f"{coverage_std:.2f}",
-                                help="Desvio padrão da razão Motoristas/Demanda ao longo dos slots."
-                            )
-
-                            if radio_selection_object == "Minimize Total Number of Drivers":
-                                # Neste regime, alta variância é esperada e não é erro
-                                if coverage_std < 0.5:
-                                    st.info("Capacity-driven allocation (expected variability)")
-                                else:
-                                    st.warning(
-                                        "High capacity dispersion across periods — expected under driver-minimization regime"
-                                    )
-                            # elif radio_selection_object == "Maximize Demand Response":
-                            #     # Aqui sim usamos estabilidade clássica
-                            #     if coverage_std < 0.2:
-                            #         st.success("Stable allocation")
-                            #     elif coverage_std < 0.5:
-                            #         st.warning("Moderately unstable allocation")
-                            #     else:
-                            #         st.warning("Highly unstable allocation")
+                            # 1) Painel de Equidade (Lorenz, Gini, ECDF)
+                            if matrix_allocation.sum() > 0:
+                                active_drivers_idx = [
+                                    driver_idx for driver_idx in range(matrix_allocation.shape[1])
+                                    if matrix_allocation[:, driver_idx].sum() > 0
+                                ]
+                                
+                                # Carga de trabalho agregada em horas
+                                slot_hours = 0.25 # TODO: use slot_minutes
+                                horas_ativos = np.array([
+                                    matrix_allocation[:, d].sum() * slot_hours 
+                                    for d in active_drivers_idx
+                                ])
+                                
+                                fig_equidade, resumo = plot_painel_esforco_operacional(
+                                    horas_por_motorista=horas_ativos,
+                                    limite_diario_horas=9.0
+                                )
+                                safe_render_figure(fig_equidade)
                             else:
-                                # Regime híbrido ou experimental
-                                if coverage_std < 0.2:
-                                    st.success("Stable allocation")
-                                elif coverage_std < 0.5:
-                                    st.warning("Moderate variability detected")
-                                else:
-                                    st.warning("High variability — review trade-offs")
-                            
-                            # Calcular e exibir os totais para cada indicador
-                            total_demanda = df_comparacao['Demanda'].sum()
-                            total_motoristas = df_comparacao['Motoristas'].sum()
-                            total_excess = float(df["Excess"].sum())
-                            # Estabilidade
-                            coverage_std = float(np.nanstd(df["Coverage Ratio"]))
-                            # Frequência
-                            slots_violados = int(df["Violation"].sum())
-                            slots_totais = len(df)
-                            # Severidade
-                            weighted_coverage = (
-                                np.minimum(df["Motoristas"], df["Demanda"]).sum()
-                                / df["Demanda"].sum()
+                                st.info(t("interp_no_effort"))
+                                resumo = {'motoristas_ativos': 0, 'media_horas': 0, 'mediana_horas': 0, 'percentil_90': 0, 'percentil_95': 0, 'indice_gini': 0}
+
+                            st.caption(
+                                t("interp_effort_caption").format(
+                                    resumo['motoristas_ativos'],
+                                    resumo['media_horas'],
+                                    resumo['mediana_horas'],
+                                    resumo['percentil_90'],
+                                    resumo['percentil_95'],
+                                    resumo['indice_gini']
+                                )
                             )
-                            total_excess = float(df["Excess"].sum())
 
                         with col_B:
-                            st.metric(
-                                "Slots with Demand Deficit",
-                                slots_violados,
-                                help="Número de slots em que a demanda não foi totalmente atendida."
-                            )
-                            st.metric(
-                                "Fully Covered Slots (%)",
-                                round(100 * (slots_totais - slots_violados) / slots_totais, 2),
-                                help="Percentual de slots com cobertura total."
-                            )
-                            st.metric(
-                                "Weighted Coverage Rate (%)",
-                                round(100 * weighted_coverage, 2),
-                                help="Cobertura ponderada pela demanda total."
-                            )
+                            if matrix_allocation.sum() > 0:
+                                fig_eff, res_eff = plot_operational_effort_per_driver_active(
+                                    matrix_allocation=matrix_allocation
+                                )
+                                safe_render_figure(fig_eff)
+                            else:
+                                st.info("No active drivers data.")
 
                         with col_C:
-                            st.metric(
-                                "Total Uncovered Demand",
-                                int(deficit_total),
-                                help="Déficit total acumulado ao longo do horizonte."
-                            )
-                            st.metric(
-                                "Max Deficit (single slot)",
-                                int(deficit_max),
-                                help="Maior déficit observado em um único slot."
-                            )
-                            st.metric(
-                                    "Total Excess Capacity",
-                                    int(total_excess),
-                                    help="Capacidade excedente acumulada ao longo dos slots."
-                            )
-                                                
-                        with col_D:
-                            # kpis, coverage, safety_margin = compute_kpis(
-                            #     demanda,
-                            #     workers_schedule=workers_schedule,
-                            #     matrix_allocation=matrix_allocation,
-                            # )
-                            
-                            # colA, colB, colC = st.columns(3)
-                            # with colA:
-                            global_cov = kpis.get("global_coverage")
+                            # Turno vs Condução
+                            SHIFT_MAX_HOURS = 13
+                            active_drivers_idx = [
+                                driver_idx for driver_idx in range(matrix_allocation.shape[1])
+                                if matrix_allocation[:, driver_idx].sum() > 0
+                            ]
 
-                            if isinstance(global_cov, (int, float)):
-                                st.metric("Global Coverage Score", f"{global_cov:.3f}")
+                            if driving_hours_per_driver is None:
+                                driving_hours_per_driver = {}
+                            elif isinstance(driving_hours_per_driver, list):
+                                driving_hours_per_driver = {i: float(v) for i, v in enumerate(driving_hours_per_driver)}
+
+                            driving_hours_active = [
+                                driving_hours_per_driver.get(driver_idx, 0.0)
+                                for driver_idx in active_drivers_idx
+                            ]
+
+                            slot_hours = 0.25
+                            shift_hours_active = [
+                                matrix_allocation[:, driver_idx].sum() * slot_hours
+                                for driver_idx in active_drivers_idx
+                            ]
+                                                        
+                            safe_render_figure(plot_panel_a_driving(driving_hours_active))
+                            st.divider()
+                            safe_render_figure(plot_panel_b_shift(shift_hours_active, SHIFT_MAX=SHIFT_MAX_HOURS))
+
+                    except Exception as e:
+                        st.error(f"Error rendering Effort panel: {e}")
+
+                # ---------------------------------------------------------
+                # Demand & KPI Analysis
+                # ---------------------------------------------------------
+                with st.expander("Deep Analysis & Metrics", expanded=True):
+                    try:
+                        col_A, col_B = st.columns(2)
+                        
+                        # Data Prep
+                        slots = list(range(1, len(demanda) + 1))
+                        df_analysis = pd.DataFrame({
+                            "Slot": slots,
+                            "Demanda": demanda,
+                            "Motoristas": workers_schedule
+                        })
+                        df_analysis["Gap"] = df_analysis["Motoristas"] - df_analysis["Demanda"]
+                        df_analysis["Violation"] = df_analysis["Gap"] < 0
+                        
+                        with col_A:
+                            safe_render_figure(plot_demand_vs_capacity_2(df_analysis))
+                        
+                        with col_B:
+                            safe_render_figure(plot_capacity_gap(df_analysis))
+
+                        st.divider()
+                        
+                        col_heat, col_kpi = st.columns([1.5, 1])
+                        
+                        with col_heat:
+                            if matrix_allocation is not None:
+                                mat = np.asarray(matrix_allocation, dtype=int)
+                                from matplotlib.colors import ListedColormap
+                                from matplotlib.figure import Figure
+                                import seaborn as sns
+
+                                cmap = ListedColormap(["white", "#1f78b4"])
+                                fig_heat = Figure(figsize=(14, FIG_HEIGHT))
+                                ax_heat = fig_heat.subplots()
+
+                                sns.heatmap(mat.T, ax=ax_heat, cmap=cmap, cbar=True)
+                                ax_heat.set_xlabel("Slots")
+                                ax_heat.set_ylabel("Drivers")
+                                ax_heat.set_title("Allocation Map")
+                                safe_render_figure(fig_heat)
                             else:
-                                st.metric("Global Coverage Score", "N/A")
+                                st.info("No allocation map available.")
+
+                        with col_kpi:
+                            kpis, coverage, safety_margin = compute_kpis(
+                                demanda,
+                                workers_schedule=workers_schedule,
+                                matrix_allocation=matrix_allocation,
+                            )
+                            # Display top metrics
+                            def safe_fmt(val):
+                                return f"{val:.2%}" if val is not None else "0.00%"
+                                
+                            st.metric("Global Coverage", safe_fmt(kpis.get('global_coverage')))
+                            st.metric("Efficiency", safe_fmt(kpis.get('worker_efficiency')))
+                            st.metric("Operational Risk", safe_fmt(kpis.get('operational_risk')))
                             
-                            we = kpis.get("worker_efficiency")
-                            st.metric("Worker Efficiency", f"{we:.3f}" if we is not None else "N/A")
-
-                            # with colB:
-                            op_risk = kpis.get("operational_risk")
-                            st.metric("Operational Risk (%)", f"{op_risk*100:.1f}%" if op_risk is not None else "N/A")
-
-                        with col_E:
-                            risk_sev = kpis.get("operational_risk_severity")
-                            st.metric("Risk Severity", int(risk_sev) if risk_sev is not None else "N/A")
-                            
-                            cost = kpis.get("cost_index")
-                            st.metric("Estimated Cost (€)", f"{cost:.2f}" if cost is not None else "N/A")
-
-                            stability = kpis.get("temporal_stability")
-                            st.metric("Temporal Stability", f"{stability:.3f}" if stability is not None else "N/A")                    
+                    except Exception as e:
+                        st.error(f"Error rendering Analysis panel: {e}")
                   
                   
                 with st.expander("LNS", expanded=True): 
@@ -4015,7 +3770,10 @@ if btn_run:
                                 df_iterationsResult["relaxation_level"] = range(len(df_iterationsResult))
 
                             # # Gráfico de convergência do objetivo
-                            fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                            from matplotlib.figure import Figure
+                            fig = Figure(figsize=(14, FIG_HEIGHT))
+                            ax = fig.subplots()
+
                             if not df_iterationsResult.empty and df_iterationsResult["objective_value"].notna().any():
                                 df_iterationsResult.plot(
                                     x="iteration",
@@ -4033,76 +3791,102 @@ if btn_run:
                                 )
 
                             ax.set_title("Convergence of Result")
-                            ax.set_xlabel("Iteration")
-                            ax.set_ylabel("Goal Value")
-                            ax.grid(True)
-                            ax.legend()
-                            
-                            # Exibir o gráfico no Streamlit
-                            st.pyplot(fig)    
-                    with col_B:
-                        if iterations_data_result != []:
-                            if "improved" in df_iterationsResult.columns:
-                                fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                with st.expander("LNS", expanded=True): 
+                    if iterations_data_result != []:
+                        df_iterationsResult = pd.DataFrame(iterations_data_result)
+                        
+                        # 🔒 Standardize columns
+                        for col in ["objective_value", "iteration", "relaxation_level"]:
+                            if col not in df_iterationsResult.columns:
+                                df_iterationsResult[col] = np.nan
+                        if "iteration" not in df_iterationsResult.columns:
+                            df_iterationsResult["iteration"] = range(len(df_iterationsResult))
 
-                                df_iterationsResult["improved_int"] = df_iterationsResult["improved"].astype(int)
+                        col_A, col_B, col_C = st.columns(3)
+                        
+                        with col_A:
+                            # 1) Convergence chart
+                            from matplotlib.figure import Figure
+                            fig_conv = Figure(figsize=(14, FIG_HEIGHT))
+                            ax_conv = fig_conv.subplots()
 
-                                ax.bar(
-                                    df_iterationsResult["iteration"],
-                                    df_iterationsResult["improved_int"],
-                                    color=["green" if x == 1 else "lightgray" for x in df_iterationsResult["improved_int"]]
+                            if not df_iterationsResult.empty and df_iterationsResult["objective_value"].notna().any():
+                                df_iterationsResult.plot(
+                                    x="iteration",
+                                    y="objective_value",
+                                    ax=ax_conv,
+                                    marker="o",
+                                    label="Goal Value"
                                 )
-                                
-                                # st.subheader("LNS – Improvement")
-                                ax.set_title("LNS – Improvement per Iteration")
-                                ax.set_xlabel("Iteration")
-                                ax.set_ylabel("Improved (1 = Yes)")
-                                ax.set_yticks([0, 1])
-                                ax.grid(True)
+                            else:
+                                ax_conv.text(0.5, 0.5, "No objective values", ha="center", va="center", transform=ax_conv.transAxes)
 
-                                st.pyplot(fig)                         
-                    
-                    with col_C:
-                        if iterations_data_result != []:
-                            #----------------------        
-                            # Relaxation Progress
-                            #---------------------- 
+                            ax_conv.set_title("Convergence of Result")
+                            ax_conv.set_xlabel("Iteration")
+                            ax_conv.set_ylabel("Goal Value")
+                            ax_conv.grid(True)
+                            ax_conv.legend()
+                            safe_render_figure(fig_conv)
+
+                        with col_B:
+                            # 2) Improvement chart
+                            if "improved" in df_iterationsResult.columns:
+                                fig_imp = Figure(figsize=(14, FIG_HEIGHT))
+                                ax_imp = fig_imp.subplots()
+
+                                imp_int = df_iterationsResult["improved"].astype(int)
+                                ax_imp.bar(
+                                    df_iterationsResult["iteration"],
+                                    imp_int,
+                                    color=["green" if x == 1 else "lightgray" for x in imp_int]
+                                )
+                                ax_imp.set_title("LNS – Improvement per Iteration")
+                                ax_imp.set_xlabel("Iteration")
+                                ax_imp.set_ylabel("Improved (1 = Yes)")
+                                ax_imp.set_yticks([0, 1])
+                                ax_imp.grid(True)
+                                safe_render_figure(fig_imp)
+
+                        with col_C:
+                            # 3) Workers Evolution
                             if "total_workers" in df_iterationsResult.columns:
-                                fig, ax = plt.subplots(figsize=(14, FIG_HEIGHT))
+                                fig_wrk = Figure(figsize=(14, FIG_HEIGHT))
+                                ax_wrk = fig_wrk.subplots()
 
                                 df_iterationsResult.plot(
                                     x="iteration",
                                     y="total_workers",
-                                    ax=ax,
+                                    ax=ax_wrk,
                                     marker="s",
                                     color="purple",
                                     label="Total Workers"
                                 )
+                                ax_wrk.set_title("LNS – Total Workers Evolution")
+                                ax_wrk.set_xlabel("Iteration")
+                                ax_wrk.set_ylabel("Total Workers")
+                                ax_wrk.grid(True)
+                                ax_wrk.legend()
+                                safe_render_figure(fig_wrk)
 
-                                st.subheader("LNS – Workers Evolution")
-                                ax.set_title("LNS – Total Workers Evolution")
-                                ax.set_xlabel("Iteration")
-                                ax.set_ylabel("Total Workers")
-                                ax.grid(True)
-                                ax.legend()
+                            # 4) Relaxation Level
+                            if not df_iterationsResult["relaxation_level"].isna().all():
+                                fig_relax = Figure(figsize=(14, FIG_HEIGHT))
+                                ax_relax = fig_relax.subplots()
 
-                                st.pyplot(fig)
-                        
-                            #----------------------        
-                            # Relaxation Progress
-                            #---------------------- 
-                            if iterations_data_result != []:
-                                # st.subheader("Relaxation Progress")
-                                fig_relax, ax_relax = plt.subplots(figsize=(14, FIG_HEIGHT))
-                                df_iterationsResult.plot(x="iteration", y="relaxation_level", ax=ax_relax, marker="x", color="red", label="Relaxation Level")
+                                df_iterationsResult.plot(
+                                    x="iteration",
+                                    y="relaxation_level",
+                                    ax=ax_relax,
+                                    marker="x",
+                                    color="red",
+                                    label="Relaxation Level"
+                                )
                                 ax_relax.set_title("Relaxation Progress")
                                 ax_relax.set_xlabel("Iteration")
                                 ax_relax.set_ylabel("Relaxation Level")
                                 ax_relax.grid(True)
                                 ax_relax.legend()
-
-                                # Exibir o gráfico no Streamlit
-                                st.pyplot(fig_relax)   
+                                safe_render_figure(fig_relax)
                     
                     # with col_B__:
                     if iterations_data_result != []:
@@ -4139,7 +3923,7 @@ if btn_run:
                                 plt.title('Constraint Matrix')
                                 plt.xlabel('X')
                                 plt.ylabel('Period')
-                                st.pyplot(fig)
+                                safe_render_figure(fig)
                             
                         #     # Converter dados para DataFrame
                         # if iterations_data_result != []:
@@ -4235,7 +4019,7 @@ if btn_run:
                             plt.title('Constraints Matrix')
                             plt.xlabel('X')
                             plt.ylabel('Period')
-                            st.pyplot(fig)
+                            safe_render_figure(fig)
                                 
                         # if iterations_data_result != []:
                         #                 st.subheader("Relaxation Progress")
@@ -4289,7 +4073,7 @@ if btn_run:
                             and coverage_vec.size > 0
                         ):
                             heat1 = plot_heatmap_coverage(coverage_vec)
-                            st.pyplot(heat1)
+                            safe_render_figure(heat1)
                         else:
                             st.info("Coverage heatmap indisponível para esta solução.")            
                     with colB1:
@@ -4302,7 +4086,7 @@ if btn_run:
                             and safety_vec.size > 0
                         ):
                             heat2 = plot_heatmap_safety(safety_vec)
-                            st.pyplot(heat2)
+                            safe_render_figure(heat2)
                         else:
                             st.info("Safety margin heatmap indisponível para esta solução.")            
                     

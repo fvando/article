@@ -1,25 +1,13 @@
-\chapter{Resultados}\label{capitulo7}
-
-% \section{Introdução}
-
-% Este capítulo apresenta os resultados obtidos com a execução do modelo de Programa{\c c}{\~a}o Linear Inteira (PLI) e da implementação computacional descrita no Capítulo~5. Os experimentos foram realizados para diferentes horizontes temporais (7, 15 e 30 dias), utilizando-se demanda variável e ativação integral das restrições impostas pelo Regulamento (CE) n.{\textordmasculine}~561/2006. 
-
-% Os resultados demonstram que o modelo é capaz de gerar escalas legalmente válidas, eficientes e compatíveis com operações reais de transporte rodoviário, apresentando excelentes tempos de execução e alta estabilidade temporal.
+\chapter{Resultados}\label{capitulo6}
 
 \section{Introdução}
 
-Este capítulo apresenta os resultados computacionais obtidos a partir da execução do modelo de Programação Linear Inteira (PLI) e da implementação computacional descrita nos Capítulos~5 e~6. Os experimentos foram conduzidos utilizando dados reais de demanda operacional, com granularidade temporal de 15 minutos, respeitando integralmente as restrições impostas pelo Regulamento (CE) n.º~561/2006.
+Este capítulo apresenta os resultados computacionais obtidos a partir da execução do modelo de Programação Linear Inteira (PLI) e da implementação computacional descrita no Capítulo~5. Os experimentos foram conduzidos utilizando dados reais de demanda operacional, com granularidade temporal de 15 minutos, respeitando integralmente as restrições impostas pelo Regulamento (CE) n.º~561/2006.
 
 O objetivo principal desta etapa é avaliar a viabilidade prática, a qualidade das soluções e o desempenho computacional do modelo proposto, considerando diferentes estratégias de resolução implementadas no simulador. Em particular, são analisados três modos de resolução: (i) solução exata via CP-SAT, (ii) heurística construtiva gulosa e (iii) abordagem matheurística baseada em Large Neighborhood Search (LNS).
 
 Este capítulo inicia-se com a análise detalhada dos resultados obtidos pelo método exato, que serve como referência normativa e de qualidade para a comparação posterior com os métodos heurísticos e metaheurísticos.
 
-
-% \section{Roteiro Experimental}
-
-% Os resultados apresentados neste capítulo seguem um roteiro experimental estruturado, concebido para avaliar de forma progressiva o comportamento do simulador sob diferentes estratégias de resolução e níveis de complexidade. Esse roteiro foi organizado em fases, permitindo analisar separadamente a viabilidade do modelo matemático, o desempenho computacional, a qualidade das soluções e o impacto de estratégias heurísticas, matheurísticas e orientadas por aprendizado de máquina.
-
-% As fases experimentais contemplam: (i) otimização exata via Programação Linear Inteira, (ii) geração de soluções iniciais por heurística gulosa, (iii) refinamento das soluções por Large Neighborhood Search (LNS), (iv) integração de modelos de aprendizado de máquina supervisionado e (v) avaliação comparativa entre os diferentes modos de resolução. Essa abordagem sistemática garante rastreabilidade, reprodutibilidade e rigor científico na análise dos resultados.
 
 \section{Roteiro Experimental}
 
@@ -36,19 +24,6 @@ O roteiro foi organizado nas seguintes etapas:
 
 Essa abordagem sistemática garante rastreabilidade, reprodutibilidade e rigor científico, permitindo que cada estratégia seja analisada sob condições controladas e comparáveis.
 
-
-% \section{Configuração Geral dos Cenários}
-
-% Os cen{\'a}rios foram configurados conforme os seguintes parâmetros principais:
-
-% \begin{itemize}
-%     \item solver: CP-SAT (OR-Tools);
-%     \item granularidade: 15 minutos por período;
-%     \item horizontes avaliados: 7, 15 e 30 dias;
-%     \item variável principal: \(x_{d,t}\) (binária);
-%     \item ativa{\c c}{\~a}o completa das restrições legais;
-%     \item demanda variável por período (não uniforme).
-% \end{itemize}
 
 \section{Configuração Geral dos Cenários}
 
@@ -86,29 +61,6 @@ Semente aleatória & Fixa para reprodutibilidade \\
 \end{tabular}
 \end{table}
 
-% \section{Execução do Solver}
-
-% A Figura~\ref{fig:solver-otimo} apresenta um exemplo de execução completa do solver CP-SAT.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T11.png}
-%     \caption{Execução do solver CP-SAT (solução ótima).}
-%     \label{fig:solver-otimo}
-% \end{figure}
-
-% O solver apresenta:
-
-% \begin{itemize}
-%     \item solução ótima;
-%     \item tempo computacional médio inferior a 1,5 segundos;
-%     \item cerca de 9.600 variáveis;
-%     \item cerca de 7.597 restrições;
-%     \item estabilidade mesmo em cenários maiores.
-% \end{itemize}
-
-% Esse desempenho confirma que a formulação PLI, associada ao CP-SAT, é adequada para aplicação prática no setor, permitindo replanejamento rápido e análises exploratórias.
-
 \section{Execução do Solver}
 
 A Figura~\ref{fig:solver-otimo} apresenta um exemplo de execução completa do solver CP-SAT para o cenário de 24 horas, com todas as restrições legais ativas.
@@ -128,34 +80,6 @@ Esse desempenho confirma que a formulação PLI, associada ao CP-SAT, é adequad
 
 
 
-% \section{Comportamento da Demanda}
-
-% A demanda utilizada nos experimentos apresenta elevada variabilidade, característica comum em opera{\c c}{\~o}es com turnos contínuos e atividades multicentrais.
-
-% A Figura~\ref{fig:demanda-experimentos} ilustra a demanda utilizada.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T12.png}
-%     \caption{Curva de demanda operacional por período.}
-%     \label{fig:demanda-experimentos}
-% \end{figure}
-
-% Observa-se:
-
-% \begin{itemize}
-%     \item períodos com demanda superior a 100 motoristas;
-%     \item períodos de baixa flutuação;
-%     \item alternância entre picos e vales;
-%     \item irregularidade — essencial para testar robustez do modelo.
-% \end{itemize}
-
-% Cabe destacar que a demanda utilizada não foi previamente suavizada ou filtrada.
-% A manutenção de picos, vales e irregularidades é intencional, pois permite avaliar
-% a robustez do modelo frente a cenários realistas, nos quais variações abruptas de
-% demanda são comuns em operações de transporte rodoviário. Dessa forma, o bom
-% desempenho observado reforça a aplicabilidade prática do modelo proposto.
-
 \section{Comportamento da Demanda}
 
 A demanda utilizada nos experimentos apresenta elevada variabilidade ao longo do horizonte analisado, característica típica de operações de transporte rodoviário com janelas de atendimento contínuas e múltiplos centros operacionais.
@@ -173,35 +97,6 @@ Observam-se períodos de pico com elevada necessidade de motoristas, intercalado
 
 O bom desempenho do modelo mesmo sob essas condições reforça sua aplicabilidade prática.
 
-
-% \section{Comparação Demanda \textit{versus} Alocação}
-
-% A Figura~\ref{fig:demanda-vs-cobertura-2} apresenta a comparação entre a demanda real e o número de motoristas alocados pelo modelo.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T3.jpg}
-%     \caption{Comparação entre demanda e cobertura gerada pelo modelo.}
-%     \label{fig:demanda-vs-cobertura-2}
-% \end{figure}
-
-% A análise mostra:
-
-% \begin{itemize}
-%     \item a cobertura acompanha com precisão a curva de demanda;
-%     \item não há sobrealocação significativa (solver evita excesso de motoristas);
-%     \item em períodos de baixa demanda, a alocação reduz-se naturalmente;
-%     \item o comportamento temporal é suave e sem oscilações abruptas.
-% \end{itemize}
-
-% A aderência entre cobertura e demanda indica que o modelo minimiza satisfatoriamente a diferença entre ambas, atendendo não apenas à conformidade legal, mas também à eficiência operacional.
-
-% Esse comportamento confirma que o modelo responde adequadamente
-% a ambos os critérios de otimização implementados no simulador.
-% No modo de maximização da resposta à demanda, observa-se a priorização
-% da cobertura mesmo em cenários críticos, enquanto no modo de minimização
-% do número de motoristas, o solver evita sobrealocação desnecessária,
-% mantendo aderência estrita à demanda.
 
 \section{Comparação Demanda \textit{versus} Alocação}
 
@@ -222,40 +117,6 @@ Esse comportamento confirma que, no modo de minimização do número total de mo
 
 
 
-
-% \section{Indicadores Operacionais}
-
-% Foram calculados diversos indicadores estatísticos para auxiliar na interpretação dos resultados. Entre eles:
-
-% \begin{itemize}
-%     \item \textbf{Cobertura da demanda};
-%     \item \textbf{Sobrecarga};
-%     \item \textbf{Subutilização};
-%     \item \textbf{Desvio padrão da cobertura}.
-% \end{itemize}
-
-% A Figura~\ref{fig:indicadores-operacionais} resume esses indicadores.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T2.jpg}
-%     \caption{Indicadores de cobertura, sobrecarga e subutilização.}
-%     \label{fig:indicadores-operacionais}
-% \end{figure}
-
-% Resultados observados:
-
-% \begin{itemize}
-%     \item cobertura média superior a 99\%;
-%     \item mínima ocorrência de sobrecarga;
-%     \item subutilização restrita a períodos de baixa demanda;
-%     \item desvio padrão da cobertura \(\approx 0,04\), indicando homogeneidade temporal.
-% \end{itemize}
-
-% O baixo desvio padrão da cobertura indica elevada regularidade
-% na alocação de motoristas ao longo do tempo, o que é particularmente
-% relevante em contextos operacionais, pois reduz oscilações abruptas
-% na escala e facilita o planejamento logístico e a gestão de recursos humanos.
 
 \section{Indicadores Operacionais}
 

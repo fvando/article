@@ -251,6 +251,13 @@ def solve_shift_schedule(
 ):
     if time_limit_seconds is None:
         time_limit_seconds = 300
+    
+    # Normalização de selected_restrictions para dicionário
+    if isinstance(selected_restrictions, list):
+        selected_restrictions = {r: True for r in selected_restrictions}
+    elif selected_restrictions is None:
+        selected_restrictions = {}
+        
     constraints = []
     num_periods = len(need)
     Y = {}
@@ -270,7 +277,6 @@ def solve_shift_schedule(
                 solver.SetSolverSpecificParametersAsString(param_str)
             else:
                 solver.SetTimeLimit(int(time_limit_seconds * 1000))
-                solver.SetRelativeGapLimit(0.05)
             
             print(f"DEBUG ENGINE: Created solver {solver_param_type} ({tipo_modelo(solver)})")
             
@@ -286,12 +292,8 @@ def solve_shift_schedule(
             
             # CRITICAL FIX: cobertura_necessidade MUST always be True
             # This is a fundamental constraint that balances demand and supply
-            if 'cobertura_necessidade' in selected_restrictions:
-                selected_restrictions['cobertura_necessidade'] = True
-                print(f"⚠️  FORCED cobertura_necessidade = True (fundamental constraint)")
-            
-            # Ensure cobertura_necessidade is always active for consistency
             selected_restrictions['cobertura_necessidade'] = True
+            print(f"⚠️  FORCED cobertura_necessidade = True (fundamental constraint)")
             
             Z = {t: solver.BoolVar(f"Z_{t}") for t in range(limit_workers)}
             U = {d: solver.NumVar(0, need[d], f"U[{d}]") for d in range(num_periods)}
@@ -372,47 +374,18 @@ def solve_shift_schedule(
                 solver.Add(Dev[t] >= 0)
                 solver.Add(Dev[t] <= cap_tasks_per_driver_per_slot * num_periods * Z[t])
 
-            # Objective Logic
-            # Normalize radio string for robust comparison
-            is_minimize = False
-            if radio_selection_object:
-                is_minimize = "Minimize" in str(radio_selection_object)
+            # ==========================================================================
+            # PHASE 1: Minimize Unmet Demand (Coverage Priority)
+            # ==========================================================================
+            objective = solver.Objective()
+            objective.SetMinimization()
             
-            if is_minimize:
-                # SCIP works better with moderate-sized weights to avoid numerical instability
-                W_UNMET = 10000.0    # Absolute priority: Coverage
-                W_DRIVER = 100.0     # Second priority: Minimum fleet
-                W_ASSIGN = 1.0       # Third: Maximization (if enabled)
-                
-                T_val = max(1, num_periods - 1)
-                objective = solver.Objective()
-                objective.SetMinimization()
-                
-                # Use SetCoefficient - the reliable way for OR-Tools MILP
-                for d in range(num_periods):
-                    # Penalty for unmet demand
-                    coeff = W_UNMET * (1.0 + 0.3 * (d / T_val))
-                    objective.SetCoefficient(U[d], float(coeff))
-                
-                for t in range(limit_workers):
-                    # Cost for driver activation
-                    objective.SetCoefficient(Z[t], float(W_DRIVER))
-                
-                # Reward for assignments (negative coefficient in Minimization)
-                # This ensures we cover as many slots as possible
-                actual_assign_reward = W_ASSIGN if enable_assignment_maximization else 0.1
-                for d in range(num_periods):
-                    for t in range(limit_workers):
-                        objective.SetCoefficient(X[d, t], -float(actual_assign_reward))
-                
-                print(f"DEBUG ENGINE: Objective set via solver.Objective().SetMinimization(). W_UNMET={W_UNMET}")
-            else:
-                objective = solver.Objective()
-                objective.SetMaximization()
-                for d in range(num_periods):
-                    for t in range(limit_workers):
-                        objective.SetCoefficient(X[d, t], 1.0)
-                print(f"DEBUG ENGINE: Objective set to STANDARD MAXIMIZE")
+            for d in range(num_periods):
+                # Primary goal: Minimize total U[d]
+                # We add a tiny gradient to prefer covering early slots if tied
+                objective.SetCoefficient(U[d], float(1.0 + 0.0001 * (d / num_periods)))
+            
+            print(f"DEBUG ENGINE: PHASE 1 Setup (Minimize Unmet Demand)")
 
             # Coverage Constraint
             print(f"DEBUG ENGINE: Sum of demand (need): {float(sum(need))}")
@@ -554,23 +527,55 @@ def solve_shift_schedule(
                         # deve existir pelo menos 45h (180 períodos) sem trabalho por semana
                         solver.Add(weekly_work <= periods_per_week - min_weekly_rest)
 
-            # Final diagnostics before solve
-            print(f"DEBUG ENGINE: Final Model Stats - Vars: {solver.NumVariables()}, Constraints: {solver.NumConstraints()}")
+            # ==========================================================================
+            # LEXICOGRAPHICAL RESOLUTION - 2 PHASES
+            # ==========================================================================
+            print(f"DEBUG ENGINE: Phase 1 Solving (Coverage)...")
+            
+            # Use 40% of time for Phase 1
+            if "SCIP" in str(solver_param_type).upper():
+                solver.SetSolverSpecificParametersAsString(f"limits/time = {time_limit_seconds * 0.4}\n")
+            else:
+                solver.SetTimeLimit(int(time_limit_seconds * 0.4 * 1000))
+
             status = solver.Solve()
-            print(f"\n=== PHASE 1 COMPLETE ===")
-            print(f"Status: {status} (0=OPTIMAL, 1=FEASIBLE, 2=INFEASIBLE)")
+            
             if status in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE):
-                obj_val = solver.Objective().Value()
-                u_sum = sum(U[d].solution_value() for d in range(num_periods))
-                x_sum = sum(X[d, t].solution_value() for d in range(num_periods) for t in range(limit_workers))
-                z_sum = sum(Z[t].solution_value() for t in range(limit_workers))
-                print(f"DEBUG SOLVE: Objective={obj_val:.2f}, Unmet={u_sum:.1f}, Tasks={x_sum:.1f}, Drivers={z_sum:.1f}")
-                print(f"DEBUG PENALTY CHECK: Unmet Penalty Component = {u_sum * 10000:.1f}")
-            print(f"========================\n")
-            
-            # SIMPLIFIED: Removed Phase 2 (Balancing) to ensure Phase 1 results are preserved exactly
-            # Modern OR-Tools handle multi-objective well enough with weights
-            
+                min_unmet = sum(U[d].solution_value() for d in range(num_periods))
+                print(f"✅ PHASE 1 COMPLETE. Min Unmet Demand: {min_unmet:.2f}")
+                
+                # Lock Unmet Demand (lexicographical requirement)
+                # Allow 0.01% epsilon or 0.1 slot to avoid numerical infeasibility in Phase 2
+                solver.Add(solver.Sum([U[d] for d in range(num_periods)]) <= float(min_unmet + 0.1))
+                
+                # PHASE 2: Minimize Resource Use
+                objective.Clear()
+                objective.SetMinimization()
+                
+                # Resource Priority: Number of active drivers
+                for t in range(limit_workers):
+                    objective.SetCoefficient(Z[t], float(1.0))
+                
+                # Tertiary goal: Maximize assignments (to cover optional capacity)
+                # This uses a small reward to break ties in driver count
+                if enable_assignment_maximization:
+                    for d in range(num_periods):
+                        for t in range(limit_workers):
+                            objective.SetCoefficient(X[d, t], -0.001)
+
+                print(f"DEBUG ENGINE: Phase 2 Solving (Resource Optimization)...")
+                
+                # Use remaining 60% of time for Phase 2
+                if "SCIP" in str(solver_param_type).upper():
+                    solver.SetSolverSpecificParametersAsString(f"limits/time = {time_limit_seconds * 0.6}\n")
+                else:
+                    solver.SetTimeLimit(int(time_limit_seconds * 0.6 * 1000))
+                
+                status = solver.Solve()
+                print(f"✅ PHASE 2 COMPLETE. Final Status: {status}")
+            else:
+                print(f"⚠️  PHASE 1 FAILED (status={status}). Skipping Phase 2.")
+
             matrix_allocation = np.zeros((num_periods, limit_workers), dtype=int)
             workers_schedule, tasks_schedule = [0] * num_periods, [0] * num_periods
             driving_hours_per_driver = {t: 0.0 for t in range(limit_workers)}
@@ -593,6 +598,22 @@ def solve_shift_schedule(
                 total_slots = int(round(sum(tasks_schedule)))
                 
                 print(f"DEBUG FINAL: total_slots={total_slots}, tasks_sum={sum(tasks_schedule)}, unmet_sum={sum(U[d].solution_value() for d in range(num_periods))}")
+            else:
+                 # FALLBACK: If solver fails (Timeout/Infeasible) return the initial allocation (Heuristic)
+                 # This prevents the "No drivers allocated" issue which breaks the UI
+                print(f"⚠️ SOLVER FAILED or TIMED OUT (Status={status}). Fallback to initial allocation (Heuristic).")
+                if initial_allocation is not None:
+                     matrix_allocation = initial_allocation
+                     # Recalculate basic stats from fallback
+                     workers_schedule = [int(sum(1 for val in matrix_allocation[d, :] if val > 0)) for d in range(num_periods)]
+                     tasks_schedule = [float(sum(matrix_allocation[d, :])) for d in range(num_periods)]
+                     total_active = int(np.sum(np.any(matrix_allocation > 0, axis=0)))
+                     total_slots = int(round(matrix_allocation.sum()))
+                     
+                     statistics_result.append(f"Model State: FALLBACK (Heuristic)")
+                else:
+                    print("⚠️ NO FALLBACK AVAILABLE. Returning empty solution.")
+
                 
                 for t in range(limit_workers): driving_hours_per_driver[t] = float(sum(X[d, t].solution_value() for d in range(num_periods)) * 0.25)
                 

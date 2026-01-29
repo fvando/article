@@ -58,24 +58,22 @@ Desenvolver, implementar e avaliar um modelo de Programa{\c c}{\~a}o Linear Inte
 
 \section{Estrutura da Dissertação}
 
-Esta dissertação está organizada em nove capítulos, além das referências, apêndices e anexos, estruturados de forma a conduzir o leitor desde a contextualização do problema até a consolidação das contribuições científicas e perspectivas futuras.
+Esta dissertação está organizada em oito capítulos, além das referências, apêndices e anexos, estruturados de forma a conduzir o leitor desde a contextualização do problema até a consolidação das contribuições científicas e perspectivas futuras.
 
 O \textbf{Capítulo 1} apresenta a introdução do trabalho, incluindo a contextualização do problema, a definição da questão de pesquisa, os objetivos geral e específicos, a justificativa do estudo e a descrição da estrutura da dissertação.
 
-O \textbf{Capítulo 2} é dedicado à revisão da literatura, abordando os fundamentos do transporte rodoviário europeu, as restrições regulatórias aplicáveis, os principais problemas de escalonamento, técnicas de modelagem com Programação Linear Inteira, metaheurísticas, o uso de solvers modernos como o OR-Tools CP-SAT, bem como trabalhos correlatos relevantes.
+O \textbf{Capítulo 2} é dedicado à revisão da literatura, abordando os fundamentos do transporte rodoviário europeu, as restrições regulatórias aplicáveis, os principais problemas de escalonamento, técnicas de modelagem com Programação Linear Inteira, metaheurísticas e o uso de solvers modernos como o OR-Tools CP-SAT.
 
-O \textbf{Capítulo 3} apresenta as bases legais e normativas do escalonamento de motoristas, com uma análise detalhada do Regulamento (CE) n.º 561/2006, da Diretiva 2002/15/CE e do Regulamento (UE) n.º 165/2014, discutindo suas implicações diretas na formulação do modelo matemático.
+O \textbf{Capítulo 3} apresenta as bases legais e normativas do escalonamento de motoristas, com uma análise detalhada do Regulamento (CE) n.º 561/2006, discutindo suas implicações diretas na formulação do modelo matemático.
 
-O \textbf{Capítulo 4} descreve a metodologia adotada na pesquisa, detalhando a estrutura geral do estudo, as etapas de formulação matemática, implementação computacional, definição dos cenários experimentais e os métodos de avaliação das soluções. Este capítulo também introduz a abordagem heurística e matheurística proposta, incluindo a utilização de Large Neighborhood Search (LNS) e a integração opcional com técnicas de aprendizagem de máquina.
+O \textbf{Capítulo 4} detalha a Metodologia e o Modelo Matemático proposto. Abrange a discretização temporal, a definição de conjuntos, parâmetros e variáveis de decisão, bem como as funções objetivo e o conjunto completo de restrições legais. Introduz também a arquitetura híbrida que combina otimização exata, heurísticas, Large Neighborhood Search (LNS) e integração com aprendizado de máquina.
 
-O \textbf{Capítulo 5} apresenta o modelo matemático proposto, incluindo a discretização temporal, a definição de conjuntos, parâmetros e variáveis de decisão, as funções objetivo e o conjunto completo de restrições que garantem a conformidade com a legislação europeia, além de uma discussão sobre linearização e observações computacionais.
+O \textbf{Capítulo 5} trata da implementação computacional, descrevendo o simulador interativo desenvolvido, a interface de parametrização, os modos de resolução, os fluxos computacionais e as funcionalidades avançadas, como o Benchmark Mode e os indicadores de esforço operacional (Gini/Lorenz).
 
-O \textbf{Capítulo 6} trata da implementação computacional do modelo, descrevendo a arquitetura geral da solução, a interface de parametrização, a construção da matriz de restrições, os modos de resolução do solver, os fluxos computacionais do simulador, bem como os mecanismos de visualização, análise iterativa e geração de indicadores operacionais.
+O \textbf{Capítulo 6} apresenta os resultados experimentais, incluindo a análise do comportamento da demanda, a comparação entre modos de resolução (Exato, Heurístico e LNS) e a validação dos indicadores operacionais e computacionais.
 
-O \textbf{Capítulo 7} apresenta os resultados obtidos a partir dos experimentos realizados, incluindo a configuração dos cenários, a análise do comportamento da demanda, a comparação entre demanda e alocação, os indicadores operacionais, a avaliação dos diferentes modos de resolução e a síntese geral dos resultados.
+O \textbf{Capítulo 7} realiza uma análise comparativa da literatura, confrontando os modelos e técnicas desenvolvidos neste trabalho com o estado da arte e discutindo o pipeline de otimização proposto.
 
-O \textbf{Capítulo 8} realiza uma revisão comparativa da literatura, confrontando os modelos e técnicas desenvolvidos neste trabalho com o estado da arte, incluindo uma análise crítica das abordagens existentes e a discussão do pipeline híbrido de otimização proposto.
+Finalmente, o \textbf{Capítulo 8} apresenta as conclusões do trabalho, sintetizando as contribuições, os resultados alcançados, as limitações identificadas e as propostas para trabalhos futuros.
 
-Por fim, o \textbf{Capítulo 9} apresenta as conclusões do trabalho, sintetizando as principais contribuições científicas, os resultados alcançados, as limitações identificadas e as direções para trabalhos futuros.
-
-As referências bibliográficas, o glossário, os apêndices e os anexos complementam o trabalho, fornecendo detalhamentos adicionais sobre formulações alternativas do modelo, cenários de simulação, parâmetros utilizados, estruturas de dados, fluxos da aplicação e documentação normativa.
+As referências bibliográficas, o glossário, os apêndices e os anexos complementam o trabalho, fornecendo detalhamentos técnicos adicionais e documentação normativa.

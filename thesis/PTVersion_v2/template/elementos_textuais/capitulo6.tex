@@ -1,314 +1,8 @@
-% \chapter{Implementação Computacional}\label{capitulo6}
-% \section{Introdução}
-
-% Este capítulo descreve a implementação computacional do modelo apresentado no Capítulo~4, utilizando a linguagem Python, o solver CP-SAT do OR-Tools e uma interface interativa criada em Streamlit. O objetivo da implementação é proporcionar uma plataforma completa e flexível para simulação, análise e validação de cenários diversos, preservando a estrutura e as restrições legais propostas pelo Regulamento (CE) n.{\textordmasculine}~561/2006.
-
-% A solução foi construída em camadas: interface, modelagem, solver e análise de resultados. Essa abordagem modular facilita manutenção, extensibilidade e integração futura com sistemas corporativos ou plataformas SaaS.
-
-% A implementação foi concebida para operar tanto com dados reais quanto com dados sintéticos de demanda.
-% Nos experimentos apresentados nesta dissertação, os dados de demanda utilizados correspondem a dados reais
-% provenientes de operações de transporte rodoviário, previamente tratados e anonimizados, garantindo
-% conformidade ética e confidencialidade operacional.
-
-% A possibilidade de geração sintética de demanda permanece disponível no simulador exclusivamente
-% para fins de testes, validação metodológica e experimentação controlada, não sendo utilizada
-% na análise principal dos resultados apresentados neste trabalho.
-
-% \section{Arquitetura Geral da Solução}
-
-% A arquitetura computacional é composta por quatro módulos principais:
-
-% \begin{enumerate}
-%     \item \textbf{Interface (Streamlit)}: coleta de parâmetros, configuração de cenários e visualização dos resultados.
-%     \item \textbf{Modelagem}: construção das variáveis, função objetivo e restrições.
-%     \item \textbf{Solver (OR-Tools)}: execução do CP-SAT, retorno de soluções, logs e tempos de execução.
-%     \item \textbf{Pós-processamento}: geração de gráficos, métricas e indicadores operacionais.
-% \end{enumerate}
-
-% Essa organização segue recomendações da literatura contemporânea em problemas combinatórios \cite{googleORTools}.
-
-% Além da formulação exata via Programação Linear Inteira, o simulador foi estendido para incorporar estratégias heurísticas e matheurísticas, permitindo a análise comparativa entre diferentes abordagens de resolução. Em particular, foram implementados três modos de solução: (i) solução exata via CP-SAT, (ii) heurística construtiva gulosa para geração de soluções iniciais e (iii) uma abordagem Large Neighborhood Search (LNS), que combina heurísticas com reotimizações locais via solver inteiro. Essa arquitetura híbrida amplia significativamente o escopo experimental da plataforma, possibilitando avaliar compromissos entre qualidade da solução e esforço computacional.
-
-% Adicionalmente, o simulador incorpora mecanismos de aprendizado de máquina supervisionado com o objetivo de guiar decisões heurísticas. Dois modelos foram introduzidos: um modelo local de atribuição motorista--período, responsável por estimar a atratividade de alocações individuais, e um modelo de avaliação de vizinhanças, utilizado para priorizar regiões promissoras no processo LNS. Esses modelos são treinados a partir de dados sintéticos gerados pelo próprio simulador, garantindo consistência entre o processo de aprendizado e o domínio do problema. Ressalta-se que a ativação do aprendizado de máquina é opcional, sendo o comportamento padrão totalmente determinístico e compatível com a heurística clássica.
-
-% Do ponto de vista metodológico, a implementação computacional foi concebida como um simulador híbrido, no qual diferentes estratégias de resolução coexistem e podem ser avaliadas sob um mesmo conjunto de parâmetros e restrições legais. A Programação Linear Inteira constitui o núcleo normativo do sistema, garantindo validade jurídica e consistência matemática, enquanto heurísticas, metaheurísticas e modelos de aprendizado de máquina são integrados como mecanismos auxiliares, com o objetivo de ampliar a eficiência computacional e o escopo experimental da plataforma.
-
-% Todas as soluções finais permanecem integralmente validadas pelo modelo de Programação Linear Inteira e pelo solver CP-SAT, garantindo conformidade legal e rigor matemático independentemente da ativação ou não do aprendizado de máquina.
-
-% \section{Interface de Parametrização}
-
-% A interface inicial permite ao usuário configurar:
-
-% \begin{itemize}
-%     \item número total de períodos;
-%     \item granularidade temporal;
-%     \item tipo de variáveis (binárias ou relaxadas);
-%     \item solver (CP-SAT ou SCIP);
-%     \item ativação ou desativação de restrições legais;
-%     \item demanda por período.
-% \end{itemize}
-
-% A Figura~\ref{fig:parametrizacao} apresenta a tela inicial da interface do sistema.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T0.png}
-%     \caption{Interface principal de parametrização da solução.}
-%     \label{fig:parametrizacao}
-% \end{figure}
-
-% \section{Configuração das Restrições Legais}
-
-% O sistema permite ativar ou desativar individualmente as restrições associadas ao Regulamento (CE) n.{\textordmasculine} 561/2006, o que possibilita:
-
-% \begin{itemize}
-%     \item realizar análises comparativas;
-%     \item simular cenários educacionais;
-%     \item testar hipóteses de flexibilização;
-%     \item avaliar impacto de restrições específicas.
-% \end{itemize}
-
-% A Figura~\ref{fig:restricoes} ilustra essa funcionalidade.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T2.jpg}
-%     \caption{Seção de ativação das restrições do Regulamento (CE) n.{\textordmasculine} 561/2006.}
-%     \label{fig:restricoes}
-% \end{figure}
-
-% \section{Inserção da Demanda Operacional}
-
-% A demanda por período pode ser definida:
-
-% \begin{itemize}
-%     \item manualmente pelo usuário;
-%     \item carregada a partir de arquivos externos;
-%     \item gerada aleatoriamente para simulação.
-% \end{itemize}
-
-% A Figura~\ref{fig:demanda} apresenta a demanda utilizada nos experimentos.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T1.jpg}
-%     \caption{Distribuição da demanda operacional por período.}
-%     \label{fig:demanda}
-% \end{figure}
-
-% \section{Construção da Matriz de Restrições}
-
-% A matriz de restrições é um dos componentes centrais da implementação. Ela representa formalmente:
-
-% \begin{itemize}
-%     \item regras legais;
-%     \item vínculos operacionais;
-%     \item continuidade temporal;
-%     \item acúmulo e reinício de condução;
-%     \item períodos de descanso.
-% \end{itemize}
-
-% As Figuras~\ref{fig:matriz-inicial} e~\ref{fig:matriz-final} mostram, respectivamente, a matriz inicial e a versão final após transformações elementares.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T122.png}
-%     \caption{Matriz de restrições (versão inicial).}
-%     \label{fig:matriz-inicial}
-% \end{figure}
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T13.png}
-%     \caption{Matriz de restrições (versão final).}
-%     \label{fig:matriz-final}
-% \end{figure}
-
-% A estrutura esparsa da matriz (entre 15\% e 35\% de preenchimento) é altamente favorável ao solver, conforme discutido por \cite{erdman2022}.
-
-% \section{Execução do Solver}
-
-% Após a modelagem, o CP-SAT é executado, retornando:
-
-% \begin{itemize}
-%     \item estado da solução (ótimo, viável, limite de tempo);
-%     \item custo total;
-%     \item valores das variáveis;
-%     \item métricas de desempenho;
-%     \item tempo computacional.
-% \end{itemize}
-
-% Embora o modelo seja formulado como um problema de Programação Linear Inteira,
-% a resolução é realizada por meio do solver CP-SAT, que combina técnicas de
-% programação por restrições, satisfatibilidade booleana e otimização inteira.
-% Essa abordagem híbrida permite explorar de forma eficiente a estrutura temporal
-% e esparsa do modelo, superando limitações típicas de solvers MILP tradicionais.
-
-% Um exemplo de execução é mostrado na Figura~\ref{fig:solver}.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T11.png}
-%     \caption{Execução do solver CP-SAT (solução ótima).}
-%     \label{fig:solver}
-% \end{figure}
-
-% Tempos inferiores a dois segundos foram observados mesmo para cenários com milhares de variáveis.
-
-% \section{Fluxo Computacional do Simulador}
-
-% Do ponto de vista computacional, o simulador segue um pipeline bem definido, composto pelas
-% seguintes etapas sequenciais:
-
-% \begin{enumerate}
-%     \item leitura e validação dos parâmetros de entrada;
-%     \item construção do modelo matemático (variáveis, restrições e função objetivo);
-%     \item execução do método de resolução selecionado (exato, heurístico ou LNS);
-%     \item pós-processamento da solução obtida;
-%     \item cálculo de indicadores operacionais e geração de visualizações.
-% \end{enumerate}
-
-% Esse pipeline é executado de forma determinística para um conjunto fixo de parâmetros,
-% garantindo reprodutibilidade dos experimentos realizados.
-
-% O fluxo de execução do simulador segue uma sequência bem definida de etapas, independentemente do modo de resolução selecionado. Inicialmente, o usuário configura os parâmetros do problema por meio da interface interativa, incluindo horizonte temporal, demanda, restrições legais e estratégia de solução. Em seguida, o sistema constrói internamente a representação matricial do problema, instanciando variáveis, restrições e a função objetivo conforme o modelo matemático descrito no Capítulo~4.
-
-% No modo exato, o modelo completo é submetido diretamente ao solver CP-SAT, que realiza a busca por soluções ótimas respeitando todas as restrições. Nos modos heurístico e LNS, o sistema primeiro gera uma solução inicial viável, que pode ser utilizada isoladamente ou como ponto de partida para processos iterativos de melhoria. No caso do LNS, subconjuntos de períodos são liberados a cada iteração, mantendo o restante da solução fixo, e um problema restrito é resolvido novamente pelo solver inteiro.
-
-% Após a obtenção da solução final, o simulador executa uma etapa de pós-processamento, responsável pelo cálculo de indicadores operacionais, métricas de desempenho e geração de visualizações gráficas. Esse fluxo modular permite comparar diferentes estratégias sob condições controladas, garantindo reprodutibilidade e consistência nos experimentos realizados.
-
-% \section{Modos de Resolução e Estratégias de Otimização}
-
-% É importante distinguir, no contexto do simulador, os conceitos de \textit{modo de resolução}
-% e \textit{modo de otimização}. O modo de resolução define a estratégia algorítmica utilizada
-% (exata, heurística ou matheurística), enquanto o modo de otimização define a função objetivo
-% adotada pelo modelo matemático (maximização da resposta à demanda ou minimização do número
-% total de motoristas).
-
-% Essa separação conceitual permite combinar livremente diferentes estratégias de resolução
-% com diferentes objetivos operacionais, ampliando o escopo experimental da plataforma.
-
-% O simulador permite a execução do problema de escalonamento em diferentes modos de resolução. No modo exato, o modelo completo de Programação Linear Inteira é resolvido pelo solver CP-SAT, garantindo soluções ótimas quando o tempo computacional é suficiente. No modo heurístico, uma estratégia construtiva gulosa gera rapidamente uma solução viável, priorizando o atendimento da demanda com menor complexidade computacional. Já no modo LNS (Large Neighborhood Search), o sistema explora iterativamente vizinhanças da solução corrente, liberando subconjuntos de períodos e reotimizando-os via solver inteiro, o que permite melhorias progressivas da solução com controle explícito do esforço computacional.
-
-% \section{Geração de Indicadores e Gráficos}
-
-% O sistema produz gráficos essenciais para avaliação da qualidade da solução:
-
-% \begin{itemize}
-%     \item cobertura da demanda;
-%     \item sobrecarga;
-%     \item subutilização;
-%     \item distribuição da quantidade de motoristas ao longo dos períodos;
-%     \item desvio padrão da cobertura.
-% \end{itemize}
-
-% A Figura~\ref{fig:indicadores} apresenta alguns desses resultados.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T3.jpg}
-%     \caption{Indicadores de cobertura, sobrecarga e subutilização.}
-%     \label{fig:indicadores}
-% \end{figure}
-
-% Já a Figura~\ref{fig:demanda-vs-cobertura} destaca a comparação entre demanda e cobertura.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T12.png}
-%     \caption{Demanda comparada à cobertura gerada pelo modelo.}
-%     \label{fig:demanda-vs-cobertura}
-% \end{figure}
-
-% \section{Módulo de Operações Elementares}
-
-% Além de resolver o problema, a aplicação permite aplicar operações elementares à matriz de restrições, possibilitando:
-
-% \begin{itemize}
-%     \item fins educacionais (ensino de álgebra linear);
-%     \item análise estrutural da matriz;
-%     \item diagnósticos avançados.
-% \end{itemize}
-
-% Exemplo ilustrado na Figura~\ref{fig:operacoes}.
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.92\textwidth]{template/figuras/T3.jpg}
-%     \caption{Operações elementares aplicadas à matriz de restrições.}
-%     \label{fig:operacoes}
-% \end{figure}
-
-% Os gráficos analíticos gerados pelo simulador desempenham papel central na avaliação da qualidade das soluções. O gráfico de cobertura da demanda permite verificar, período a período, se o número de motoristas alocados atende ou excede a demanda operacional. O gráfico de margem de segurança evidencia excessos ou déficits de alocação, auxiliando na identificação de sobrecargas ou subutilizações. Já os gráficos temporais de estabilidade e eficiência fornecem uma visão agregada do comportamento da solução ao longo do horizonte, indicando o grau de regularidade das escalas e o nível de aproveitamento da força de trabalho.
-
-% No modo LNS, gráficos adicionais apresentam o histórico das iterações, incluindo a evolução do valor da função objetivo e a identificação de melhorias sucessivas. Esses gráficos permitem analisar o processo de convergência do algoritmo, evidenciando como a solução é refinada ao longo das iterações e em quais momentos ocorrem ganhos significativos. Essa visualização é particularmente útil para estudos experimentais, pois permite comparar estratégias de vizinhança, critérios de aceitação e parâmetros de relaxação.
-
-% \section{Extensões Heurísticas e Metaheurísticas}
-
-% Além da resolução exata via Programação Linear Inteira, o simulador foi estendido para incorporar métodos heurísticos e metaheurísticos, com o objetivo de ampliar a capacidade de experimentação, reduzir tempos computacionais em cenários de maior escala e permitir análises comparativas entre diferentes estratégias de solução.
-
-% Inicialmente, foi implementada uma heurística gulosa (\textit{greedy initial allocation}), responsável por gerar soluções viáveis iniciais a partir da demanda por período. Essa heurística prioriza a alocação de motoristas nos períodos de maior demanda, respeitando limites operacionais básicos, e serve tanto como solução independente quanto como ponto de partida para métodos mais avançados.
-
-% Em seguida, foi integrado um método de \textit{Large Neighborhood Search} (LNS), caracterizado pela destruição e reconstrução parcial da solução. A cada iteração, subconjuntos de períodos são liberados, mantendo o restante da solução fixo, e um problema restrito é resolvido novamente via solver inteiro. Essa abordagem combina a robustez da otimização exata com a flexibilidade de exploração típica das metaheurísticas.
-
-% \section{Integração de Aprendizado de Máquina}
-
-% O simulador incorpora um módulo experimental de aprendizado de máquina com o objetivo de orientar decisões locais e estratégicas durante o processo de otimização. Essa integração não substitui o modelo matemático, mas atua como um mecanismo de apoio, mantendo total compatibilidade com a solução exata.
-
-% Foram definidos dois modelos supervisionados distintos. O primeiro, denominado $f_1$, atua no nível local, atribuindo escores à decisão de alocar um determinado motorista em um período específico durante a heurística gulosa. O segundo modelo, $f_2$, opera em nível agregado, avaliando vizinhanças candidatas no algoritmo LNS, priorizando aquelas com maior potencial de melhoria.
-
-% A arquitetura foi concebida de forma resiliente: na ausência de modelos treinados ou do ambiente de aprendizado de máquina, o sistema automaticamente recorre a regras heurísticas clássicas, garantindo que o comportamento do simulador permaneça estável e reproduzível. Dessa forma, o aprendizado de máquina atua como uma camada opcional de inteligência adicional, sem comprometer a validade dos experimentos.
-
-% \section{Geração de Datasets e Treinamento dos Modelos}
-
-% Para viabilizar a integração com aprendizado de máquina, foi desenvolvido um pipeline automático de geração de dados supervisionados. A partir de múltiplas instâncias sintéticas de demanda, o simulador executa tanto soluções heurísticas quanto soluções ótimas via solver inteiro, registrando decisões e resultados intermediários.
-
-% Esses dados são organizados em dois conjuntos distintos: um dataset voltado ao treinamento do modelo $f_1$, contendo informações locais sobre motorista, período e contexto operacional; e um segundo dataset para o modelo $f_2$, composto por características agregadas das vizinhanças exploradas pelo LNS.
-
-% O treinamento dos modelos é realizado externamente ao fluxo principal de otimização, utilizando algoritmos de \textit{gradient boosting} (LightGBM). Os modelos resultantes são então carregados dinamicamente pelo simulador, permitindo a avaliação do impacto do aprendizado supervisionado sobre a qualidade e a estabilidade das soluções geradas.
-
-% \section{Visualização Avançada e Análise Iterativa}
-
-% Além dos gráficos tradicionais de cobertura e atendimento da demanda, o simulador passou a oferecer visualizações avançadas que permitem uma análise mais profunda do comportamento dos algoritmos ao longo do tempo.
-
-% No contexto do LNS, são gerados gráficos que mostram a evolução do valor da função objetivo por iteração, a identificação de melhorias sucessivas e o comportamento do nível de relaxamento aplicado. Esses gráficos permitem avaliar empiricamente a convergência do método e comparar o desempenho entre estratégias exatas, heurísticas e metaheurísticas.
-
-% Adicionalmente, foram incluídos mapas de calor e métricas temporais que evidenciam padrões de subutilização, sobrecarga e estabilidade da solução, ampliando a capacidade analítica do simulador e fortalecendo sua utilização tanto para pesquisa quanto para fins educacionais.
-
-% \section{Posicionamento do Simulador como Plataforma Experimental}
-
-% Com as extensões implementadas, o simulador ultrapassa o papel de uma simples ferramenta de resolução de problemas de Programação Linear Inteira, consolidando-se como uma plataforma experimental híbrida. Ele permite a comparação sistemática entre métodos exatos, heurísticos, metaheurísticos e abordagens híbridas com aprendizado de máquina, sob um mesmo conjunto de restrições legais rigorosas.
-
-% Essa flexibilidade torna o sistema particularmente adequado para estudos de sensibilidade, avaliação de escalabilidade e investigação de estratégias avançadas de otimização aplicada ao transporte rodoviário. Além disso, a arquitetura modular facilita futuras extensões, como modelos estocásticos, integração com dados telemáticos reais e aplicações em ambientes corporativos ou SaaS.
-
-% É importante destacar que todas as extensões implementadas — heurísticas, metaheurísticas e aprendizado de máquina — foram concebidas como camadas complementares ao modelo matemático exato, não comprometendo sua validade ou conformidade legal. Em particular, o uso de aprendizado supervisionado limita-se à priorização de decisões locais e à seleção de vizinhanças promissoras, sem alterar diretamente as restrições ou a função objetivo do problema. Dessa forma, o simulador preserva rigor científico e transparência metodológica, ao mesmo tempo em que amplia significativamente seu potencial experimental.
-
-% \section{Considerações Finais}
-
-% A implementação computacional desenvolvida provou ser:
-
-% \begin{itemize}
-%     \item eficiente;
-%     \item escalável;
-%     \item robusta;
-%     \item flexível para análise de cenários.
-% \end{itemize}
-
-% O uso combinado de PLI, OR-Tools e Streamlit permite visualizar, interpretar e validar facilmente soluções complexas, oferecendo um ambiente completo para experimentação científica e aplicação prática no setor de transporte rodoviário europeu.
-
-% Dessa forma, a implementação computacional transcende a simples resolução de um modelo de Programação Linear Inteira, constituindo uma plataforma experimental completa para o estudo de escalonamento de motoristas sob restrições legais complexas. A combinação de modelagem exata, heurísticas, matheurísticas, aprendizado de máquina e visualização interativa fornece uma base sólida tanto para aplicações industriais quanto para investigações científicas avançadas, alinhando-se aos objetivos desta dissertação.
-
-% A implementação computacional descrita neste capítulo fornece a base operacional
-% necessária para a realização dos experimentos apresentados no capítulo seguinte.
-% Todos os resultados, indicadores e análises discutidos no Capítulo~7 foram gerados
-% diretamente a partir do simulador aqui descrito, assegurando consistência entre
-% modelo matemático, implementação computacional e validação empírica.
-
-\chapter{Implementação Computacional}\label{capitulo6}
+\chapter{Implementação Computacional}\label{capitulo5}
 \section{Introdução}
 
 Este capítulo descreve a implementação computacional do modelo matemático
-apresentado no Capítulo~5, bem como o desenvolvimento de um simulador
+apresentado no Capítulo~4, bem como o desenvolvimento de um simulador
 interativo concebido para apoiar a análise, validação e experimentação
 de estratégias de escalonamento de motoristas sob o Regulamento
 (CE) n.{\textordmasculine}~561/2006.
@@ -365,7 +59,7 @@ planejamento de transporte.
 Este capítulo apresenta, portanto, a arquitetura, os principais módulos
 e os fluxos computacionais do simulador desenvolvido, estabelecendo a
 base operacional necessária para os experimentos e análises apresentados
-no Capítulo~7.
+no Capítulo~6.
 
 \section{Arquitetura Geral da Solução}
 
@@ -417,7 +111,7 @@ conjunto de parâmetros selecionados.
 \subsection{Camada de Modelagem Matemática}
 
 A camada de modelagem é responsável por instanciar o modelo de
-Programação Linear Inteira descrito no Capítulo~5. Nessa etapa,
+Programação Linear Inteira descrito no Capítulo~4. Nessa etapa,
 são construídos:
 
 \begin{itemize}
@@ -738,7 +432,7 @@ Programação Linear Inteira e Programação por Restrições.
 Do ponto de vista matemático, cada linha da matriz corresponde a uma
 restrição do modelo, enquanto cada coluna está associada a uma variável de
 decisão. A construção dessa matriz reflete diretamente a formulação
-apresentada no Capítulo~5, garantindo consistência entre teoria e
+apresentada no Capítulo~4, garantindo consistência entre teoria e
 implementação.
 
 \subsection{Estrutura e Organização da Matriz}
@@ -821,919 +515,919 @@ temporal e modularidade favorece a atuação do CP-SAT, permitindo resolver
 instâncias com milhares de variáveis e restrições em tempos compatíveis com
 uso prático.
 
-Os resultados experimentais apresentados no Capítulo~7 evidenciam essa
+Os resultados experimentais apresentados no Capítulo~6 evidenciam essa
 eficiência, confirmando que a estrutura matricial adotada é adequada para o
 problema de escalonamento de motoristas sob regulamentação europeia.
 
 \section{Execução do Solver}
 
-Após a definição completa do modelo matemático e da matriz de restrições, o
-problema de escalonamento é submetido ao processo de resolução por meio do
-solver CP-SAT, integrante da biblioteca OR-Tools. Embora o modelo seja
-formulado como um problema de Programação Linear Inteira, o CP-SAT adota uma
-abordagem híbrida, combinando técnicas de programação por restrições,
-satisfatibilidade booleana e otimização inteira.
-
-Essa escolha permite explorar de forma eficiente a forte estrutura temporal e
-a esparsidade do modelo, superando limitações frequentemente observadas em
-solvers MILP tradicionais quando aplicados a problemas regulados de grande
-escala.
-
-\subsection{Inicialização e Parâmetros do Solver}
-
-O simulador inicializa o solver com um conjunto explícito de parâmetros
-computacionais, que podem ser configurados diretamente pela interface. Entre
-os principais parâmetros destacam-se:
-
-\begin{itemize}
-    \item limite máximo de tempo de execução;
-    \item tolerância de \textit{gap} relativo entre solução atual e melhor
-    limite inferior;
-    \item nível de verbosidade dos logs;
-    \item limites associados ao processo iterativo do LNS.
-\end{itemize}
-
-Esses parâmetros permitem adaptar o comportamento do solver ao tamanho do
-problema e aos objetivos do experimento, possibilitando desde execuções rápidas
-até análises mais aprofundadas.
-
-\subsection{Critérios de Parada}
-
-A execução do solver é encerrada quando pelo menos um dos seguintes critérios
-é atendido:
-
-\begin{itemize}
-    \item obtenção de solução ótima comprovada;
-    \item atingimento do limite máximo de tempo;
-    \item convergência dentro da tolerância de \textit{gap} especificada;
-    \item interrupção controlada em modos heurísticos ou matheurísticos.
-\end{itemize}
-
-Esses critérios garantem controle explícito sobre o esforço computacional,
-evitando execuções excessivamente longas e permitindo comparações justas entre
-diferentes estratégias de resolução.
-
-\subsection{Estados de Solução}
-
-Ao término da execução, o solver retorna um estado que indica a situação da
-resolução, podendo assumir, entre outros, os seguintes valores:
-
-\begin{itemize}
-    \item \texttt{OPTIMAL}: solução ótima encontrada;
-    \item \texttt{FEASIBLE}: solução viável encontrada dentro dos limites;
-    \item \texttt{INFEASIBLE}: nenhuma solução viável existe;
-    \item \texttt{UNBOUNDED}: problema mal formulado;
-    \item \texttt{NOT\_SOLVED}: execução interrompida antes da obtenção de
-    solução.
-\end{itemize}
-
-Nos modos heurístico e LNS, soluções viáveis são aceitas mesmo na ausência de
-prova de otimalidade, desde que respeitem todas as restrições ativadas.
-
-\subsection{Execução nos Diferentes Modos de Resolução}
-
-No modo exato, o modelo completo é submetido diretamente ao CP-SAT, que realiza
-a busca por soluções ótimas respeitando integralmente todas as restrições
-legais e operacionais.
-
-No modo heurístico, o solver pode ser utilizado de forma limitada ou não ser
-acionado, dependendo da configuração, sendo o foco a obtenção rápida de uma
-solução viável inicial.
-
-No modo LNS, o solver é invocado repetidamente para resolver subproblemas
-restritos, nos quais apenas subconjuntos de variáveis são liberados a cada
-iteração. Esse processo permite melhorar progressivamente a solução, mantendo
-controle explícito sobre o esforço computacional.
-
-\subsection{Extração da Solução}
-
-Uma vez concluída a execução, o simulador extrai de forma sistemática os
-valores das variáveis de decisão, construindo:
-
-\begin{itemize}
-    \item a matriz de alocação motorista--período;
-    \item o número total de motoristas ativos;
-    \item a carga de trabalho por motorista;
-    \item métricas agregadas de cobertura e eficiência.
-\end{itemize}
-
-Essa extração é realizada de maneira uniforme para todos os modos de
-resolução, garantindo comparabilidade direta entre soluções exatas,
-heurísticas e matheurísticas.
-
-\subsection{Relação com os Resultados Experimentais}
-
-Os dados retornados pelo solver alimentam diretamente os indicadores e
-visualizações apresentados no Capítulo~7. Tempos de execução, estados de
-solução, valores da função objetivo e métricas derivadas são registrados de
-forma automática, assegurando consistência entre a implementação
-computacional e a análise empírica.
-
-Dessa forma, a execução do solver constitui o elo fundamental entre o modelo
-matemático e os resultados experimentais discutidos posteriormente.
-
-\section{Fluxo Computacional do Simulador}
-
-O simulador desenvolvido segue um fluxo computacional bem definido e
-determinístico, estruturado em etapas sequenciais que garantem
-reprodutibilidade, consistência experimental e comparabilidade entre os
-diferentes modos de resolução disponíveis.
-
-Independentemente da estratégia algorítmica selecionada (exata, heurística ou
-LNS), o fluxo geral de execução mantém a mesma estrutura lógica, diferenciando-se
-apenas nos mecanismos internos de resolução.
-
-\subsection{Etapas do Fluxo de Execução}
-
-O fluxo computacional do simulador pode ser descrito pelas seguintes etapas
-principais:
-
-\begin{enumerate}
-    \item \textbf{Leitura e validação dos parâmetros de entrada}: o sistema
-    coleta, por meio da interface, os parâmetros do problema, incluindo
-    horizonte temporal, demanda, restrições legais ativadas, modo de resolução
-    e função objetivo.
-    
-    \item \textbf{Construção do modelo matemático}: com base nos parâmetros
-    definidos, o simulador instancia as variáveis de decisão, a função objetivo
-    selecionada e o conjunto de restrições ativas, conforme o modelo formal
-    descrito no Capítulo~5.
-    
-    \item \textbf{Montagem da matriz de restrições}: o modelo é convertido para
-    sua representação matricial interna, preservando a estrutura esparsa e o
-    encadeamento temporal característicos do problema.
-    
-    \item \textbf{Execução do método de resolução}: de acordo com o modo
-    selecionado, o sistema executa:
-    \begin{itemize}
-        \item a resolução exata via CP-SAT;
-        \item a heurística construtiva para geração de solução inicial;
-        \item o processo iterativo de Large Neighborhood Search (LNS).
-    \end{itemize}
-    
-    \item \textbf{Extração da solução}: os valores das variáveis são extraídos
-    de forma padronizada, permitindo a construção da matriz de alocação,
-    métricas agregadas e indicadores operacionais.
-    
-    \item \textbf{Pós-processamento e análise}: o sistema calcula indicadores
-    de desempenho, gera visualizações gráficas e registra métricas
-    computacionais, como tempo de execução e estado da solução.
-\end{enumerate}
-
-\subsection{Determinismo e Reprodutibilidade}
-
-Para um conjunto fixo de parâmetros de entrada, o fluxo computacional do
-simulador é determinístico, assegurando que execuções repetidas produzam os
-mesmos resultados. Essa propriedade é essencial para a validação científica
-dos experimentos e para a comparação rigorosa entre diferentes estratégias de
-resolução.
-
-Mesmo nos modos heurístico e LNS, nos quais decisões locais e processos
-iterativos estão presentes, o uso de critérios controlados e a ausência de
-componentes estocásticos garantem consistência entre execuções equivalentes.
-
-\subsection{Fluxo Específico por Modo de Resolução}
-
-No modo exato, o fluxo computacional segue diretamente da construção do modelo
-para a execução do solver CP-SAT, que explora o espaço de soluções até atingir
-os critérios de parada definidos.
-
-No modo heurístico, a geração da solução ocorre por meio de regras construtivas
-gulosas, com foco na obtenção rápida de uma solução viável, respeitando as
-restrições legais ativadas.
-
-No modo LNS, o fluxo incorpora ciclos iterativos adicionais, nos quais
-subconjuntos de variáveis são liberados a cada iteração, mantendo o restante da
-solução fixo. A cada ciclo, um subproblema restrito é resolvido pelo solver
-inteiro, permitindo melhorias progressivas da solução.
-
-Apesar dessas diferenças internas, o fluxo de entrada e saída permanece
-uniforme, o que garante comparabilidade direta entre os resultados obtidos nos
-três modos.
-
-\subsection{Integração com os Resultados Experimentais}
-
-O fluxo computacional descrito neste capítulo fornece a base operacional para
-todos os experimentos apresentados no Capítulo~7. A uniformidade na coleta de
-métricas, na extração das soluções e no cálculo dos indicadores assegura que as
-diferenças observadas nos resultados sejam atribuídas exclusivamente às
-estratégias de resolução adotadas, e não a variações no processo de execução.
-
-Dessa forma, o fluxo computacional do simulador estabelece o elo entre a
-formulação matemática, a implementação computacional e a validação empírica
-dos métodos propostos.
-
-\section{Modos de Resolução e Estratégias de Otimização}
-
-No simulador desenvolvido, é feita uma distinção clara entre os conceitos de
-\textit{modo de resolução} e \textit{estratégia de otimização}. O modo de
-resolução refere-se ao método algorítmico empregado para explorar o espaço de
-soluções, enquanto a estratégia de otimização define o critério adotado pela
-função objetivo do modelo matemático.
-
-Essa separação conceitual permite combinar livremente diferentes abordagens de
-resolução com diferentes objetivos operacionais, ampliando o escopo analítico
-da plataforma experimental.
-
-\subsection{Modo de Resolução Exato}
-
-No modo de resolução exato, o problema completo de escalonamento é formulado
-como um modelo de Programação Linear Inteira e resolvido diretamente pelo
-solver CP-SAT. Nesse modo, todas as variáveis, restrições legais ativadas e a
-função objetivo selecionada são consideradas simultaneamente, permitindo a
-busca por soluções ótimas comprovadas, sempre que o tempo computacional
-disponível o permita.
-
-Esse modo fornece uma referência de qualidade para os demais métodos,
-servindo como base para validação das soluções heurísticas e
-matheurísticas.
-
-\subsection{Modo Heurístico}
-
-O modo heurístico utiliza uma estratégia construtiva gulosa para gerar
-rapidamente uma solução viável. A heurística opera de forma incremental,
-priorizando o atendimento da demanda por período e respeitando os principais
-limites operacionais e legais ativados.
-
-Embora não haja garantia de otimalidade nesse modo, ele apresenta baixo custo
-computacional e é particularmente adequado para cenários de grande escala ou
-situações em que respostas rápidas são necessárias. Além disso, a solução
-gerada pode ser utilizada como ponto de partida para métodos mais avançados,
-como o LNS.
-
-\subsection{Modo Matheurístico (LNS)}
-
-O modo LNS (\textit{Large Neighborhood Search}) combina elementos heurísticos
-com reotimizações locais via solver inteiro. A partir de uma solução inicial,
-subconjuntos de variáveis são liberados a cada iteração, mantendo o restante da
-solução fixo. Em seguida, um subproblema restrito é resolvido pelo solver,
-permitindo melhorias progressivas da solução.
-
-Essa abordagem explora de forma eficiente a estrutura temporal do problema,
-equilibrando qualidade da solução e esforço computacional. O LNS permite
-controlar explicitamente o tamanho das vizinhanças e o número de iterações,
-tornando-o adequado para análises experimentais comparativas.
-
-\subsection{Estratégias de Otimização}
-
-De forma independente do modo de resolução, o simulador permite selecionar a
-estratégia de otimização adotada pelo modelo matemático. As principais
-estratégias implementadas são:
-
-\begin{itemize}
-    \item \textbf{Maximização da resposta à demanda}: prioriza o atendimento
-    máximo da demanda operacional ao longo do horizonte de planejamento,
-    admitindo, quando necessário, demanda não atendida de forma controlada;
-    \item \textbf{Minimização do número de motoristas ativos}: busca reduzir o
-    uso da força de trabalho, assumindo atendimento integral da demanda.
-\end{itemize}
-
-Essas estratégias refletem objetivos operacionais distintos e permitem avaliar
-compromissos entre cobertura e eficiência de recursos.
-
-\subsection{Combinação entre Modos e Estratégias}
-
-A arquitetura do simulador permite combinar qualquer modo de resolução com
-qualquer estratégia de otimização. Por exemplo, a minimização do número de
-motoristas pode ser realizada tanto por meio de uma resolução exata quanto por
-heurísticas ou LNS.
-
-Essa flexibilidade possibilita análises comparativas sistemáticas, nas quais
-os efeitos do método de resolução e da função objetivo podem ser avaliados de
-forma isolada ou combinada.
-
-\subsection{Relação com os Experimentos Apresentados}
-
-Nos experimentos apresentados no Capítulo~7, os três modos de resolução
-(exato, heurístico e LNS) são avaliados sob estratégias de otimização
-equivalentes, garantindo comparabilidade direta dos resultados. As diferenças
-observadas em termos de qualidade da solução, tempo computacional e estabilidade
-são, portanto, atribuídas exclusivamente às características dos métodos de
-resolução adotados.
-
-Essa abordagem reforça a validade experimental do estudo e permite uma
-interpretação clara dos compromissos envolvidos em cada estratégia.
-
-\section{Geração de Indicadores e Gráficos}
-
-A geração de indicadores e visualizações gráficas constitui uma etapa essencial
-do simulador, pois permite avaliar de forma objetiva a qualidade das soluções
-obtidas e interpretar o comportamento dos diferentes métodos de resolução.
-Todos os indicadores apresentados são derivados diretamente das variáveis de
-decisão do modelo matemático, assegurando consistência entre formulação,
-implementação e análise empírica.
-
-Os indicadores foram projetados para responder a questões operacionais
-específicas, como cobertura da demanda, utilização da força de trabalho,
-estabilidade temporal e balanceamento da carga entre motoristas.
-
-\subsection{Indicadores de Cobertura da Demanda}
-
-O indicador de cobertura da demanda mede, para cada período discretizado, a
-diferença entre a demanda operacional e o número de motoristas efetivamente
-alocados. Esse indicador permite identificar períodos de subcobertura,
-cobertura exata ou sobrealocação.
-
-A partir dessa informação, são derivados indicadores agregados, como a taxa
-global de cobertura e a quantidade total de demanda não atendida, utilizados
-diretamente na análise comparativa entre métodos.
-
-\subsection{Indicadores de Utilização e Sobrecarga}
-
-Para avaliar o uso da força de trabalho, o simulador calcula métricas de
-utilização por motorista, incluindo:
-
-\begin{itemize}
-    \item carga total de trabalho por motorista;
-    \item média de carga entre motoristas ativos;
-    \item identificação de sobrecargas individuais.
-\end{itemize}
-
-Esses indicadores permitem verificar se a solução concentra excessivamente a
-carga em poucos motoristas ou se promove uma distribuição mais equilibrada,
-aspecto particularmente relevante em cenários regulados.
-
-\subsection{Indicadores Temporais e Estabilidade}
-
-Indicadores temporais são utilizados para analisar a estabilidade da solução
-ao longo do horizonte de planejamento. Entre eles destacam-se:
-
-\begin{itemize}
-    \item desvio padrão da cobertura por período;
-    \item variação do número de motoristas ativos ao longo do tempo;
-    \item regularidade dos padrões de alocação.
-\end{itemize}
-
-Essas métricas permitem avaliar não apenas a qualidade pontual da solução, mas
-também seu comportamento dinâmico, aspecto importante para aplicações
-operacionais reais.
-
-\subsection{Indicadores Computacionais}
-
-Além dos indicadores operacionais, o simulador registra métricas
-computacionais associadas ao processo de resolução, tais como:
-
-\begin{itemize}
-    \item tempo total de execução;
-    \item número de iterações (no caso do LNS);
-    \item estado final da solução (ótima, viável, interrompida);
-    \item \textit{gap} relativo entre solução e melhor limite conhecido.
-\end{itemize}
-
-Esses indicadores permitem comparar o esforço computacional exigido por cada
-modo de resolução, complementando a análise da qualidade das soluções obtidas.
-
-\subsection{Visualizações Gráficas}
-
-Os indicadores calculados são apresentados por meio de visualizações gráficas
-interativas, incluindo gráficos de linhas, barras e distribuições. Essas
-visualizações permitem explorar padrões temporais, identificar picos de
-demanda e analisar diferenças entre métodos de resolução de forma intuitiva.
-
-Embora o simulador gere uma ampla variedade de gráficos, nesta dissertação são
-apresentados apenas aqueles considerados mais representativos para a análise
-comparativa entre os métodos exato, heurístico e LNS, evitando a proliferação
-excessiva de artefatos visuais.
-
-\subsection{Relação com os Resultados Experimentais}
-
-Todos os indicadores e gráficos descritos nesta seção são utilizados
-diretamente nos experimentos apresentados no Capítulo~7. A padronização na
-geração e interpretação dessas métricas assegura que as conclusões extraídas
-sejam fundamentadas em evidências quantitativas consistentes e comparáveis
-entre os diferentes métodos avaliados.
-
-\section{Módulo de Operações Elementares}
-
-Além da resolução do problema de escalonamento, o simulador incorpora um módulo
-específico para a aplicação de operações elementares sobre a matriz de
-restrições. Esse módulo foi concebido com objetivos predominantemente
-educacionais, analíticos e diagnósticos, não interferindo no processo de
-otimização utilizado para a geração dos resultados experimentais principais.
-
-As operações elementares implementadas incluem transformações clássicas de
-álgebra linear, tais como troca de linhas, multiplicação de linhas por
-constantes e combinações lineares controladas entre restrições.
-
-\subsection{Objetivos do Módulo}
-
-A inclusão do módulo de operações elementares atende a três objetivos
-principais:
-
-\begin{itemize}
-    \item apoiar atividades educacionais relacionadas à modelagem matemática
-    e à Programação Linear Inteira;
-    \item permitir a análise estrutural da matriz de restrições, em especial
-    no que diz respeito à densidade, organização e encadeamento temporal;
-    \item auxiliar no diagnóstico de problemas numéricos ou estruturais durante
-    a fase de desenvolvimento do modelo.
-\end{itemize}
-
-Esse módulo possibilita explorar a relação entre a formulação algébrica do
-problema e seu impacto sobre o desempenho computacional do solver, sem alterar
-o conjunto de soluções viáveis.
-
-\subsection{Preservação da Equivalência Matemática}
-
-Todas as operações disponibilizadas no simulador são cuidadosamente
-implementadas de modo a preservar a equivalência matemática do sistema de
-restrições. Em particular, as transformações aplicadas não modificam o espaço
-de soluções viáveis nem o valor ótimo do problema, atuando apenas sobre sua
-representação algébrica.
-
-Essa propriedade é fundamental para garantir que o uso do módulo não comprometa
-a validade dos experimentos realizados, sendo sua aplicação restrita a
-contextos exploratórios e analíticos.
-
-\subsection{Análise da Densidade da Matriz}
-
-Um dos usos práticos do módulo de operações elementares é a análise da densidade
-da matriz de restrições antes e depois de transformações específicas. O
-simulador calcula métricas de densidade estrutural, permitindo avaliar como
-diferentes formas de organização das restrições influenciam o desempenho do
-solver.
-
-Essa análise é particularmente relevante em problemas de grande escala, nos
-quais pequenas variações na estrutura da matriz podem impactar significativamente
-o tempo de resolução.
-
-\subsection{Relação com os Resultados Apresentados}
-
-Embora o módulo de operações elementares não seja utilizado diretamente na
-geração das soluções analisadas no Capítulo~7, ele desempenhou papel importante
-durante o desenvolvimento e validação do modelo, auxiliando na compreensão da
-estrutura do problema e na identificação de formulações mais eficientes.
-
-Dessa forma, o módulo contribui para a robustez metodológica do trabalho,
-reforçando a transparência e o rigor científico adotados na implementação
-computacional.
-
-\section{Extensões Heurísticas e Metaheurísticas}
-
-Embora o núcleo do simulador seja fundamentado em um modelo de Programação Linear
-Inteira resolvido de forma exata pelo solver CP-SAT, a plataforma foi estendida
-para incorporar métodos heurísticos e metaheurísticos. Essas extensões têm como
-objetivo ampliar o escopo experimental, reduzir tempos computacionais em cenários
-de maior escala e permitir a análise comparativa entre diferentes estratégias de
-resolução sob um mesmo conjunto de restrições legais.
-
-As abordagens heurísticas e metaheurísticas implementadas não substituem o modelo
-matemático exato, mas atuam como mecanismos complementares, sempre mantendo a
-validade jurídica e a consistência estrutural do problema.
-
-\subsection{Heurística Construtiva Gulosa}
-
-A primeira extensão implementada consiste em uma heurística construtiva gulosa
-(\textit{greedy initial allocation}), responsável por gerar rapidamente soluções
-viáveis a partir da demanda operacional por período.
-
-Essa heurística opera de forma incremental, priorizando períodos com maior
-demanda e alocando motoristas de acordo com regras locais de viabilidade,
-respeitando limites operacionais básicos e restrições legais essenciais. O
-objetivo principal dessa abordagem é produzir uma solução inicial consistente,
-com baixo custo computacional, que possa ser utilizada de forma independente ou
-como ponto de partida para métodos de melhoria.
-
-A heurística gulosa apresenta desempenho computacional significativamente superior
-ao método exato em cenários de grande escala, porém não garante otimalidade global,
-sendo particularmente adequada para análises exploratórias e aplicações em tempo
-quase real.
-
-\subsection{Large Neighborhood Search (LNS)}
-
-Para superar as limitações inerentes às heurísticas construtivas, o simulador
-incorpora uma abordagem de \textit{Large Neighborhood Search} (LNS), caracterizada
-pela destruição e reconstrução parcial da solução.
-
-No método LNS, a partir de uma solução inicial viável (gerada pela heurística
-gulosa ou pelo solver exato), subconjuntos de períodos são iterativamente
-liberados, enquanto o restante da solução permanece fixo. Em cada iteração, um
-problema restrito é reconstruído e resolvido novamente pelo solver inteiro,
-permitindo melhorias progressivas da solução.
-
-Essa estratégia combina a robustez da otimização exata com a flexibilidade
-exploratória típica das metaheurísticas, oferecendo um equilíbrio eficaz entre
-qualidade da solução e esforço computacional.
-
-\subsection{Controle de Relaxação e Iterações}
-
-O simulador permite controlar explicitamente parâmetros associados ao processo
-LNS, tais como o tamanho da vizinhança liberada, o número máximo de iterações e o
-nível de relaxação aplicado em cada etapa.
-
-Esse controle possibilita estudar o comportamento do algoritmo sob diferentes
-configurações, analisando o impacto de decisões como a intensidade da destruição,
-a frequência de reotimizações e os critérios de parada adotados.
-
-\subsection{Garantia de Validade das Soluções}
-
-Um aspecto central da implementação é que todas as soluções finais geradas pelos
-métodos heurísticos e metaheurísticos são sempre validadas pelo modelo de
-Programação Linear Inteira e pelo solver CP-SAT. Mesmo quando uma solução é
-construída heurística ou parcialmente, sua aceitação final depende do atendimento
-integral das restrições legais e operacionais.
-
-Essa estratégia garante que nenhuma solução inválida do ponto de vista jurídico
-ou matemático seja utilizada nos experimentos apresentados nesta dissertação.
-
-\subsection{Relação com os Experimentos Computacionais}
-
-As extensões heurísticas e metaheurísticas desempenham papel fundamental nos
-experimentos discutidos no Capítulo~7. Em particular, os resultados permitem
-comparar:
-
-\begin{itemize}
-    \item qualidade da solução obtida;
-    \item tempo computacional;
-    \item estabilidade da cobertura da demanda;
-    \item eficiência na utilização da força de trabalho.
-\end{itemize}
-
-Essas comparações evidenciam os compromissos entre métodos exatos, heurísticos e
-metaheurísticos, reforçando a importância de abordagens híbridas em problemas de
-escalonamento sob restrições legais complexas.
-
-\section{Integração de Aprendizado de Máquina}
-
-Além das abordagens exatas, heurísticas e metaheurísticas, o simulador incorpora
-um módulo experimental de aprendizado de máquina supervisionado, cujo objetivo é
-auxiliar decisões locais e estratégicas durante o processo de otimização. Essa
-integração foi concebida como uma camada complementar, não substitutiva, mantendo
-plena compatibilidade com o modelo matemático exato e com as restrições legais do
-Regulamento (CE) n.\textordmasculine~561/2006.
-
-O aprendizado de máquina não altera diretamente a formulação do problema, a
-função objetivo nem o conjunto de restrições. Sua função é orientar escolhas
-heurísticas, reduzindo o espaço de busca e priorizando decisões potencialmente
-mais promissoras, sem comprometer a validade jurídica ou matemática das soluções.
-
-\subsection{Motivação para o Uso de Aprendizado Supervisionado}
-
-Problemas de escalonamento sob restrições temporais rígidas apresentam elevada
-complexidade combinatória, especialmente quando resolvidos repetidamente em
-cenários de simulação. Embora solvers exatos sejam capazes de produzir soluções
-ótimas, o custo computacional pode crescer rapidamente com o tamanho do
-horizonte e da força de trabalho.
-
-Nesse contexto, o aprendizado supervisionado surge como uma ferramenta para
-capturar padrões recorrentes observados em soluções ótimas ou quase ótimas,
-auxiliando o processo decisório em etapas heurísticas e metaheurísticas, sem
-abrir mão do rigor do modelo exato.
-
-\subsection{Modelos Supervisionados Implementados}
-
-Foram definidos dois modelos supervisionados distintos, com papéis claramente
-separados no simulador.
-
-O primeiro modelo, denominado $f_1$, atua no nível local, avaliando decisões de
-alocação motorista--período durante a heurística construtiva. Esse modelo recebe
-como entrada características associadas ao período, à demanda, ao estado do
-motorista e ao contexto operacional, retornando um escore que representa a
-atratividade relativa daquela alocação.
-
-O segundo modelo, denominado $f_2$, opera em nível agregado no contexto do
-algoritmo LNS. Seu objetivo é avaliar subconjuntos de períodos candidatos à
-liberação, estimando o potencial de melhoria da solução caso aquela vizinhança
-seja explorada. Dessa forma, o modelo auxilia na priorização de vizinhanças mais
-promissoras, reduzindo o número de iterações improdutivas.
-
-\subsection{Arquitetura Resiliente e Comportamento Padrão}
-
-A integração com aprendizado de máquina foi projetada de forma resiliente. Caso
-os modelos não estejam disponíveis, não estejam treinados ou o ambiente de
-execução não suporte o módulo de aprendizado, o simulador recorre
-automaticamente a regras heurísticas clássicas e determinísticas.
-
-Esse mecanismo garante que o comportamento padrão do simulador seja sempre
-reproduzível e independente do aprendizado de máquina, evitando qualquer
-dependência estrutural ou viés não controlado nos experimentos.
-
-\subsection{Geração de Dados e Treinamento dos Modelos}
-
-Para viabilizar o aprendizado supervisionado, foi desenvolvido um pipeline
-automático de geração de dados. A partir de múltiplas instâncias sintéticas de
-demanda, o simulador executa soluções heurísticas e soluções exatas via solver
-inteiro, registrando decisões intermediárias, estados do sistema e métricas de
-desempenho.
-
-Os dados coletados são organizados em dois conjuntos distintos: um dataset
-voltado ao treinamento do modelo $f_1$, com informações locais de decisão, e um
-dataset voltado ao modelo $f_2$, composto por características agregadas das
-vizinhanças exploradas no LNS.
-
-O treinamento dos modelos é realizado externamente ao fluxo principal de
-otimização, utilizando algoritmos de \textit{gradient boosting}. Os modelos
-treinados são posteriormente carregados dinamicamente pelo simulador, não
-interferindo na formulação matemática nem no processo de validação das soluções.
-
-\subsection{Papel do Aprendizado de Máquina nos Experimentos}
-
-Nos experimentos apresentados nesta dissertação, o uso de aprendizado de máquina
-é tratado como um recurso opcional e experimental. Os resultados principais
-utilizam o comportamento determinístico do simulador, permitindo comparações
-justas entre métodos exatos, heurísticos e metaheurísticos.
-
-Quando ativado, o aprendizado supervisionado atua como um mecanismo de
-aceleração e refinamento, potencialmente reduzindo tempos de convergência e
-melhorando a estabilidade das soluções, sem alterar os critérios formais de
-avaliação adotados.
-
-\subsection{Garantia de Rigor Metodológico}
-
-É importante destacar que todas as soluções finais, independentemente do uso ou
-não de aprendizado de máquina, são sempre validadas pelo modelo de Programação
-Linear Inteira e pelo solver CP-SAT. O aprendizado supervisionado não possui
-autonomia para violar restrições, modificar objetivos ou aceitar soluções
-inválidas.
-
-Dessa forma, a integração de aprendizado de máquina preserva rigor científico,
-transparência metodológica e conformidade legal, atuando exclusivamente como uma
-camada auxiliar de apoio à decisão.
-
-\section{Geração de Datasets e Treinamento dos Modelos}
-
-A integração de aprendizado de máquina no simulador exigiu o desenvolvimento de
-um pipeline específico para geração de dados supervisionados, totalmente
-compatível com o domínio do problema e com o modelo matemático subjacente. Esse
-pipeline foi concebido para garantir consistência entre os dados utilizados no
-treinamento e as decisões efetivamente tomadas pelo sistema de escalonamento.
-
-\subsection{Origem dos Dados Supervisionados}
-
-Os datasets utilizados no treinamento dos modelos supervisionados não são
-provenientes de fontes externas nem de bases genéricas. Eles são gerados
-diretamente pelo próprio simulador, a partir da execução controlada de múltiplos
-cenários de escalonamento.
-
-Cada instância de dados é construída a partir de:
-\begin{itemize}
-    \item curvas sintéticas de demanda por período;
-    \item diferentes configurações de restrições legais ativas;
-    \item soluções heurísticas iniciais;
-    \item soluções exatas obtidas via solver inteiro;
-    \item histórico de decisões intermediárias durante o processo de otimização.
-\end{itemize}
-
-Essa estratégia garante que os dados de treinamento reflitam fielmente a lógica
-do problema, suas restrições legais e os critérios operacionais adotados no
-modelo matemático.
-
-\subsection{Dataset para o Modelo Local de Alocação ($f_1$)}
-
-O primeiro conjunto de dados foi projetado para treinar o modelo local de decisão
-$f_1$, utilizado durante a heurística construtiva. Cada observação do dataset
-corresponde a uma decisão candidata de alocação motorista--período.
-
-As variáveis explicativas incluem, entre outras:
-\begin{itemize}
-    \item demanda do período;
-    \item nível de cobertura acumulada;
-    \item estado do motorista (ativo, descanso, condução acumulada);
-    \item posição temporal no horizonte;
-    \item indicadores locais de carga e utilização.
-\end{itemize}
-
-O rótulo associado a cada observação indica a qualidade daquela decisão, medida
-com base na solução final obtida (ótima ou quase ótima), permitindo ao modelo
-aprender padrões de alocação mais eficientes.
-
-\subsection{Dataset para Avaliação de Vizinhanças no LNS ($f_2$)}
-
-O segundo dataset é voltado ao treinamento do modelo $f_2$, responsável por
-avaliar vizinhanças candidatas no algoritmo LNS. Nesse caso, cada observação
-representa um subconjunto de períodos liberados para reotimização em uma
-iteração do LNS.
-
-As características utilizadas incluem:
-\begin{itemize}
-    \item tamanho da vizinhança;
-    \item posição temporal dos períodos liberados;
-    \item nível de violação ou folga das restrições;
-    \item variação da função objetivo nas iterações anteriores;
-    \item indicadores agregados de estabilidade e carga.
-\end{itemize}
-
-O rótulo indica o ganho efetivo obtido após a reotimização daquela vizinhança,
-permitindo ao modelo aprender quais padrões tendem a gerar melhorias mais
-significativas.
-
-\subsection{Pipeline de Geração Automática}
-
-A geração dos datasets é realizada de forma automática e offline, por meio de
-execuções repetidas do simulador em diferentes cenários. Esse processo não
-interfere no fluxo principal de otimização e não ocorre durante a execução dos
-experimentos analisados nesta dissertação.
-
-Cada execução gera registros estruturados que são armazenados em formato tabular,
-permitindo posterior auditoria, reprodutibilidade e controle de versões dos
-datasets utilizados.
-
-\subsection{Treinamento dos Modelos Supervisionados}
-
-O treinamento dos modelos $f_1$ e $f_2$ é realizado externamente ao simulador,
-utilizando algoritmos de \textit{gradient boosting}, devido à sua capacidade de
-modelar relações não lineares e lidar eficientemente com variáveis heterogêneas.
-
-Os modelos treinados são posteriormente exportados e carregados dinamicamente
-pelo simulador, sem necessidade de recompilação ou modificação do núcleo de
-otimização.
-
-\subsection{Separação entre Treinamento e Avaliação}
-
-É importante destacar que os dados utilizados para treinamento dos modelos não
-são reutilizados nos experimentos de avaliação apresentados nesta dissertação.
-Essa separação evita vazamento de informação e garante que os resultados
-observados não sejam artificialmente favorecidos pelo aprendizado supervisionado.
-
-Nos experimentos principais, o simulador é avaliado tanto com quanto sem o uso
-dos modelos treinados, permitindo comparar o impacto real do aprendizado de
-máquina sobre desempenho computacional e qualidade das soluções.
-
-\subsection{Considerações Metodológicas}
-
-A estratégia adotada garante que o aprendizado supervisionado:
-\begin{itemize}
-    \item não introduz viés externo ao problema;
-    \item não altera a formulação matemática;
-    \item não compromete a validade legal das soluções;
-    \item atua exclusivamente como mecanismo auxiliar.
-\end{itemize}
-
-Dessa forma, o uso de aprendizado de máquina reforça o caráter experimental e
-exploratório da plataforma, sem comprometer o rigor científico exigido para a
-análise dos resultados apresentados.
-
-\section{Visualização Avançada e Análise Iterativa}
-
-A visualização dos resultados desempenha papel central no simulador desenvolvido,
-não apenas como mecanismo de apresentação, mas como ferramenta analítica para
-interpretação do comportamento dos algoritmos, diagnóstico de soluções e validação
-das hipóteses experimentais. Para esse fim, foram implementados módulos de
-visualização capazes de representar tanto indicadores agregados quanto informações
-temporais detalhadas.
-
-\subsection{Visualizações Temporais da Solução}
-
-Um conjunto fundamental de gráficos apresenta a evolução temporal da demanda, da
-capacidade alocada e da cobertura efetiva ao longo do horizonte de planejamento.
-Essas visualizações permitem verificar, período a período, se a solução obtida
-atende integralmente à demanda operacional ou se existem déficits pontuais.
-
-Adicionalmente, são gerados gráficos de margem de segurança, que evidenciam
-situações de sobrecarga ou subutilização, permitindo avaliar o grau de robustez da
-solução frente a variações operacionais. Esses gráficos são particularmente úteis
-para identificar períodos críticos e padrões recorrentes de instabilidade.
-
-\subsection{Indicadores de Estabilidade e Eficiência}
-
-Para além da cobertura da demanda, o simulador calcula indicadores de estabilidade
-e eficiência associados à alocação de motoristas. Entre eles, destacam-se:
-\begin{itemize}
-    \item o desvio padrão da cobertura ao longo do tempo;
-    \item a distribuição da carga de trabalho por motorista;
-    \item o tempo médio de presença ativa;
-    \item a relação entre esforço alocado e demanda atendida.
-\end{itemize}
-
-Esses indicadores são apresentados tanto de forma numérica quanto gráfica,
-permitindo avaliar se a solução, embora viável, apresenta comportamento regular
-ou excessivamente concentrado em determinados motoristas ou períodos.
-
-\subsection{Análise Iterativa no Modo LNS}
-
-No modo de resolução LNS, visualizações adicionais são geradas para acompanhar o
-processo iterativo de melhoria da solução. Em particular, são apresentados gráficos
-que mostram:
-\begin{itemize}
-    \item a evolução do valor da função objetivo ao longo das iterações;
-    \item o impacto das liberações parciais da solução;
-    \item o comportamento do nível de relaxamento aplicado;
-    \item a frequência e magnitude das melhorias obtidas.
-\end{itemize}
-
-Essas visualizações permitem analisar empiricamente a convergência do método,
-identificando se o algoritmo se estabiliza prematuramente ou continua a produzir
-ganhos marginais ao longo das iterações.
-
-\subsection{Comparação entre Modos de Resolução}
-
-O simulador permite a visualização comparativa direta entre os modos exato,
-heurístico e LNS. Gráficos consolidados exibem diferenças em termos de:
-\begin{itemize}
-    \item tempo computacional;
-    \item qualidade da solução;
-    \item número de motoristas ativos;
-    \item estabilidade temporal da alocação.
-\end{itemize}
-
-Essa comparação visual facilita a identificação de compromissos entre esforço
-computacional e qualidade da solução, reforçando o caráter experimental da
-plataforma.
-
-\subsection{Visualizações para Diagnóstico e Auditoria}
-
-Além das visualizações orientadas a desempenho, o simulador oferece gráficos
-voltados ao diagnóstico e à auditoria das soluções. Mapas de calor da matriz de
-alocação permitem identificar padrões de ativação, blocos contínuos de trabalho e
-eventuais irregularidades temporais.
-
-Essas representações visuais auxiliam na verificação manual da conformidade legal,
-facilitando a identificação de violações sutis que poderiam não ser evidentes em
-indicadores agregados.
-
-\subsection{Integração com o Processo Experimental}
-
-As visualizações avançadas não são utilizadas apenas como saída final, mas como
-parte integrante do processo experimental. Elas orientam ajustes de parâmetros,
-avaliação de estratégias heurísticas e calibração de métodos LNS e de aprendizado
-de máquina.
-
-Dessa forma, o módulo de visualização contribui diretamente para o refinamento do
-simulador e para a interpretação dos resultados apresentados nos capítulos
-experimentais seguintes, fortalecendo a conexão entre implementação
-computacional e análise empírica.
-
-\section{Posicionamento do Simulador como Plataforma Experimental}
-
-A implementação computacional desenvolvida ao longo deste trabalho ultrapassa o
-papel tradicional de um resolvedor de problemas de Programação Linear Inteira,
-configurando-se como uma plataforma experimental híbrida para o estudo do
-escalonamento de motoristas sob regulamentação europeia.
-
-Diferentemente de abordagens focadas exclusivamente na obtenção de uma solução
-ótima, o simulador foi concebido para permitir a investigação sistemática de
-diferentes estratégias de resolução, objetivos operacionais e configurações de
-restrições, mantendo sempre como núcleo normativo o modelo matemático exato
-apresentado nos capítulos anteriores.
-
-\subsection{Unificação de Estratégias de Resolução}
-
-A plataforma integra, em um mesmo ambiente computacional, métodos exatos,
-heurísticos e matheurísticos, possibilitando comparações diretas sob condições
-controladas. A Programação Linear Inteira resolvida via CP-SAT atua como referência
-de validade e qualidade, enquanto a heurística construtiva e o método LNS oferecem
-alternativas computacionalmente mais eficientes para cenários de maior escala ou
-com restrições temporais mais severas.
-
-Essa unificação permite analisar, de forma rigorosa, os compromissos entre
-qualidade da solução, esforço computacional e estabilidade operacional, aspecto
-essencial em aplicações reais de transporte rodoviário.
-
-\subsection{Separação entre Modelo, Resolução e Análise}
-
-Um dos princípios centrais da arquitetura do simulador é a separação clara entre:
-\begin{itemize}
-    \item o modelo matemático normativo;
-    \item os métodos de resolução empregados;
-    \item os mecanismos de análise e visualização.
-\end{itemize}
-
-Essa separação garante que modificações em estratégias heurísticas, parâmetros do
-solver ou módulos de aprendizado de máquina não comprometam a validade do modelo
-legal subjacente. Ao mesmo tempo, facilita a extensão da plataforma para novos
-cenários, restrições ou objetivos sem necessidade de reformulação estrutural.
-
-\subsection{Reprodutibilidade e Controle Experimental}
-
-O simulador foi projetado para assegurar reprodutibilidade dos experimentos.
-Para um conjunto fixo de parâmetros de entrada — horizonte temporal, demanda,
-restrições legais e modo de resolução — o comportamento do sistema é determinístico,
-permitindo a replicação integral dos resultados apresentados.
-
-Além disso, o controle explícito sobre a ativação de restrições, critérios de
-otimização e estratégias de resolução possibilita a realização de estudos de
-sensibilidade e análises comparativas rigorosas, fundamentais para avaliação
-científica.
-
-\subsection{Integração Opcional de Aprendizado de Máquina}
-
-O aprendizado de máquina foi integrado como uma camada complementar, não como
-substituto da otimização exata. Sua utilização restringe-se à priorização de
-decisões locais e à seleção de vizinhanças promissoras no contexto do LNS, sem
-alterar diretamente restrições ou funções objetivo.
-
-Essa abordagem preserva o rigor matemático do modelo, ao mesmo tempo em que amplia
-o potencial experimental da plataforma, permitindo investigar a interação entre
-otimização combinatória e aprendizado supervisionado de forma controlada e
-interpretável.
-
-\subsection{Aplicabilidade Científica e Industrial}
-
-Do ponto de vista científico, o simulador oferece um ambiente completo para a
-investigação de problemas de escalonamento sob restrições legais complexas,
-viabilizando estudos comparativos, análises de escalabilidade e experimentação com
-estratégias híbridas.
-
-Do ponto de vista industrial, a arquitetura modular, a capacidade de operar com
-dados reais e a interface interativa tornam a plataforma adequada para aplicações
-em contextos corporativos, estudos de viabilidade operacional e suporte à tomada
-de decisão, preservando confidencialidade e conformidade regulatória.
-
-\subsection{Síntese do Capítulo}
-
-Em síntese, o simulador desenvolvido consolida-se como uma plataforma experimental
-robusta, flexível e extensível, que conecta rigor matemático, implementação
-computacional e análise empírica. Ele fornece a base operacional necessária para os
-experimentos e comparações apresentados nos capítulos seguintes, assegurando
-consistência metodológica entre formulação teórica, implementação e validação dos
-resultados.
+ Após a definição completa do modelo matemático e da matriz de restrições, o
+ problema de escalonamento é submetido ao processo de resolução por meio do
+ solver CP-SAT, integrante da biblioteca OR-Tools. Embora o modelo seja
+ formulado como um problema de Programação Linear Inteira, o CP-SAT adota uma
+ abordagem híbrida, combinando técnicas de programação por restrições,
+ satisfatibilidade booleana e otimização inteira.
+
+ Essa escolha permite explorar de forma eficiente a forte estrutura temporal e
+ a esparsidade do modelo, superando limitações frequentemente observadas em
+ solvers MILP tradicionais quando aplicados a problemas regulados de grande
+ escala.
+
+ \subsection{Inicialização e Parâmetros do Solver}
+
+ O simulador inicializa o solver com um conjunto explícito de parâmetros
+ computacionais, que podem ser configurados diretamente pela interface. Entre
+ os principais parâmetros destacam-se:
+
+ \begin{itemize}
+     \item limite máximo de tempo de execução;
+     \item tolerância de \textit{gap} relativo entre solução atual e melhor
+     limite inferior;
+     \item nível de verbosidade dos logs;
+     \item limites associados ao processo iterativo do LNS.
+ \end{itemize}
+
+ Esses parâmetros permitem adaptar o comportamento do solver ao tamanho do
+ problema e aos objetivos do experimento, possibilitando desde execuções rápidas
+ até análises mais aprofundadas.
+
+ \subsection{Critérios de Parada}
+
+ A execução do solver é encerrada quando pelo menos um dos seguintes critérios
+ é atendido:
+
+ \begin{itemize}
+     \item obtenção de solução ótima comprovada;
+     \item atingimento do limite máximo de tempo;
+     \item convergência dentro da tolerância de \textit{gap} especificada;
+     \item interrupção controlada em modos heurísticos ou matheurísticos.
+ \end{itemize}
+
+ Esses critérios garantem controle explícito sobre o esforço computacional,
+ evitando execuções excessivamente longas e permitindo comparações justas entre
+ diferentes estratégias de resolução.
+
+ \subsection{Estados de Solução}
+
+ Ao término da execução, o solver retorna um estado que indica a situação da
+ resolução, podendo assumir, entre outros, os seguintes valores:
+
+ \begin{itemize}
+     \item \texttt{OPTIMAL}: solução ótima encontrada;
+     \item \texttt{FEASIBLE}: solução viável encontrada dentro dos limites;
+     \item \texttt{INFEASIBLE}: nenhuma solução viável existe;
+     \item \texttt{UNBOUNDED}: problema mal formulado;
+     \item \texttt{NOT\_SOLVED}: execução interrompida antes da obtenção de
+     solução.
+ \end{itemize}
+
+ Nos modos heurístico e LNS, soluções viáveis são aceitas mesmo na ausência de
+ prova de otimalidade, desde que respeitem todas as restrições ativadas.
+
+ \subsection{Execução nos Diferentes Modos de Resolução}
+
+ No modo exato, o modelo completo é submetido diretamente ao CP-SAT, que realiza
+ a busca por soluções ótimas respeitando integralmente todas as restrições
+ legais e operacionais.
+
+ No modo heurístico, o solver pode ser utilizado de forma limitada ou não ser
+ acionado, dependendo da configuração, sendo o foco a obtenção rápida de uma
+ solução viável inicial.
+
+ No modo LNS, o solver é invocado repetidamente para resolver subproblemas
+ restritos, nos quais apenas subconjuntos de variáveis são liberados a cada
+ iteração. Esse processo permite melhorar progressivamente a solução, mantendo
+ controle explícito sobre o esforço computacional.
+
+ \subsection{Extração da Solução}
+
+ Uma vez concluída a execução, o simulador extrai de forma sistemática os
+ valores das variáveis de decisão, construindo:
+
+ \begin{itemize}
+     \item a matriz de alocação motorista--período;
+     \item o número total de motoristas ativos;
+     \item a carga de trabalho por motorista;
+     \item métricas agregadas de cobertura e eficiência.
+ \end{itemize}
+
+ Essa extração é realizada de maneira uniforme para todos os modos de
+ resolução, garantindo comparabilidade direta entre soluções exatas,
+ heurísticas e matheurísticas.
+
+ \subsection{Relação com os Resultados Experimentais}
+
+ Os dados retornados pelo solver alimentam diretamente os indicadores e
+ visualizações apresentados no Capítulo~6. Tempos de execução, estados de
+ solução, valores da função objetivo e métricas derivadas são registrados de
+ forma automática, assegurando consistência entre a implementação
+ computacional e a análise empírica.
+
+ Dessa forma, a execução do solver constitui o elo fundamental entre o modelo
+ matemático e os resultados experimentais discutidos posteriormente.
+
+ \section{Fluxo Computacional do Simulador}
+
+ O simulador desenvolvido segue um fluxo computacional bem definido e
+ determinístico, estruturado em etapas sequenciais que garantem
+ reprodutibilidade, consistência experimental e comparabilidade entre os
+ diferentes modos de resolução disponíveis.
+
+ Independentemente da estratégia algorítmica selecionada (exata, heurística ou
+ LNS), o fluxo geral de execução mantém a mesma estrutura lógica, diferenciando-se
+ apenas nos mecanismos internos de resolução.
+
+ \subsection{Etapas do Fluxo de Execução}
+
+ O fluxo computacional do simulador pode ser descrito pelas seguintes etapas
+ principais:
+
+ \begin{enumerate}
+     \item \textbf{Leitura e validação dos parâmetros de entrada}: o sistema
+     coleta, por meio da interface, os parâmetros do problema, incluindo
+     horizonte temporal, demanda, restrições legais ativadas, modo de resolução
+     e função objetivo.
+     
+     \item \textbf{Construção do modelo matemático}: com base nos parâmetros
+     definidos, o simulador instancia as variáveis de decisão, a função objetivo
+     selecionada e o conjunto de restrições ativas, conforme o modelo formal
+     descrito no Capítulo~4.
+     
+     \item \textbf{Montagem da matriz de restrições}: o modelo é convertido para
+     sua representação matricial interna, preservando a estrutura esparsa e o
+     encadeamento temporal característicos do problema.
+     
+     \item \textbf{Execução do método de resolução}: de acordo com o modo
+     selecionado, o sistema executa:
+     \begin{itemize}
+         \item a resolução exata via CP-SAT;
+         \item a heurística construtiva para geração de solução inicial;
+         \item o processo iterativo de Large Neighborhood Search (LNS).
+     \end{itemize}
+     
+     \item \textbf{Extração da solução}: os valores das variáveis são extraídos
+     de forma padronizada, permitindo a construção da matriz de alocação,
+     métricas agregadas e indicadores operacionais.
+     
+     \item \textbf{Pós-processamento e análise}: o sistema calcula indicadores
+     de desempenho, gera visualizações gráficas e registra métricas
+     computacionais, como tempo de execução e estado da solução.
+ \end{enumerate}
+
+ \subsection{Determinismo e Reprodutibilidade}
+
+ Para um conjunto fixo de parâmetros de entrada, o fluxo computacional do
+ simulador é determinístico, assegurando que execuções repetidas produzam os
+ mesmos resultados. Essa propriedade é essencial para a validação científica
+ dos experimentos e para a comparação rigorosa entre diferentes estratégias de
+ resolução.
+
+ Mesmo nos modos heurístico e LNS, nos quais decisões locais e processos
+ iterativos estão presentes, o uso de critérios controlados e a ausência de
+ componentes estocásticos garantem consistência entre execuções equivalentes.
+
+ \subsection{Fluxo Específico por Modo de Resolução}
+
+ No modo exato, o fluxo computacional segue diretamente da construção do modelo
+ para a execução do solver CP-SAT, que explora o espaço de soluções até atingir
+ os critérios de parada definidos.
+
+ No modo heurístico, a geração da solução ocorre por meio de regras construtivas
+ gulosas, com foco na obtenção rápida de uma solução viável, respeitando as
+ restrições legais ativadas.
+
+ No modo LNS, o fluxo incorpora ciclos iterativos adicionais, nos quais
+ subconjuntos de variáveis são liberados a cada iteração, mantendo o restante da
+ solução fixo. A cada ciclo, um subproblema restrito é resolvido pelo solver
+ inteiro, permitindo melhorias progressivas da solução.
+
+ Apesar dessas diferenças internas, o fluxo de entrada e saída permanece
+ uniforme, o que garante comparabilidade direta entre os resultados obtidos nos
+ três modos.
+
+ \subsection{Integração com os Resultados Experimentais}
+
+ O fluxo computacional descrito neste capítulo fornece a base operacional para
+ todos os experimentos apresentados no Capítulo~6. A uniformidade na coleta de
+ métricas, na extração das soluções e no cálculo dos indicadores assegura que as
+ diferenças observadas nos resultados sejam atribuídas exclusivamente às
+ estratégias de resolução adotadas, e não a variações no processo de execução.
+
+ Dessa forma, o fluxo computacional do simulador estabelece o elo entre a
+ formulação matemática, a implementação computacional e a validação empírica
+ dos métodos propostos.
+
+ \section{Modos de Resolução e Estratégias de Otimização}
+
+ No simulador desenvolvido, é feita uma distinção clara entre os conceitos de
+ \textit{modo de resolução} e \textit{estratégia de otimização}. O modo de
+ resolução refere-se ao método algorítmico empregado para explorar o espaço de
+ soluções, enquanto a estratégia de otimização define o critério adotado pela
+ função objetivo do modelo matemático.
+
+ Essa separação conceitual permite combinar livremente diferentes abordagens de
+ resolução com diferentes objetivos operacionais, ampliando o escopo analítico
+ da plataforma experimental.
+
+ \subsection{Modo de Resolução Exato}
+
+ No modo de resolução exato, o problema completo de escalonamento é formulado
+ como um modelo de Programação Linear Inteira e resolvido diretamente pelo
+ solver CP-SAT. Nesse modo, todas as variáveis, restrições legais ativadas e a
+ função objetivo selecionada são consideradas simultaneamente, permitindo a
+ busca por soluções ótimas comprovadas, sempre que o tempo computacional
+ disponível o permita.
+
+ Esse modo fornece uma referência de qualidade para os demais métodos,
+ servindo como base para validação das soluções heurísticas e
+ matheurísticas.
+
+ \subsection{Modo Heurístico}
+
+ O modo heurístico utiliza uma estratégia construtiva gulosa para gerar
+ rapidamente uma solução viável. A heurística opera de forma incremental,
+ priorizando o atendimento da demanda por período e respeitando os principais
+ limites operacionais e legais ativadas.
+
+ Embora não haja garantia de otimalidade nesse modo, ele apresenta baixo custo
+ computacional e é particularmente adequado para cenários de grande escala ou
+ situações em que respostas rápidas são necessárias. Além disso, a solução
+ gerada pode ser utilizada como ponto de partida para métodos mais avançados,
+ como o LNS.
+
+ \subsection{Modo Matheurístico (LNS)}
+
+ O modo LNS (\textit{Large Neighborhood Search}) combina elementos heurísticos
+ com reotimizações locais via solver inteiro. A partir de uma solução inicial,
+ subconjuntos de variáveis são liberados a cada iteração, mantendo o restante da
+ solução fixo. Em seguida, um subproblema restrito é resolvido pelo solver,
+ permitindo melhorias progressivas da solução.
+
+ Essa abordagem explora de forma eficiente a estrutura temporal do problema,
+ equilibrando qualidade da solução e esforço computacional. O LNS permite
+ controlar explicitamente o tamanho das vizinhanças e o número de iterações,
+ tornando-o adequado para análises experimentais comparativas.
+
+ \subsection{Estratégias de Otimização}
+
+ De forma independente do modo de resolução, o simulador permite selecionar a
+ estratégia de otimização adotada pelo modelo matemático. As principais
+ estratégias implementadas são:
+
+ \begin{itemize}
+     \item \textbf{Maximização da resposta à demanda}: prioriza o atendimento
+     máximo da demanda operacional ao longo do horizonte de planejamento,
+     admitindo, quando necessário, demanda não atendida de forma controlada;
+     \item \textbf{Minimização do número de motoristas ativos}: busca reduzir o
+     uso da força de trabalho, assumindo atendimento integral da demanda.
+ \end{itemize}
+
+ Essas estratégias refletem objetivos operacionais distintos e permitem avaliar
+ compromissos entre cobertura e eficiência de recursos.
+
+ \subsection{Combinação entre Modos e Estratégias}
+
+ A arquitetura do simulador permite combinar qualquer modo de resolução com
+ qualquer estratégia de otimização. Por exemplo, a minimização do número de
+ motoristas pode ser realizada tanto por meio de uma resolução exata quanto por
+ heurísticas ou LNS.
+
+ Essa flexibilidade possibilita análises comparativas sistemáticas, nas quais
+ os efeitos do método de resolução e da função objetivo podem ser avaliadas de
+ forma isolada ou combinada.
+
+ \subsection{Relação com os Experimentos Apresentados}
+
+ Nos experimentos apresentados no Capítulo~6, os três modos de resolução
+ (exato, heurístico e LNS) são avaliados sob estratégias de otimização
+ equivalentes, garantindo comparabilidade direta dos resultados. As diferenças
+ observadas em termos de qualidade da solução, tempo computacional e estabilidade
+ são, portanto, atribuídas exclusivamente às características dos métodos de
+ resolução adotados.
+
+ Essa abordagem reforça a validade experimental do estudo e permite uma
+ interpretação clara dos compromissos envolvidos em cada estratégia.
+
+ \section{Geração de Indicadores e Gráficos}
+
+ A geração de indicadores e visualizações gráficas constitui uma etapa essencial
+ do simulador, pois permite avaliar de forma objetiva a qualidade das soluções
+ obtidas e interpretar o comportamento dos diferentes métodos de resolução.
+ Todos os indicadores apresentados são derivados diretamente das variáveis de
+ decisão do modelo matemático, assegurando consistência entre formulação,
+ implementação e análise empírica.
+
+ Os indicadores foram projetados para responder a questões operacionais
+ específicas, como cobertura da demanda, utilização da força de trabalho,
+ estabilidade temporal e balanceamento da carga entre motoristas.
+
+ \subsection{Indicadores de Cobertura da Demanda}
+
+ O indicador de cobertura da demanda mede, para cada período discretizado, a
+ diferença entre a demanda operacional e o número de motoristas efetivamente
+ alocados. Esse indicador permite identificar períodos de subcobertura,
+ cobertura exata ou sobrealocação.
+
+ A partir dessa informação, são derivados indicadores agregados, como a taxa
+ global de cobertura e a quantidade total de demanda não atendida, utilizados
+ diretamente na análise comparativa entre métodos.
+
+ \subsection{Indicadores de Utilização e Sobrecarga}
+
+ Para avaliar o uso da força de trabalho, o simulador calcula métricas de
+ utilização por motorista, incluindo:
+
+ \begin{itemize}
+     \item carga total de trabalho por motorista;
+     \item média de carga entre motoristas ativos;
+     \item identificação de sobrecargas individuais.
+ \end{itemize}
+
+ Esses indicadores permitem verificar se a solução concentra excessivamente a
+ carga em poucos motoristas ou se promove uma distribuição mais equilibrada,
+ aspecto particularmente relevante em cenários regulados.
+
+ \subsection{Indicadores Temporais e Estabilidade}
+
+ Indicadores temporais são utilizados para analisar a estabilidade da solução
+ ao longo do horizonte de planejamento. Entre eles destacam-se:
+
+ \begin{itemize}
+     \item desvio padrão da cobertura por período;
+     \item variação do número de motoristas ativos ao longo do tempo;
+     \item regularidade dos padrões de alocação.
+ \end{itemize}
+
+ Essas métricas permitem avaliar não apenas a qualidade pontual da solução, mas
+ também seu comportamento dinâmico, aspecto importante para aplicações
+ operacionais reais.
+
+ \subsection{Indicadores Computacionais}
+
+ Além dos indicadores operacionais, o simulador registra métricas
+ computacionais associadas ao processo de resolução, tais como:
+
+ \begin{itemize}
+     \item tempo total de execução;
+     \item número de iterações (no caso do LNS);
+     \item estado final da solução (ótima, viável, interrompida);
+     \item \textit{gap} relativo entre solução e melhor limite conhecido.
+ \end{itemize}
+
+ Esses indicadores permitem comparar o esforço computacional exigido por cada
+ modo de resolução, complementando a análise da qualidade das soluções obtidas.
+
+ \subsection{Visualizações Gráficas}
+
+ Os indicadores calculados são apresentados por meio de visualizações gráficas
+ interativas, incluindo gráficos de linhas, barras e distribuições. Essas
+ visualizações permitem explorar padrões temporais, identificar picos de
+ demanda e analisar diferenças entre métodos de resolução de forma intuitiva.
+
+ Embora o simulador gere uma ampla variedade de gráficos, nesta dissertação são
+ apresentados apenas aqueles considerados mais representativos para a análise
+ comparativa entre os métodos exato, heurístico e LNS, evitando a proliferação
+ excessiva de artefatos visuais.
+
+ \subsection{Relação com os Resultados Experimentais}
+
+ Todos os indicadores e gráficos descritos nesta seção são utilizados
+ diretamente nos experimentos apresentados no Capítulo~6. A padronização na
+ geração e interpretação dessas métricas assegura que as conclusões extraídas
+ sejam fundamentadas em evidências quantitativas consistentes e comparáveis
+ entre os diferentes métodos avaliados.
+
+ \section{Módulo de Operações Elementares}
+
+ Além da resolução do problema de escalonamento, o simulador incorpora um módulo
+ específico para a aplicação de operações elementares sobre a matriz de
+ restrições. Esse módulo foi concebido com objetivos predominantemente
+ educacionais, analíticos e diagnósticos, não interferindo no processo de
+ otimização utilizado para a geração dos resultados experimentais principais.
+
+ As operações elementares implementadas incluem transformações clássicas de
+ álgebra linear, tais como troca de linhas, multiplicação de linhas por
+ constantes e combinações lineares controladas entre restrições.
+
+ \subsection{Objetivos do Módulo}
+
+ A inclusão do módulo de operações elementares atende a três objetivos
+ principais:
+
+ \begin{itemize}
+     \item apoiar atividades educacionais relacionadas à modelagem matemática
+     e à Programação Linear Inteira;
+     \item permitir a análise estrutural da matriz de restrições, em especial
+     no que diz respeito à densidade, organização e encadeamento temporal;
+     \item auxiliar no diagnóstico de problemas numéricos ou estruturais durante
+     a fase de desenvolvimento do modelo.
+ \end{itemize}
+
+ Esse módulo possibilita explorar a relação entre a formulação algébrica do
+ problema e seu impacto sobre o desempenho computacional do solver, sem alterar
+ o conjunto de soluções viáveis.
+
+ \subsection{Preservação da Equivalência Matemática}
+
+ Todas as operações disponibilizadas no simulador são cuidadosamente
+ implementadas de modo a preservar a equivalência matemática do sistema de
+ restrições. Em particular, as transformações aplicadas não modificam o espaço
+ de soluções viáveis nem o valor ótimo do problema, atuando apenas sobre sua
+ representação algébrica.
+
+ Essa propriedade é fundamental para garantir que o uso do módulo não comprometa
+ a validade dos experimentos realizados, sendo sua aplicação restrita a
+ contextos exploratórios e analíticos.
+
+ \subsection{Análise da Densidade da Matriz}
+
+ Um dos usos práticos do módulo de operações elementares é a análise da densidade
+ da matriz de restrições antes e depois de transformações específicas. O
+ simulador calcula métricas de densidade estrutural, permitindo avaliar como
+ diferentes formas de organização das restrições influenciam o desempenho do
+ solver.
+
+ Essa análise é particularmente relevante em problemas de grande escala, nos
+ quais pequenas variações na estrutura da matriz podem impactar significativamente
+ o tempo de resolução.
+
+ \subsection{Relação com os Resultados Apresentados}
+
+ Embora o módulo de operações elementares não seja utilizado diretamente na
+ geração das soluções analisadas no Capítulo~6, ele desempenhou papel importante
+ durante o desenvolvimento e validação do modelo, auxiliando na compreensão da
+ estrutura do problema e na identificação de formulações mais eficientes.
+
+ Dessa forma, o módulo contribui para a robustez metodológica do trabalho,
+ reforçando a transparência e o rigor científico adotados na implementação
+ computacional.
+
+ \section{Extensões Heurísticas e Metaheurísticas}
+
+ Embora o núcleo do simulador seja fundamentado em um modelo de Programação Linear
+ Inteira resolvido de forma exata pelo solver CP-SAT, a plataforma foi estended
+ para incorporar métodos heurísticos e metaheurísticos. Essas extensões têm como
+ objetivo ampliar o escopo experimental, reduzir tempos computacionais em cenários
+ de maior escala e permitir a análise comparativa entre diferentes estratégias de
+ resolução sob um mesmo conjunto de restrições legais.
+
+ As abordagens heurísticas e metaheurísticas implementadas não substituem o modelo
+ matemático exato, mas atuam como mecanismos complementares, sempre mantendo a
+ validade jurídica e a consistência estrutural do problema.
+
+ \subsection{Heurística Construtiva Gulosa}
+
+ A primeira extensão implementada consiste em uma heurística construtiva gulosa
+ (\textit{greedy initial allocation}), responsável por gerar rapidamente soluções
+ viáveis a partir da demanda operacional por período.
+
+ Essa heurística opera de forma incremental, priorizando períodos com maior
+ demanda e alocando motoristas de acordo com regras locais de viabilidade,
+ respeitando limites operacionais básicos e restrições legais essenciais. O
+ objetivo principal dessa abordagem é produzir uma solução inicial consistente,
+ com baixo custo computacional, que possa ser utilizada de forma independente ou
+ como ponto de partida para métodos de melhoria.
+
+ A heurística gulosa apresenta desempenho computacional significativamente superior
+ ao método exato em cenários de grande escala, porém não garante otimalidade global,
+ sendo particularmente adequada para análises exploratórias e aplicações em tempo
+ quase real.
+
+ \subsection{Large Neighborhood Search (LNS)}
+
+ Para superar as limitações inerentes às heurísticas construtivas, o simulador
+ incorpora uma abordagem de \textit{Large Neighborhood Search} (LNS), caracterizada
+ pela destruição e reconstrução parcial da solução.
+
+ No método LNS, a partir de uma solução inicial viável (gerada pela heurística
+ gulosa ou pelo solver exato), subconjuntos de períodos são iterativamente
+ liberados, enquanto o restante da solução permanece fixo. Em cada iteração, um
+ problema restrito é reconstruído e resolvido novamente pelo solver inteiro,
+ permitindo melhorias progressivas da solução.
+
+ Essa estratégia combina a robustez da otimização exata com a flexibilidade
+ exploratória típica das metaheurísticas, oferecendo um equilíbrio eficaz entre
+ qualidade da solução e esforço computacional.
+
+ \subsection{Controle de Relaxação e Iterações}
+
+ O simulador permite controlar explicitamente parâmetros associados ao processo
+ LNS, tais como o tamanho da vizinhança liberada, o número máximo de iterações e o
+ nível de relaxação aplicado em cada etapa.
+
+ Esse controle possibilita estudar o comportamento do algoritmo sob diferentes
+ configurações, analisando o impacto de decisões como a intensidade da destruição,
+ a frequência de reotimizações e os critérios de parada adotados.
+
+ \subsection{Garantia de Validade das Soluções}
+
+ Um aspecto central da implementação é que todas as soluções finais geradas pelos
+ métodos heurísticos e metaheurísticos são sempre validadas pelo modelo de
+ Programação Linear Inteira e pelo solver CP-SAT. Mesmo quando uma solução é
+ construída heurística ou parcialmente, sua aceitação final depende do atendimento
+ integral das restrições legais e operacionais.
+
+ Essa estratégia garante que nenhuma solução inválida do ponto de vista jurídico
+ ou matemático seja utilizada nos experimentos apresentados nesta dissertação.
+
+ \subsection{Relação com os Experimentos Computacionais}
+
+ As extensões heurísticas e metaheurísticas desempenham papel fundamental nos
+ experimentos discutidos no Capítulo~6. Em particular, os resultados permitem
+ comparar:
+
+ \begin{itemize}
+     \item qualidade da solução obtida;
+     \item tempo computacional;
+     \item estabilidade da cobertura da demanda;
+     \item eficiência na utilização da força de trabalho.
+ \end{itemize}
+
+ Essas comparações evidenciam os compromissos entre métodos exatos, heurísticos e
+ metaheurísticos, reforçando a importância de abordagens híbridas em problemas de
+ escalonamento sob restrições legais complexas.
+
+ \section{Integração de Aprendizado de Máquina}
+
+ Além das abordagens exatas, heurísticas e metaheurísticas, o simulador incorpora
+ um módulo experimental de aprendizado de máquina supervisionado, cujo objetivo é
+ auxiliar decisões locais e estratégicas durante o processo de otimização. Essa
+ integração foi concebida como uma camada complementar, não substitutiva, mantendo
+ plena compatibilidade com o modelo matemático exato e com as restrições legais do
+ Regulamento (CE) n.\textordmasculine~561/2006.
+
+ O aprendizado de máquina não altera diretamente a formulação do problema, a
+ função objetivo nem o conjunto de restrições. Sua função é orientar escolhas
+ heurísticas, reduzindo o espaço de busca e priorizando decisões potencialmente
+ mais promissoras, sem comprometer a validade jurídica ou matemática das soluções.
+
+ \subsection{Motivação para o Uso de Aprendizado Supervisionado}
+
+ Problemas de escalonamento sob restrições temporais rígidas apresentam elevada
+ complexidade combinatória, especialmente quando resolvidos repetidamente em
+ cenários de simulação. Embora solvers exatos sejam capazes de produzir soluções
+ ótimas, o custo computacional pode crescer rapidamente com o tamanho do
+ horizonte e da força de trabalho.
+
+ Nesse contexto, o aprendizado supervisionado surge como uma ferramenta para
+ capturar padrões recorrentes observados em soluções ótimas ou quase ótimas,
+ auxiliando o processo decisório em etapas heurísticas e metaheurísticas, sem
+ abrir mão do rigor do modelo exato.
+
+ \subsection{Modelos Supervisionados Implementados}
+
+ Foram definidos dois modelos supervisionados distintos, com papéis claramente
+ separados no simulador.
+
+ O primeiro modelo, denominado $f_1$, atua no nível local, avaliando decisões de
+ alocação motorista--período durante a heurística construtiva. Esse modelo recebe
+ como entrada características associadas ao período, à demanda, ao estado do
+ motorista e ao contexto operacional, retornando um escore que representa a
+ atratividade relativa daquela alocação.
+
+ O segundo modelo, denominado $f_2$, opera em nível agregado no contexto do
+ algoritmo LNS. Seu objetivo é avaliar subconjuntos de períodos candidatos à
+ liberação, estimando o potencial de melhoria da solução caso aquela vizinhança
+ seja explorada. Dessa forma, o modelo auxilia na priorização de vizinhanças mais
+ promissoras, reduzindo o número de iterações improdutivas.
+
+ \subsection{Arquitetura Resiliente e Comportamento Padrão}
+
+ A integração com aprendizado de máquina foi projetada de forma resiliente. Caso
+ os modelos não estejam disponíveis, não estejam treinados ou o ambiente de
+ execução não suporte o módulo de aprendizado, o simulador recorre
+ automaticamente a regras heurísticas clássicas e determinísticas.
+
+ Esse mecanismo garante que o comportamento padrão do simulador seja sempre
+ reproduzível e independente do aprendizado de máquina, evitando qualquer
+ dependência estrutural ou viés não controlado nos experimentos.
+
+ \subsection{Geração de Dados e Treinamento dos Modelos}
+
+ Para viabilizar o aprendizado supervisionado, foi desenvolvido um pipeline
+ automático de geração de dados. A partir de múltiplas instâncias sintéticas de
+ demanda, o simulador executa soluções heurísticas e soluções exatas via solver
+ inteiro, registrando decisões intermediárias, estados do sistema e métricas de
+ desempenho.
+
+ Os dados coletados são organizados em dois conjuntos distintos: um dataset
+ voltado ao treinamento do modelo $f_1$, com informações locais de decisão, e um
+ dataset voltado ao modelo $f_2$, composto por características agregadas das
+ vizinhanças exploradas no LNS.
+
+ O treinamento dos modelos é realizado externamente ao fluxo principal de
+ otimização, utilizando algoritmos de \textit{gradient boosting}. Os modelos
+ treinados são posteriormente carregados dinamicamente pelo simulador, não
+ interferindo na formulação matemática nem no processo de validação das soluções.
+
+ \subsection{Papel do Aprendizado de Máquina nos Experimentos}
+
+ Nos experimentos apresentados nesta dissertação, o uso de aprendizado de máquina
+ é tratado como um recurso opcional e experimental. Os resultados principais
+ utilizam o comportamento determinístico do simulador, permitindo comparações
+ justas entre métodos exatos, heurísticos e metaheurísticos.
+
+ Quando ativado, o aprendizado supervisionado atua como um mecanismo de
+ aceleração e refinamento, potencialmente reduzindo tempos de convergência e
+ melhorando a estabilidade das soluções, sem alterar os critérios formais de
+ avaliação adotados.
+
+ \subsection{Garantia de Rigor Metodológico}
+
+ É importante destacar que todas as soluções finais, independentemente do uso ou
+ não de aprendizado de máquina, são sempre validadas pelo modelo de Programação
+ Linear Inteira e pelo solver CP-SAT. O aprendizado supervisionado não possui
+ autonomia para violar restrições, modificar objetivos ou aceitar soluções
+ inválidas.
+
+ Dessa forma, a integração de aprendizado de máquina preserva rigor científico,
+ transparência metodológica e conformidade legal, atuando exclusivamente como uma
+ camada auxiliar de apoio à decisão.
+
+ \section{Geração de Datasets e Treinamento dos Modelos}
+
+ A integração de aprendizado de máquina no simulador exigiu o desenvolvimento de
+ um pipeline específico para geração de dados supervisionados, totalmente
+ compatível com o domínio do problema e com o modelo matemático subjacente. Esse
+ pipeline foi concebido para garantir consistência entre os dados utilizados no
+ treinamento e as decisões efetivamente tomadas pelo sistema de escalonamento.
+
+ \subsection{Origem dos Dados Supervisionados}
+
+ Os datasets utilizados no treinamento dos modelos supervisionados não são
+ provenientes de fontes externas nem de bases genéricas. Eles são gerados
+ diretamente pelo próprio simulador, a partir da execução controlada de múltiplos
+ cenários de escalonamento.
+
+ Cada instância de dados é construída a partir de:
+ \begin{itemize}
+     \item curvas sintéticas de demanda por período;
+     \item diferentes configurações de restrições legais ativas;
+     \item soluções heurísticas iniciais;
+     \item soluções exatas obtidas via solver inteiro;
+     \item histórico de decisões intermediárias durante o processo de otimização.
+ \end{itemize}
+
+ Essa estratégia garante que os dados de treinamento reflitam fielmente a lógica
+ do problema, suas restrições legais e os critérios operacionais adotados no
+ modelo matemático.
+
+ \subsection{Dataset para o Modelo Local de Alocação ($f_1$)}
+
+ O primeiro conjunto de dados foi projetado para treinar o modelo local de decisão
+ $f_1$, utilizado durante a heurística construtiva. Cada observação do dataset
+ corresponde a uma decisão candidata de alocação motorista--período.
+
+ As variáveis explicativas incluem, entre outras:
+ \begin{itemize}
+     \item demanda do período;
+     \item nível de cobertura acumulada;
+     \item estado do motorista (ativo, descanso, condução acumulada);
+     \item posição temporal no horizonte;
+     \item indicadores locais de carga e utilização.
+ \end{itemize}
+
+ O rótulo associado a cada observação indica a qualidade daquela decisão, medida
+ com base na solução final obtida (ótima ou quase ótima), permitindo ao modelo
+ aprender padrões de alocação mais eficientes.
+
+ \subsection{Dataset para Avaliação de Vizinhanças no LNS ($f_2$)}
+
+ O segundo dataset é voltado ao treinamento do modelo $f_2$, responsável por
+ avaliar vizinhanças candidatas no algoritmo LNS. Nesse caso, cada observação
+ representa um subconjunto de períodos liberados para reotimização em uma
+ iteração do LNS.
+
+ As características utilizadas incluem:
+ \begin{itemize}
+     \item tamanho da vizinhança;
+     \item posição temporal dos períodos liberados;
+     \item nível de violação ou folga das restrições;
+     \item variação da função objetivo nas iterações anteriores;
+     \item indicadores agregados de estabilidade e carga.
+ \end{itemize}
+
+ O rótulo indica o ganho efetivo obtido após a reotimização daquela vizinhança,
+ permitindo ao modelo aprender quais padrões tendem a gerar melhorias mais
+ significativas.
+
+ \subsection{Pipeline de Geração Automática}
+
+ A geração dos datasets é realizada de forma automática e offline, por meio de
+ execuções repetidas do simulador em diferentes cenários. Esse processo não
+ interfere no fluxo principal de otimização e não ocorre durante a execução dos
+ experimentos analisados nesta dissertação.
+
+ Cada execução gera registros estruturados que são armazenados em formato tabular,
+ permitindo posterior auditoria, reprodutibilidade e controle de versões dos
+ datasets utilizados.
+
+ \subsection{Treinamento dos Modelos Supervisionados}
+
+ O treinamento dos modelos $f_1$ e $f_2$ é realizado externamente ao simulador,
+ utilizando algoritmos de \textit{gradient boosting}, devido à sua capacidade de
+ modelar relações não lineares e lidar eficientemente com variáveis heterogêneas.
+
+ Os modelos treinados são posteriormente exportados e carregados dinamicamente
+ pelo simulador, sem necessidade de recompilação ou modificação do núcleo de
+ otimização.
+
+ \subsection{Separação entre Treinamento e Avaliação}
+
+ É importante destacar que os dados utilizados para treinamento dos modelos não
+ são reutilizados nos experimentos de avaliação apresentados nesta dissertação.
+ Essa separação evita vazamento de informação e garante que os resultados
+ observados não sejam artificialmente favorecidos pelo aprendizado supervisionado.
+
+ Nos experimentos principais, o simulador é avaliado tanto com quanto sem o uso
+ dos modelos treinados, permitindo comparar o impacto real do aprendizado de
+ máquina sobre desempenho computacional e qualidade das soluções.
+
+ \subsection{Considerações Metodológicas}
+
+ A estratégia adotada garante que o aprendizado supervisionado:
+ \begin{itemize}
+     \item não introduz viés externo ao problema;
+     \item não altera a formulação matemática;
+     \item não compromete a validade legal das soluções;
+     \item atua exclusivamente como mecanismo auxiliar.
+ \end{itemize}
+
+ Dessa forma, o uso de aprendizado de máquina reforça o caráter experimental e
+ exploratório da plataforma, sem comprometer o rigor científico exigido para a
+ análise dos resultados apresentados.
+
+ \section{Visualização Avançada e Análise Iterativa}
+
+ A visualização dos resultados desempenha papel central no simulador desenvolvido,
+ não apenas como mecanismo de apresentação, mas como ferramenta analítica para
+ interpretação do comportamento dos algoritmos, diagnóstico de soluções e validação
+ das hipóteses experimentais. Para esse fim, foram implementados módulos de
+ visualização capazes de representar tanto indicadores agregados quanto informações
+ temporais detalhadas.
+
+ \subsection{Visualizações Temporais da Solução}
+
+ Um conjunto fundamental de gráficos apresenta a evolução temporal da demanda, da
+ capacidade alocada e da cobertura efetiva ao longo do horizonte de planejamento.
+ Essas visualizações permitem verificar, período a período, se a solução obtida
+ atende integralmente à demanda operacional ou se existem déficits pontuais.
+
+ Adicionalmente, são gerados gráficos de margem de segurança, que evidenciam
+ situações de sobrecarga ou subutilização, permitindo avaliar o grau de robustez da
+ solução frente a variações operacionais. Esses gráficos são particularmente úteis
+ para identificar períodos críticos e padrões recorrentes de instabilidade.
+
+ \subsection{Indicadores de Estabilidade e Eficiência}
+
+ Para além da cobertura da demanda, o simulador calcula indicadores de estabilidade
+ e eficiência associados à alocação de motoristas. Entre eles, destacam-se:
+ \begin{itemize}
+     \item o desvio padrão da cobertura ao longo do tempo;
+     \item a distribuição da carga de trabalho por motorista;
+     \item o tempo médio de presença ativa;
+     \item a relação entre esforço alocado e demanda atendida.
+ \end{itemize}
+
+ Esses indicadores são apresentados tanto de forma numérica quanto gráfica,
+ permitindo avaliar se a solução, embora viável, apresenta comportamento regular
+ ou excessivamente concentrado em determinados motoristas ou períodos.
+
+ \subsection{Análise Iterativa no Modo LNS}
+
+ No modo de resolução LNS, visualizações adicionais são geradas para acompanhar o
+ processo iterativo de melhoria da solução. Em particular, são apresentados gráficos
+ que mostram:
+ \begin{itemize}
+     \item a evolução do valor da função objetivo ao longo das iterações;
+     \item o impacto das liberações parciais da solução;
+     \item o comportamento do nível de relaxamento aplicado;
+     \item a frequência e magnitude das melhorias obtidas.
+ \end{itemize}
+
+ Essas visualizações permitem analisar empiricamente a convergência do método,
+ identificando se o algoritmo se estabiliza prematuramente ou continua a produzir
+ ganhos marginais ao longo das iterações.
+
+ \subsection{Comparação entre Modos de Resolução}
+
+ O simulador permite a visualização comparativa direta entre os modos exato,
+ heurístico e LNS. Gráficos consolidados exibem diferenças em termos de:
+ \begin{itemize}
+     \item tempo computacional;
+     \item qualidade da solução;
+     \item número de motoristas ativos;
+     \item estabilidade temporal da alocação.
+ \end{itemize}
+
+ Essa comparação visual facilita a identificação de compromissos entre esforço
+ computacional e qualidade da solução, reforçando o caráter experimental da
+ plataforma.
+
+ \subsection{Visualizações para Diagnóstico e Auditoria}
+
+ Além das visualizações orientadas a desempenho, o simulador oferece gráficos
+ voltados ao diagnóstico e à auditoria das soluções. Mapas de calor da matriz de
+ alocação permitem identificar padrões de ativação, blocos contínuos de trabalho e
+ eventuais irregularidades temporais.
+
+ Essas representações visuais auxiliam na verificação manual da conformidade legal,
+ facilitando a identificação de violações sutis que poderiam não ser evidentes em
+ indicadores agregados.
+
+ \subsection{Integração com o Processo Experimental}
+
+ As visualizações avançadas não são utilizadas apenas como saída final, mas como
+ parte integrante do processo experimental. Elas orientam ajustes de parâmetros,
+ avaliação de estratégias heurísticas e calibração de métodos LNS e de aprendizado
+ de máquina.
+
+ Dessa forma, o módulo de visualização contribui diretamente para o refinamento do
+ simulador e para a interpretação dos resultados apresentados nos capítulos
+ experimentais seguintes, fortalecendo a conexão entre implementação
+ computacional e análise empírica.
+
+ \section{Posicionamento do Simulador como Plataforma Experimental}
+
+ A implementação computacional desenvolvida ao longo deste trabalho ultrapassa o
+ papel tradicional de um resolvedor de problemas de Programação Linear Inteira,
+ configurando-se como uma plataforma experimental híbrida para o estudo do
+ escalonamento de motoristas sob regulamentação europeia.
+
+ Diferentemente de abordagens focadas exclusivamente na obtenção de uma solução
+ ótima, o simulador foi concebido para permitir a investigação sistemática de
+ diferentes estratégias de resolução, objetivos operacionais e configurações de
+ restrições, mantendo sempre como núcleo normativo o modelo matemático exato
+ apresentado nos capítulos anteriores.
+
+ \subsection{Unificação de Estratégias de Resolução}
+
+ A plataforma integra, em um mesmo ambiente computacional, métodos exatos,
+ heurísticos e matheurísticos, possibilitando comparações diretas sob condições
+ controladas. A Programação Linear Inteira resolvida via CP-SAT atua como referência
+ de validade e qualidade, enquanto a heurística construtiva e o método LNS oferecem
+ alternativas computacionalmente mais eficientes para cenários de maior escala ou
+ com restrições temporais mais severas.
+
+ Essa unificação permite analisar, de forma rigorosa, os compromissos entre
+ qualidade da solução, esforço computacional e estabilidade operacional, aspecto
+ essencial em aplicações reais de transporte rodoviário.
+
+ \subsection{Separação entre Modelo, Resolução e Análise}
+
+ Um dos princípios centrais da arquitetura do simulador é a separação clara entre:
+ \begin{itemize}
+     \item o modelo matemático normativo;
+     \item os métodos de resolução empregados;
+     \item os mecanismos de análise e visualização.
+ \end{itemize}
+
+ Essa separação garante que modificações em estratégias heurísticas, parâmetros do
+ solver ou módulos de aprendizado de máquina não comprometam a validade do modelo
+ legal subjacente. Ao mesmo tempo, facilita a extensão da plataforma para novos
+ cenários, restrições ou objetivos sem necessidade de reformulação estrutural.
+
+ \subsection{Reprodutibilidade e Controle Experimental}
+
+ O simulador foi projetado para assegurar reprodutibilidade dos experimentos.
+ Para um conjunto fixo de parâmetros de entrada — horizonte temporal, demanda,
+ restrições legais e modo de resolução — o comportamento do sistema é determinístico,
+ permitindo a replicação integral dos resultados apresentados.
+
+ Além disso, o controle explícito sobre a ativação de restrições, critérios de
+ otimização e estratégias de resolução possibilita a realização de estudos de
+ sensibilidade e análises comparativas rigorosas, fundamentais para avaliação
+ científica.
+
+ \subsection{Integração Opcional de Aprendizado de Máquina}
+
+ O aprendizado de máquina foi integrado como uma camada complementar, não como
+ substituto da otimização exata. Sua utilização restringe-se à priorização de
+ decisões locais e à seleção de vizinhanças promissoras no contexto do LNS, sem
+ alterar diretamente restrições ou funções objetivo.
+
+ Essa abordagem preserva o rigor matemático do modelo, ao mesmo tempo em que amplia
+ o potencial experimental da plataforma, permitindo investigar a interação entre
+ otimização combinatória e aprendizado supervisionado de forma controlada e
+ interpretável.
+
+ \subsection{Aplicabilidade Científica e Industrial}
+
+ Do ponto de vista científico, o simulador oferece um ambiente completo para a
+ investigação de problemas de escalonamento sob restrições legais complexas,
+ viabilizando estudos comparativos, análises de escalabilidade e experimentação com
+ estratégias híbridas.
+
+ Do ponto de vista industrial, a arquitetura modular, a capacidade de operar com
+ dados reais e a interface interativa tornam a plataforma adequada para aplicações
+ em contextos corporativos, estudos de viabilidade operacional e suporte à tomada
+ de decisão, preservando confidencialidade e conformidade regulatória.
+
+ \subsection{Síntese do Capítulo}
+
+ Em síntese, o simulador desenvolvido consolida-se como uma plataforma experimental
+ robusta, flexível e extensível, que conecta rigor matemático, implementação
+ computacional e análise empírica. Ele fornece a base operacional necessária para os
+ experimentos e comparações apresentados nos capítulos seguintes, assegurando
+ consistência metodológica entre formulação teórica, implementação e validação dos
+ resultados.

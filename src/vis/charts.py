@@ -211,7 +211,13 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 import numpy as np
+
+# 🔒 CRITICAL: Set Agg backend BEFORE any pyplot import to ensure thread safety
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 try:
     import seaborn as sns
@@ -263,7 +269,8 @@ def plot_heatmap_coverage(coverage: Any):
     if cov is None or cov.size == 0:
         return None
 
-    fig, ax = plt.subplots(figsize=(16, 2))
+    fig = Figure(figsize=(16, 2))
+    ax = fig.subplots()
 
     data = cov.reshape(1, -1)  # (1, n)
 
@@ -288,7 +295,8 @@ def plot_heatmap_safety(safety_margin: Any):
     if sm is None or sm.size == 0:
         return None
 
-    fig, ax = plt.subplots(figsize=(16, 2))
+    fig = Figure(figsize=(16, 2))
+    ax = fig.subplots()
 
     data = sm.reshape(1, -1)  # (1, n)
 
@@ -325,7 +333,9 @@ def plot_kpi_radar(kpis_dict: Dict[str, Any]):
     values = values + values[:1]
     angles = np.linspace(0, 2 * np.pi, len(values), endpoint=True)
 
-    fig, ax = plt.subplots(subplot_kw=dict(polar=True), figsize=(6, FIG_HEIGHT))
+    fig = Figure(figsize=(6, FIG_HEIGHT))
+    ax = fig.subplots(subplot_kw=dict(polar=True))
+    
     ax.plot(angles, values, linewidth=2)
     ax.fill(angles, values, alpha=0.25)
 

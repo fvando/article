@@ -4,6 +4,20 @@
 
 import numpy as np
 import pandas as pd
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+Number = Union[int, float]
+VecLike = Union[List[Number], np.ndarray]
+
+def _to_1d_array(x: Any) -> Optional[np.ndarray]:
+    if x is None:
+        return None
+    if isinstance(x, (int, float, np.number)):
+        return None  # int/float NÃO é vetor válido aqui
+    arr = np.asarray(x, dtype=float)
+    if arr.ndim != 1:
+        return None
+    return arr
 
 # def compute_kpis(demanda, workers_schedule):
 #     """Retorna todos os KPIs avançados como um dicionário estruturado."""
@@ -462,22 +476,30 @@ def _to_1d_numeric(x: Any) -> Optional[np.ndarray]:
 
 #     return kpis, coverage_vec, safety_margin_vec
 
-# kpis.py
-import numpy as np
-from typing import Any, Dict, List, Optional, Tuple, Union
-
-Number = Union[int, float]
-VecLike = Union[List[Number], np.ndarray]
-
-def _to_1d_array(x: Any) -> Optional[np.ndarray]:
-    if x is None:
-        return None
-    if isinstance(x, (int, float, np.number)):
-        return None  # int/float NÃO é vetor válido aqui
-    arr = np.asarray(x, dtype=float)
-    if arr.ndim != 1:
-        return None
-    return arr
+def calculate_gini(values: np.ndarray) -> float:
+    """
+    Calcula o Índice de Gini para um vetor de valores (ex: horas por motorista).
+    0 = igualdade perfeita, 1 = desigualdade máxima.
+    """
+    if values is None or values.size == 0:
+        return 0.0
+    
+    # Valores devem ser não negativos e ordenados
+    x = np.sort(values.astype(float))
+    n = len(x)
+    
+    if np.sum(x) <= 0:
+        return 0.0
+        
+    # Lorenz Curve approach
+    cumsum_x = np.cumsum(x)
+    cumsum_x = np.insert(cumsum_x, 0, 0)
+    lorenz = cumsum_x / cumsum_x[-1]
+    
+    # Gini = 1 - 2 * area under Lorenz curve
+    # Area under Lorenz curve using trapezoidal rule
+    area = np.trapz(lorenz, np.linspace(0, 1, n + 1))
+    return float(1 - 2 * area)
 
 def compute_kpis(
     demanda: VecLike,
@@ -492,16 +514,19 @@ def compute_kpis(
       - safety_margin: vetor (slots)
     """
 
-    # d = _to_1d_array(demanda)
-    # w = _to_1d_array(workers_schedule)
-    
     d = _to_1d_array(demanda)
 
     # Fonte primária: matrix_allocation
     if isinstance(matrix_allocation, np.ndarray) and matrix_allocation.ndim == 2:
         w = matrix_allocation.sum(axis=1)
+        # Horas por motorista (para Gini)
+        # Assumindo que cada slot = 0.25h (15min)
+        driving_hours = matrix_allocation.sum(axis=0) * 0.25
+        active_hours = driving_hours[driving_hours > 0]
+        gini_index = calculate_gini(active_hours)
     else:
         w = _to_1d_array(workers_schedule)
+        gini_index = None
     
 
     # contrato fixo (NUNCA remove chaves)
@@ -519,6 +544,7 @@ def compute_kpis(
         "operational_risk_severity": None,
         "temporal_stability": None,
         "cost_index": None,
+        "gini_index": gini_index,
 
         # vetores para gráficos
         "coverage": None,
@@ -530,10 +556,6 @@ def compute_kpis(
     if d is None or d.size == 0:
         kpis["note"] = "Demanda inválida/ausente."
         return kpis, None, None
-
-    # if w is None or w.size == 0:
-    #     kpis["note"] = "workers_schedule ausente ou não é vetor 1D."
-    #     return kpis, None, None
 
     if w is None or w.size == 0:
         kpis["note"] = "Dados insuficientes para KPIs slot-level."
@@ -606,6 +628,7 @@ def compute_kpis(
         "cost_index": cost_index,
         "coverage": coverage_vec,
         "safety_margin": safety_margin,
+        "gini_index": gini_index,
         "note": "KPIs completos calculados",
     })
 
