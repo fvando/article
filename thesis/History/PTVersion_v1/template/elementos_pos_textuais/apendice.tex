@@ -1,0 +1,297 @@
+\begin{apendicesenv}
+\partapendices
+
+\chapter{Formulações Alternativas do Modelo}
+
+\noindent
+\textbf{Nota de consistência terminológica.}
+Nos apêndices, o termo \emph{tarefa} é utilizado de forma genérica para representar
+blocos de trabalho associados a períodos discretizados no modelo principal.
+Quando aplicável, a correspondência tarefa $\leftrightarrow$ período é direta,
+não implicando perda de generalidade da formulação.
+
+Este apêndice apresenta formulações alternativas e extensões estruturadas a partir
+do modelo principal de Programação Linear Inteira (PLI) desenvolvido para o
+problema de escalonamento de motoristas profissionais sob o Regulamento (CE)
+n.º~561/2006. O objetivo destes modelos complementares é demonstrar a
+flexibilidade da abordagem proposta e documentar versões alternativas avaliadas
+durante o processo de experimentação.
+
+\section{Modelo com Janelas de Tempo Suaves (Soft Time Windows)}
+Nesta formulação, janelas de tempo rígidas para início de turnos foram relaxadas
+por meio de penalizações lineares. O objetivo consiste em permitir que o solver
+explore soluções mais amplas em cenários de alta restrição, atribuindo custos a
+atrasos e adiantamentos. A função objetivo passa a incorporar penalidades
+adicionais:
+
+\[
+\min\; Z = \sum_{i,j} c_{ij} x_{ij} + \sum_{m} \alpha_m e_m + \sum_{m} \beta_m a_m,
+\]
+
+onde $e_m$ representa atraso permitido e $a_m$ adiantamento. Este modelo foi útil
+em cenários de sobrecarga operacional.
+
+\section{Modelo com Agrupamento de Motoristas por Categoria}
+Em operações reais, empresas segmentam motoristas por categorias: nacional,
+internacional, ADR, refrigerado, entre outras. Nesta formulação estendida,
+restrições de compatibilidade foram adicionadas:
+
+\[
+x_{ij} \leq cat(i,j)
+\]
+
+onde $cat(i,j)$ é uma matriz binária que define compatibilidade entre categorias e
+tarefas. Essa abordagem permitiu analisar impactos da especialização.
+
+\section{Modelo com Múltiplos Períodos (Planeamento Semanal)}
+Para planeamento semanal, foi desenvolvido um modelo multi-período com acumulação
+de horas por motorista, respeitando limites de direção diários e semanais:
+
+\[
+H^\text{sem}_m = \sum_{d \in Dias} H_{m,d} \leq H^\text{max}_\text{sem}.
+\]
+
+Esta versão foi particularmente útil nos testes de escalabilidade, permitindo
+avaliar desempenho do solver frente a horizontes temporais ampliados.
+
+\section{Modelo com Preferências do Motorista}
+Em extensões opcionais, foi testado um modelo com vetores de preferência
+(motorista–rota–horário), introduzindo coeficientes de satisfação:
+
+\[
+\max \sum_{i,j} s_{ij} x_{ij},
+\]
+
+onde $s_{ij}$ representa o nível de preferência. Essa formulação foi útil no
+estudo exploratório de equilíbrio entre eficiência e bem-estar do trabalhador.
+
+\bigskip
+As variações aqui documentadas constituem parte do processo iterativo de
+refinamento do modelo e servem como base para potenciais trabalhos futuros.
+
+
+
+\chapter{Cenários de Simulação e Parâmetros Utilizados}
+
+Este apêndice documenta integralmente os cenários experimentais utilizados para
+avaliar o modelo de escalonamento, bem como os parâmetros adotados no solver
+OR-Tools e restrições específicas aplicadas durante os testes.
+
+\section{Descrição Geral dos Cenários}
+Foram configurados três cenários principais:
+
+\begin{itemize}
+    \item \textbf{Cenário 1 — Operação Diária Regular:}  
+    25 motoristas, 40 tarefas, predominância de viagens locais, baixa variabilidade
+    temporal.
+
+    \item \textbf{Cenário 2 — Alta Demanda com Conflitos de Horário:}  
+    40 motoristas, 70 tarefas, múltiplos períodos sobrepostos, ocorrências de
+    turnos com início simultâneo e forte impacto das janelas temporais.
+
+    \item \textbf{Cenário 3 — Operação Internacional:}  
+    20 motoristas com categorias distintas, viagens transfronteiriças,
+    restrições completas do Regulamento 561/2006, incluindo pausas e repousos
+    semanais reduzidos.
+\end{itemize}
+
+\section{Configurações do Solver (CP-SAT / OR-Tools)}
+
+Embora o solver CP-SAT não seja um MILP clássico, utiliza mecanismos análogos
+a \emph{presolve}, cortes e heurísticas internas, configurados implicitamente
+ou via parâmetros de alto nível.
+
+As principais configurações aplicadas ao OR-Tools foram:
+
+\begin{itemize}
+    \item \textbf{MIP\_gap:} 0,01 (1\%).  
+    \item \textbf{MaxTime:} 600 segundos (10 minutos).  
+    \item \textbf{Presolve:} ativado.  
+    \item \textbf{Cuts:} automáticas.  
+    \item \textbf{Heurísticas:} ativadas (feasibility pump e LP relaxation).  
+\end{itemize}
+
+O tempo de execução variou entre 4s e 35s para os cenários básicos, e até 2m15s
+para os cenários de escala ampliada.
+
+\section{Restrições Consideradas}
+Foram aplicadas integralmente as seguintes exigências:
+
+\begin{itemize}
+    \item limite de 9h de condução diária (com variação permitida para 10h)
+    \item pausas mínimas de 45 minutos a cada 4h30 de direção
+    \item repouso diário regular de 11h ou fracionado em 3h + 9h
+    \item controle semanal de horas acumuladas
+    \item compatibilidade entre motorista e tarefa
+\end{itemize}
+
+\section{Dados Sintéticos Gerados}
+Para garantir reprodutibilidade, parte dos dados foi sintetizada usando
+procedimentos controlados de geração, incluindo:
+
+\begin{itemize}
+    \item distribuição normal truncada para durações de tarefas
+    \item distribuição uniforme para janelas de início
+    \item matriz de distâncias obtida a partir de centroides simulados
+\end{itemize}
+
+Os dados reais utilizados na empresa cliente foram anonimizados e não são
+expostos neste documento por razões de confidencialidade.
+
+\bigskip
+Os cenários aqui documentados constituem a base experimental para validação,
+desempenho e análise de sensibilidade do modelo de escalonamento proposto.
+
+
+\chapter{Estrutura de Entradas e Saídas do Solver}
+
+Este apêndice descreve o formato dos dados utilizados no solver OR-Tools e as
+estruturas retornadas após a resolução do modelo.
+
+\section{Entradas do Modelo}
+
+\begin{itemize}
+    \item \textbf{Matriz de tarefas ($T$):}  
+    Contém identificação, duração, janelas de início e compatibilidades.
+
+    \item \textbf{Conjunto de motoristas ($M$):}  
+    Inclui categoria, histórico de horas, limites semanais e tipo de operação.
+
+    \item \textbf{Parâmetros regulatórios ($R$):}  
+    Conjunto estruturado contendo:
+    \begin{itemize}
+        \item limites de condução diária e semanal,
+        \item regras de pausa,
+        \item repousos diários e semanais.
+    \end{itemize}
+
+    \item \textbf{Parâmetros do Solver ($S$):}  
+    \begin{itemize}
+        \item MIP\_gap,
+        \item tempo máximo,
+        \item níveis de corte,
+        \item ativação de heurísticas.
+    \end{itemize}
+\end{itemize}
+
+\section{Saídas do Modelo}
+
+\begin{itemize}
+    \item \textbf{Alocação motorista–tarefa ($x_{ij}=1$):}  
+    Indica qual motorista foi designado a cada tarefa.
+
+    \item \textbf{Horas acumuladas:}  
+    Relatório do total de horas diárias e semanais por motorista.
+
+    \item \textbf{Verificação de conformidade:}  
+    Conjunto de flags apontando violações regulatórias.
+
+    \item \textbf{Função objetivo atingida ($Z^*$):}  
+    Custo total, número de motoristas utilizados ou métrica equivalente.
+
+    \item \textbf{Relatório temporal:}  
+    Tempo de execução do solver, número de nós explorados, cortes aplicados.
+\end{itemize}
+
+\chapter{Processo de Geração de Dados Sintéticos}
+
+Este apêndice descreve o método empregado para gerar dados sintéticos utilizados
+nos experimentos, garantindo reprodutibilidade e aderência ao comportamento real
+do setor de transporte rodoviário.
+
+\section{Estratégia de Geração}
+O processo foi dividido em três etapas:
+
+\subsection*{1. Geração das Tarefas}
+Durations foram amostradas de uma distribuição normal truncada:
+\[
+D \sim \text{Normal}(\mu = 180, \sigma = 40) \quad \text{com} \quad D \in [60, 480].
+\]
+
+\subsection*{2. Janelas de Tempo}
+Os intervalos de início foram gerados usando distribuição uniforme:
+\[
+S \sim \text{Uniform}(6h, 20h).
+\]
+
+\subsection*{3. Perfil dos Motoristas}
+Atributos gerados:
+
+\begin{itemize}
+    \item categoria (Nacional, Internacional, ADR),
+    \item horas acumuladas na semana anterior,
+    \item disponibilidade,
+    \item qualificações específicas.
+\end{itemize}
+
+\section{Validação dos Dados}
+Foram aplicadas checagens consistentes:
+
+\begin{itemize}
+    \item nenhuma tarefa ultrapassa o limite diário permitido,
+    \item janelas de tempo não se sobrepõem indevidamente,
+    \item distribuição de categorias aproximada da realidade da empresa.
+\end{itemize}
+
+\chapter{Modelo Matemático Completo}
+
+Este apêndice apresenta a formulação completa do modelo de Programação Linear
+Inteira utilizado na dissertação.
+
+\section{Variáveis de Decisão}
+
+\[
+x_{ij} = 
+\begin{cases}
+1 & \text{se o motorista } i \text{ realiza a tarefa } j,\\
+0 & \text{caso contrário}.
+\end{cases}
+\]
+
+\[
+h_{i}^\text{dia},\; h_{i}^\text{sem}: \text{horas acumuladas diário e semanal}.
+\]
+
+\section{Função Objetivo}
+
+\[
+\min Z = \sum_{i,j} c_{ij}x_{ij},
+\]
+
+onde $c_{ij}$ representa custos operacionais, distância, categoria ou penalidades.
+
+\section{Restrições}
+
+\subsection{Atribuição Única}
+\[
+\sum_{i} x_{ij} = 1 \quad \forall j.
+\]
+
+\subsection{Limite de Condução Diária}
+\[
+h_i^\text{dia} = \sum_{j} d_j x_{ij} \le 9 + e_i.
+\]
+
+\subsection{Janelas de Tempo}
+\[
+s_j x_{ij} \ge a_j, \qquad s_j x_{ij} + d_j \le b_j.
+\]
+
+\subsection{Compatibilidade Motorista–Tarefa}
+\[
+x_{ij} \leq comp(i,j).
+\]
+
+\subsection{Acúmulo Semanal}
+\[
+h_i^\text{sem} = \sum_{j} d_j x_{ij} \le 56.
+\]
+
+\section{Modelo Final}
+Versão consolidada inclui todas as restrições regulatórias (CE 561/2006), limites
+de pausa, repouso e condução quinzenal, incorporadas por meio de estruturas
+lineares ou restrições complementares.
+
+
+\end{apendicesenv}
+

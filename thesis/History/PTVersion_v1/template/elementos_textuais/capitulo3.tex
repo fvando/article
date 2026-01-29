@@ -1,0 +1,138 @@
+\chapter{Bases Legais e Normativas do Escalonamento de Motoristas}\label{capitulo3}
+
+\section{Introdução}
+
+O transporte rodoviário europeu é regulamentado por um conjunto abrangente de normas destinadas a promover a segurança viária, garantir condições adequadas de trabalho aos motoristas e promover a harmonização das práticas entre os Estados-Membros. A formulação do modelo de Programação Linear Inteira (PLI) apresentado nesta dissertação deriva diretamente dessas normas, que estabelecem limites específicos de condução, períodos mínimos de descanso e requisitos tecnológicos relacionados ao registo de atividades.
+
+Além de definir limites normativos, esses diplomas legais impõem uma estrutura temporal altamente acoplada, caracterizada por janelas móveis, restrições acumulativas e dependências entre períodos consecutivos. Tais características tornam o escalonamento de motoristas um problema estruturalmente complexo do ponto de vista computacional, demandando formulações matemáticas capazes de capturar não apenas estados locais, mas também históricos de condução e descanso. Essa complexidade normativa é um dos principais motivadores para a adoção de Programação Linear Inteira, bem como para a exploração de estratégias complementares de resolução e melhoria de soluções, conforme desenvolvido nos capítulos subsequentes.
+
+Este capítulo tem por objetivo apresentar uma síntese estruturada das principais bases legais aplicáveis ao escalonamento de motoristas na União Europeia, com ênfase no Regulamento (CE) n.\textordmasculine~561/2006, na Diretiva 2002/15/CE e no Regulamento (UE) n.\textordmasculine~165/2014. A compreensão desses diplomas jurídicos é fundamental para contextualizar as restrições incorporadas ao modelo matemático discutido no Capítulo~4.
+
+Ressalta-se que as normas aqui descritas não são tratadas apenas como referências teóricas, mas como elementos diretamente observáveis e verificáveis em dados reais de operação. Os parâmetros utilizados ao longo desta dissertação refletem registros efetivos de jornadas, tempos de condução e períodos de descanso, conforme capturados por sistemas operacionais e dispositivos de registro, promovendo aderência prática e sustentação empírica ao modelo proposto.
+
+\section{Regulamento (CE) n.\textordmasculine~561/2006}
+
+O Regulamento (CE) n.\textordmasculine~561/2006 estabelece as regras relativas aos tempos de condução, pausas e períodos de repouso dos motoristas envolvidos em operações de transporte rodoviário. Seu objetivo principal é melhorar a segurança viária, prevenir a fadiga, reduzir acidentes e garantir condições de trabalho adequadas.
+
+Os principais requisitos incluem:
+
+\subsection{Limites de Condução}
+
+\begin{itemize}
+    \item \textbf{Condução diária}: máximo de 9 horas, podendo ser estendido a 10 horas até duas vezes por semana.
+    \item \textbf{Condução semanal}: máximo de 56 horas.
+    \item \textbf{Condução quinzenal}: máximo de 90 horas em dois períodos consecutivos de 7 dias.
+\end{itemize}
+
+\subsection{Pausas Obrigatórias}
+
+Após um período máximo de 4,5 horas de condução contínua, o motorista deve realizar uma pausa mínima de 45 minutos, podendo ser fracionada em:
+
+\begin{itemize}
+    \item 15 minutos + 30 minutos,
+    \item desde que ambos os períodos ocorram dentro das 4,5 horas.
+\end{itemize}
+
+\subsection{Descanso Diário}
+
+O período de descanso diário pode ser:
+
+\begin{itemize}
+    \item \textbf{Normal}: pelo menos 11 horas consecutivas;  
+    \item \textbf{Reduzido}: pelo menos 9 horas consecutivas, permitido até três vezes entre dois descansos semanais.
+\end{itemize}
+
+\subsection{Descanso Semanal}
+
+\begin{itemize}
+    \item \textbf{Regular}: ao menos 45 horas contínuas;
+    \item \textbf{Reduzido}: mínimo de 24 horas, com compensação até o final da terceira semana seguinte.
+\end{itemize}
+
+\subsection{Implicações para o modelo matemático}
+
+Essas regras originam diretamente:
+
+\begin{itemize}
+    \item restrições de limites diários, semanais e quinzenais de trabalho;
+    \item restrições acumulativas (janelas móveis);
+    \item restrições de continuidade temporal de descanso;
+    \item necessidade de variáveis auxiliares para extensão diária e pausas.
+\end{itemize}
+
+Do ponto de vista da modelagem, o Regulamento (CE) n.\textordmasculine~561/2006 não pode ser interpretado como um conjunto de restrições isoladas. Seus limites diários, semanais e quinzenais operam simultaneamente e sobrepostos, criando janelas móveis de verificação que se deslocam ao longo do horizonte de planejamento. Essa característica limita a adoção de abordagens puramente locais ou estáticas e justifica a necessidade de variáveis de estado acumulado, mecanismos de reinício após descanso e controle explícito de extensões diárias, todos incorporados ao modelo matemático apresentado no Capítulo~4.
+
+\section{Diretiva 2002/15/CE}
+
+A Diretiva 2002/15/CE trata do \textit{tempo de trabalho} dos trabalhadores móveis. Complementa o Regulamento (CE) n.{\textordmasculine} 561/2006 ao definir períodos que não são estritamente de condução, mas que fazem parte da jornada de trabalho.
+
+Os principais elementos incluem:
+
+\begin{itemize}
+    \item limite de 48 horas de trabalho semanal (média), podendo atingir 60 horas quando a média de 48 horas for respeitada no período de quatro meses;
+    \item definição de atividades como:
+        \begin{itemize}
+            \item carga e descarga;
+            \item espera operacional;
+            \item assistência documental e logística;
+            \item preparação e encerramento de veículo.
+        \end{itemize}
+    \item períodos de disponibilidade não contabilizados como trabalho.
+\end{itemize}
+
+Embora o foco principal desta dissertação recaia sobre os tempos de condução regulados pelo Regulamento (CE) n.\textordmasculine~561/2006, os conceitos introduzidos pela Diretiva 2002/15/CE são relevantes para a interpretação dos dados reais utilizados. Em particular, registros operacionais de jornada frequentemente incluem atividades não classificadas como condução, mas que impactam a disponibilidade do motorista. Assim, mesmo quando não modelados explicitamente como variáveis de decisão, esses tempos influenciam a parametrização do problema e a análise dos resultados obtidos.
+
+Embora esta dissertação concentre-se na parte de condução, os tempos descritos pela Diretiva representam potencial extensão futura do modelo (ver Capítulo~7).
+
+\section{Regulamento (UE) n.{\textordmasculine} 165/2014}
+
+Este regulamento estabelece as regras relativas ao tacógrafo digital, dispositivo responsável pelo registro eletrônico da condução, pausas, velocidade e distâncias. Sua principal finalidade é assegurar a fiscalização adequada do cumprimento do Regulamento (CE) n.{\textordmasculine} 561/2006.
+
+Entre seus pontos mais relevantes:
+
+\begin{itemize}
+    \item obrigatoriedade de tacógrafos inteligentes em veículos de transporte internacional;
+    \item registro automático de localização por GNSS;
+    \item salvaguarda e criptografia dos dados de condução;
+    \item integração com sistemas de controle e fiscalização.
+\end{itemize}
+
+No contexto desta dissertação, o Regulamento (UE) n.\textordmasculine~165/2014 estabelece o elo entre o modelo teórico e a realidade operacional. Embora os experimentos utilizem dados simulados, a estrutura do modelo foi concebida de forma compatível com os registros gerados por tacógrafos digitais, permitindo, em princípio, a substituição de dados sintéticos por dados reais. Essa compatibilidade reforça o potencial de aplicabilidade do simulador e viabiliza sua futura integração com sistemas telemáticos e plataformas de gestão de frotas.
+
+Embora não estabeleça limites operacionais adicionais, o Regulamento (UE) n.\textordmasculine~165/2014 define o mecanismo tecnológico que assegura a rastreabilidade, confiabilidade e auditabilidade dos dados utilizados nesta pesquisa. Os registros provenientes de tacógrafos digitais constituem a principal fonte empírica para a validação do cumprimento do Regulamento (CE) n.\textordmasculine~561/2006, reforçando a necessidade de que o modelo matemático esteja alinhado à estrutura e à granularidade dos dados reais disponíveis.
+
+\section{Síntese das Bases Legais}
+
+O conjunto normativo formado pelo Regulamento (CE) n.\textordmasculine~561/2006, pela Diretiva 2002/15/CE e pelo Regulamento (UE) n.\textordmasculine~165/2014 estabelece um arcabouço legal altamente restritivo e tecnicamente detalhado para o escalonamento de motoristas no transporte rodoviário europeu.
+
+Essas normas impõem:
+\begin{itemize}
+    \item limites temporais rígidos e cumulativos;
+    \item janelas móveis de avaliação (24 horas, semana e quinzena);
+    \item forte interdependência entre períodos de condução, pausa e descanso;
+    \item necessidade de monitoramento contínuo e verificável;
+    \item aderência aos registros reais provenientes de tacógrafos digitais.
+\end{itemize}
+
+Do ponto de vista desta dissertação, tais características possuem impacto direto não apenas na formulação matemática, mas também na natureza dos dados utilizados. Os parâmetros empregados refletem situações reais de operação, capturadas por sistemas de registro e gestão, o que exige que o modelo de Programação Linear Inteira seja capaz de reproduzir a lógica normativa observada nos dados empíricos.
+
+\section{Relação com o Modelo Matemático}
+
+Cada restrição normativa apresentada neste capítulo corresponde a um conjunto de inequações no Capítulo~4. Essa abordagem busca assegurar:
+
+\begin{itemize}
+    \item conformidade legal no escopo do modelo;
+    \item capacidade de auditoria;
+    \item rastreabilidade das decisões;
+    \item transparência operacional.
+\end{itemize}
+
+Assim, o modelo matemático não apenas resolve um problema de otimização, mas também se alinha ao quadro regulatório europeu.
+
+Além disso, a utilização de dados reais impõe requisitos adicionais ao modelo, como robustez frente a variações operacionais, consistência temporal e capacidade de reproduzir padrões observados na prática. Dessa forma, o modelo matemático desenvolvido não se limita a satisfazer restrições abstratas, mas busca representar o comportamento observável das jornadas de trabalho sob a legislação europeia.
+
+Dessa forma, o Capítulo~4 apresenta a tradução formal dessas normas em um conjunto estruturado de variáveis, parâmetros, função objetivo e restrições lineares, estabelecendo a base matemática que sustenta toda a implementação computacional e os experimentos apresentados nos capítulos seguintes.
+
+\section{Considerações Finais}
+
+As normativas apresentadas neste capítulo formam a base conceitual e jurídica necessária para compreender o problema de escalonamento de motoristas. Elas estruturam todas as restrições incorporadas ao modelo matemático, justificando a sua formulação e motivando a atenção aos detalhes temporais abordados nos capítulos subsequentes.

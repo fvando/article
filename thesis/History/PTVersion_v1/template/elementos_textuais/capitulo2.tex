@@ -1,0 +1,181 @@
+\chapter{Revisão da Literatura}\label{capitulo2}
+
+\section{Introdução}
+
+Este capítulo apresenta o referencial teórico que fundamenta o desenvolvimento do modelo de otimização e do simulador computacional propostos nesta dissertação. A revisão não se limita a uma descrição conceitual da literatura, mas busca estabelecer uma conexão direta entre os trabalhos existentes e as decisões de modelagem, implementação e experimentação adotadas ao longo do trabalho.
+
+São discutidos aspectos relativos ao transporte rodoviário europeu sob regulamentação estrita, à modelagem matemática baseada em Programação Linear Inteira (PLI), aos problemas de escalonamento com janelas temporais móveis, ao uso de metaheurísticas e matheurísticas em problemas de grande porte, bem como à aplicação de solvers modernos capazes de lidar com estruturas temporais complexas.
+
+Adicionalmente, a revisão destaca lacunas existentes na literatura, em especial no que se refere à integração profunda entre conformidade regulatória, granularidade temporal fina, análise estrutural do modelo e experimentação híbrida, aspectos que motivam e justificam a abordagem proposta nesta dissertação.
+
+\section{Transporte Rodoviário Europeu e as Restrições Regulatórias}
+
+O transporte rodoviário de cargas é um dos pilares da cadeia logística europeia, responsável pela circulação de grande parte dos produtos entre países-membros. Para garantir segurança e padronização operacional, o Regulamento (CE) n.º 561/2006 estabelece limites sobre o tempo de condução, pausas e períodos de descanso. Essas regras impõem uma estrutura de dependências temporais dinâmicas ao planejamento operacional das empresas transportadoras.
+
+Modelos tradicionais de planejamento muitas vezes não incorporam de forma explícita essas janelas móveis — diárias, semanais e quinzenais que determinam limites máximos de condução contínua, acumulada e condições específicas de descanso, o que resulta em formulações incapazes de capturar adequadamente o acoplamento temporal e a complexidade combinatória induzida pela regulamentação. A literatura identifica esse tipo de problema como intrinsecamente complexo, dadas as dependências entre períodos consecutivos \cite{pillac2013}.
+
+Assim, qualquer solução computacional voltada ao escalonamento de motoristas deve considerar esse conjunto de restrições regulatórias, sob pena de gerar soluções inviáveis e não conformes. Modelos robustos precisam integrar, além das condições operacionais, os elementos legais que afetam diretamente o comportamento das variáveis de decisão.
+
+Do ponto de vista da modelagem matemática, essas regras introduzem dependências temporais não locais, uma vez que o cumprimento de uma restrição em determinado período depende do histórico acumulado em janelas móveis de 24 horas, 7 dias e 14 dias. Tal característica diferencia o escalonamento de motoristas de problemas clássicos de alocação de pessoal, exigindo formulações capazes de capturar memória temporal e reinícios condicionais, frequentemente por meio de variáveis auxiliares e restrições acumulativas.
+
+\section{Problemas de Escalonamento e Abordagens Estruturadas}
+
+O escalonamento de motoristas pertence à família dos problemas de escalonamento de pessoal (\textit{workforce scheduling}), que envolvem a alocação de indivíduos a atividades ao longo do tempo, respeitando requisitos de capacidade, janelas temporais e restrições operacionais. Tais problemas são tipicamente formulados como modelos inteiros binários, dada a necessidade de representar decisões discretas de trabalhar ou descansar.
+
+Estudos clássicos mostram a adequação da PLI para representar essas estruturas, sobretudo quando associadas a restrições temporais dependentes, como no caso de motoristas profissionais, demonstrando como decisões temporais de alocação podem ser representadas por matrizes binárias, combinadas a restrições lógicas e acumulativas.
+
+Além disso, \cite{taylor2019} destaca que problemas de escalonamento frequentemente são NP-difíceis e exigem formulações que lidem com alta dimensionalidade. Restrições de janelas móveis, comuns em regulamentações como a europeia, exigem especial atenção para evitar inconsistências ou sobrecargas de condução.
+
+No contexto específico do escalonamento de motoristas, a formulação em PLI frequentemente assume uma estrutura matricial binária do tipo motorista × período, o que leva a modelos de alta dimensionalidade quando se adota granularidade temporal fina. Essa característica impõe desafios computacionais relevantes, ao mesmo tempo em que permite uma representação precisa das regras legais e operacionais, desde que acompanhada por técnicas adequadas de linearização e decomposição temporal.
+
+\section{Modelagem Matemática com Programação Linear Inteira}
+
+Ao longo deste trabalho, os termos Programação Linear Inteira (PLI), Integer Linear Programming (ILP) e Mixed Integer Linear Programming (MILP) são utilizados de forma intercambiável, conforme a convenção adotada na literatura internacional.
+
+A Programação Linear Inteira (PLI) é amplamente utilizada para modelar problemas combinatórios na área de logística. \cite{hillier2021} destaca que variáveis binárias e restrições lineares permitem representar condições complexas como limites de tempo, dependências condicionais e estruturas acumulativas – características essenciais no escalonamento sob regulamentação.
+
+Modelos híbridos envolvendo ILP e heurísticas também são bastante discutidos na literatura \cite{pinheiro2011densitycontrol} e \cite{pinheiro2008hybridcp} exploram técnicas de otimização combinando busca local, geração de soluções candidatas e modelos exatos. Essas abordagens mostram que, embora métodos exatos proporcionem precisão, heurísticas podem auxiliar na redução do espaço de busca e no aprimoramento da solução inicial.
+
+No contexto do transporte, \cite{pinheiro2007transporte} aplica modelos matemáticos ao problema de otimização de transporte de passageiros, destacando o papel da modelagem formal no atendimento a requisitos operacionais e normativos.
+
+\section{Metaheurísticas e Técnicas Avançadas de Otimização}
+
+Modelos baseados em metaheurísticas são particularmente utilizados para problemas de corte, empacotamento, roteamento e escalonamento. Trabalhos como os de \cite{pinheiro2016nesting}, \cite{pinheiro2014parallelbrkga}, \cite{pinheiro2020biasedrkga} e \cite{pinheiro2019twophase} demonstram que algoritmos híbridos, como \textit{pinheiro2016Nesting} e técnicas de geração e busca, são eficazes em problemas estruturados com alta combinatorialidade.
+
+Essas contribuições evidenciam a relevância de técnicas híbridas para solucionar problemas que, assim como o escalonamento de motoristas, possuem espaços de busca muito grandes.
+
+Entre as abordagens metaheurísticas, o método de \textit{Large Neighborhood Search} (LNS) destaca-se como particularmente adequado para problemas de escalonamento com forte acoplamento temporal. O LNS permite a destruição e reconstrução parcial da solução, mantendo parte das decisões fixas enquanto reotimiza subconjuntos do problema, frequentemente com apoio de modelos exatos. Essa característica torna o LNS especialmente atraente para integração com PLI, configurando abordagens conhecidas como matheurísticas.
+
+\section{O Uso de Solvers Modernos: OR-Tools e CP-SAT}
+
+O CP-SAT, solver principal da Google OR-Tools, é particularmente adequado para problemas com grande quantidade de variáveis binárias e restrições lógicas, como é o caso do escalonamento de motoristas sob regulamentação europeia. Sua capacidade de combinar técnicas de programação por restrições, propagação de domínios e aprendizado de cláusulas permite lidar de forma eficiente com janelas temporais móveis e restrições acumulativas, superando limitações observadas em solvers puramente baseados em programação linear inteira. Estudos da Google Research \cite{googleORTools} mostram que CP-SAT supera solvers tradicionais em várias classes de problemas combinatórios.
+
+O uso de solvers híbridos é consistentemente apoiado pela literatura moderna. A proximidade estrutural entre o escalonamento e problemas como roteamento e corte pode ser observada em trabalhos como \cite{pinheiro2019vrp}, que aplicam algoritmos probabilísticos ao problema de roteamento de veículos com coleta e entrega simultâneas. Esses modelos possuem restrições temporais e operacionais análogas, reforçando a aplicabilidade da OR-Tools ao problema tratado nesta dissertação.
+
+\section{Modelos de Apoio à Decisão e Multicritério}
+
+Embora o foco deste trabalho seja um modelo matemático baseado em PLI, modelos multicritério (MCDA) fornecem fundamentação adicional para o processo decisório em ambientes complexos.
+
+\cite{pinheiro2015projectmanagement} discute o uso da Análise Verbal de Decisão (VDA) em ambientes de múltiplos critérios, reforçando a importância de métodos estruturados. Já \cite{pinheiro2016itinfra} e \cite{pinheiro2008production} demonstram como abordagens multicritério podem apoiar decisões em contextos onde múltiplos fatores operacionais coexistem.
+
+Essas contribuições mostram que, embora a solução proposta nesta dissertação utilize um modelo matemático exato, técnicas complementares podem ampliar as perspectivas de análise situacional e avaliação de alternativas.
+
+\section{Trabalhos Correlatos sobre Escalonamento e Logística}
+
+Há uma diversidade de estudos aplicados ao escalonamento e otimização no contexto de logística. \cite{moreira2024} aborda minimização de custos logísticos em empresas de transporte rodoviário, enquanto \cite{moreira2025} apresenta um modelo preliminar para escalonamento de motoristas sob regulamentação.
+
+No campo de scheduling, trabalhos como \cite{pinheiro2005jornal} e \cite{pinheiro2004timetabling} demonstram estruturas formais que são semelhantes àquelas utilizadas no presente estudo: variáveis binárias, controle de janelas e dependências temporais.
+
+Tais contribuições reforçam o espaço de pesquisa e motivam o desenvolvimento de modelos cada vez mais completos e alinhados às necessidades reais do setor.
+
+\section{Síntese da Revisão}
+
+A revisão da literatura realizada neste capítulo evidencia que o escalonamento de motoristas no transporte rodoviário europeu constitui um problema de elevada complexidade estrutural, decorrente da interação entre requisitos operacionais, restrições legais rigorosas e dependências temporais acumulativas. Diferentemente de problemas clássicos de alocação de recursos, o escalonamento sob o Regulamento (CE) n.º 561/2006 impõe janelas móveis de decisão (24 horas, 7 dias e 14 dias), limites acumulados de condução e regras condicionais de descanso, o que torna inadequadas abordagens simplificadas ou puramente heurísticas sem mecanismos explícitos de verificação de conformidade.
+
+A literatura analisada demonstra que a Programação Linear Inteira (PLI) é uma das abordagens mais adequadas para representar formalmente esse tipo de problema, uma vez que permite modelar decisões discretas, restrições acumulativas e vínculos lógicos de forma rigorosa. Trabalhos clássicos e contemporâneos confirmam que modelos baseados em variáveis binárias, quando corretamente formulados, conseguem capturar com precisão regras regulatórias complexas, desde que acompanhados de técnicas adequadas de discretização temporal e linearização.
+
+Entretanto, também se observa que modelos exatos, quando aplicados isoladamente, podem enfrentar limitações de escalabilidade em instâncias de grande porte ou quando submetidos a demandas altamente variáveis. Por esse motivo, a literatura recente aponta uma tendência clara em direção a abordagens híbridas, que combinam modelos matemáticos exatos com heurísticas construtivas, métodos de busca em grandes vizinhanças (\textit{Large Neighborhood Search} -- LNS) e estratégias de decomposição ou relaxação. Essas abordagens permitem explorar o espaço de soluções de forma mais eficiente, mantendo a consistência com o modelo regulatório subjacente.
+
+Os estudos revisados também destacam o papel crescente de solvers modernos, como o CP-SAT da biblioteca OR-Tools, que combinam técnicas de programação por restrições, satisfação booleana e otimização inteira. A capacidade desses solvers de lidar com modelos de grande dimensão, fortemente acoplados no tempo e com estruturas matriciais esparsas, torna-os particularmente adequados para problemas de escalonamento sob regulamentação europeia.
+
+Além disso, a literatura evidencia que o uso de métricas estruturais — como densidade da matriz de restrições, padrões de esparsidade e comportamento temporal das variáveis — pode fornecer informações valiosas sobre a dificuldade do problema e o desempenho esperado do solver. No entanto, observa-se que poucos trabalhos exploram explicitamente essas métricas como instrumentos de diagnóstico, pré-processamento ou orientação heurística, o que revela uma lacuna relevante no estado da arte.
+
+Outro aspecto emergente identificado na revisão é a incorporação de técnicas de aprendizado de máquina como mecanismos auxiliares de apoio à decisão em problemas de otimização combinatória. Embora ainda incipiente no contexto do escalonamento de motoristas sob regulamentação, essa linha de pesquisa sugere que modelos supervisionados podem ser utilizados para estimar a qualidade de decisões locais, priorizar regiões promissoras do espaço de busca ou acelerar processos heurísticos, desde que integrados de forma não intrusiva e com garantias de reprodutibilidade.
+
+De forma geral, a literatura revela um cenário fragmentado: por um lado, modelos de roteirização e VRP focam majoritariamente em aspectos espaciais e de custo; por outro, modelos regulatórios concentram-se nas restrições temporais, frequentemente sem integração com estratégias avançadas de busca ou análise estrutural. Poucos trabalhos apresentam uma abordagem integrada que combine: (i) formulação exata completa das restrições legais, (ii) mecanismos heurísticos e matheurísticos de melhoria, (iii) instrumentação analítica do comportamento do modelo e (iv) suporte à experimentação sistemática.
+
+Nesse contexto, a presente dissertação posiciona-se como uma contribuição que busca integrar esses diferentes eixos, utilizando a Programação Linear Inteira como núcleo formal, complementada por heurísticas construtivas, métodos LNS, análise estrutural da matriz de restrições e, de forma opcional, mecanismos de aprendizado supervisionado. Essa integração visa não apenas resolver instâncias específicas, mas também oferecer uma plataforma experimental capaz de apoiar análises comparativas, estudos de sensibilidade e investigações científicas mais amplas sobre o escalonamento de motoristas sob restrições legais complexas.
+
+A partir dessa síntese, estabelece-se o arcabouço conceitual e metodológico que fundamenta a formulação do modelo matemático, da implementação computacional e do desenho experimental apresentados nos capítulos subsequentes.
+
+Os resultados desta comparação indicam que o simulador implementa um conjunto de técnicas inéditas, particularmente relevantes pela natureza matricial das operações e pelo uso de métricas estruturais (como densidade) para guiar processos heurísticos e matheurísticos. Essa abordagem não foi identificada na literatura revisada, nem no artigo comparativo utilizado como referência, caracterizando assim uma contribuição original dentro do escopo de escalonamento de motoristas.
+
+\bigskip
+
+% Caso deseje adicionar a referência direta sem BibTeX:
+%\begin{thebibliography}{9}
+%\bibitem{artigoEscalonamento2025}
+%Autor(es), \emph{Título do artigo}, Transportation Research Part B, 2025. (Referência ao artigo 1-s2.0-S0305054825000292-main)
+%\end{thebibliography}
+
+% \begin{figure}[H]
+%     \centering
+
+%     \begin{tikzpicture}[
+%         node distance=13mm,
+%         >=latex,
+%         box/.style={
+%             rectangle,
+%             rounded corners,
+%             draw=black,
+%             thick,
+%             align=center,
+%             minimum width=38mm,
+%             minimum height=11mm,
+%             fill=gray!10
+%         },
+%         decision/.style={
+%             diamond,
+%             draw,
+%             thick,
+%             align=center,
+%             aspect=2,
+%             inner sep=1pt,
+%             fill=gray!10
+%         }
+%     ]
+
+%     % NODES ---------------------------------------------------------
+%     \node[box] (input) {Demanda \\ \small{(96 períodos de 15 min)}};
+
+%     \node[box, below=of input] (heuristic) {Heurística Construtiva \\ \textbf{Greedy Allocation Matrix}};
+
+%     \node[box, below=of heuristic] (density) {Avaliação da Densidade \\ da Matriz de Restrições};
+
+%     \node[decision, below=of density] (checkdens) {Densidade aceitável?};
+
+%     \node[box, below=of checkdens] (lns) {LNS Guiado por Densidade \\ \small{Destruição por blocos temporais}};
+
+%     \node[box, below=of lns] (milp) {Reconstrução via MILP Local \\ \texttt{solve\_shift\_schedule()}};
+
+%     \node[decision, below=of milp] (checkconv) {Melhor solução?};
+
+%     \node[box, below=of checkconv] (output) {Solução Final \\ Escalonamento Otimizado};
+
+%     % Loops ---------------------------------------------------------
+%     \draw[->] (checkdens.east) -- ++(26mm,0) |- (lns.east) node[pos=0.25, right]{\small{não}};
+    
+%     \draw[->] (checkconv.west) -- ++(-26mm,0) |- (lns.west) node[pos=0.25, left]{\small{não}};
+
+%     % FLOWARROWS ----------------------------------------------------
+%     \draw[->] (input) -- (heuristic);
+%     \draw[->] (heuristic) -- (density);
+%     \draw[->] (density) -- (checkdens);
+
+%     \draw[->] (checkdens) -- node[right]{\small{sim}} (output);
+
+%     \draw[->] (checkdens) -- (lns);
+
+%     \draw[->] (lns) -- (milp);
+%     \draw[->] (milp) -- (checkconv);
+
+%     \draw[->] (checkconv) -- node[right]{\small{sim}} (output);
+
+%     % Title
+%     \node[above=5mm of input, align=center] {\textbf{Pipeline Híbrido de Escalonamento}\\{\small (Heurística $\rightarrow$ LNS $\rightarrow$ MILP)}};
+
+%     \end{tikzpicture}
+
+%     \caption{Representação do pipeline híbrido proposto: uma abordagem matheurística composta por heurística construtiva, LNS guiado por densidade e reconstrução via MILP, com ciclos iterativos de melhoria até convergência.}
+%     \label{fig:pipeline-hibrido}
+% \end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{template/figuras/fluxogeral.png}
+    \caption{Pipeline do simulador híbrido proposto: geração de solução inicial por heurística (com ML opcional $f_1$), melhoria iterativa por LNS (com seleção de vizinhanças opcional $f_2$), reconstrução local via CP-SAT/MILP com fixação parcial e validação final de conformidade com o Regulamento (CE) n.º 561/2006.}
+    \label{fig:pipeline-simulador-hibrido}
+\end{figure}
+
+
+

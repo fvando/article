@@ -1,0 +1,537 @@
+\chapter{Revisão Comparatativa da Literatura e Posicionamento Científico}\label{capitulo8}
+
+\section{Revisao Comparativa da Literatura: Modelos de Escalonamento, Roteirizacao e Conformidade Regulamentar}
+
+A literatura sobre escalonamento de motoristas e problemas de roteirização com restrições regulatórias evoluiu substancialmente nas últimas décadas, especialmente após a consolidação do Regulamento (CE) n.º 561/2006, que introduziu limites rígidos de condução, pausas obrigatórias e períodos de descanso. Este capítulo apresenta uma análise comparativa abrangente entre os principais trabalhos relacionados ao tema, incluindo: (i) Moreira et al. (Artigo Antigo), (ii) Moreira (Artigo Atualizado – CSOC2025), (iii) o estudo publicado em \textit{Computers \& Operations Research} (2025), (iv) Pillai e Ulmanen (2019), (v) Blöchliger (2004) e (vi) Savelsbergh e Sol (1995). Cada trabalho é analisado em relação à abordagem metodológica, delineamento experimental, objetivos, resultados e contribuições ao estado da arte.
+
+A análise comparativa a seguir contempla trabalhos representativos de diferentes
+linhas de pesquisa — desde formulações clássicas de roteirização e coleta-entrega
+até abordagens recentes focadas em conformidade regulatória e escalonamento temporal.
+A Tabela~\ref{tab:comparacao_trabalhos} sintetiza essas contribuições, permitindo
+uma comparação direta entre objetivos, metodologias e escopo de aplicação.
+
+
+A Tabela~\ref{tab:comparacao_trabalhos} sintetiza os elementos estruturais essenciais de cada estudo, permitindo uma avaliação direta das diferenças conceituais, metodológicas e aplicadas.
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Comparação abrangente entre estudos relevantes sobre escalonamento, roteirização e conformidade regulatória.}
+\label{tab:comparacao_trabalhos}
+\begin{tabularx}{\textwidth}{p{2.0cm} p{2.0cm} p{2.0cm} p{2.0cm} p{2.0cm} p{2.0cm}}
+\toprule
+\textbf{Trabalho} &
+\textbf{Abordagem} &
+\textbf{Metodologia} &
+\textbf{Delineamento do Estudo} &
+\textbf{Objetivos Principais} &
+\textbf{Resultados / Contribuições} \\
+
+\textbf{Moreira et al. (Artigo Antigo)} &
+Otimização exata para alocação de frota &
+Modelo ILP; solução com LINGO; análise de custos &
+Estudo matemático de alocação de veículos e custos operacionais &
+Minimizar custos totais de operação; otimizar alocação de frota &
+Demonstra redução de custos e eficiência logística; base conceitual sólida \\ 
+
+\textbf{Moreira (Artigo Atualizado – CSOC2025)} &
+Escalonamento completo de motoristas sob legislação europeia &
+Modelo MILP; solução com OR-Tools CP-SAT; simulações &
+Formulação temporal em granularidade de 15 minutos; múltiplos horizontes (1, 2, 7, 15 dias) &
+Minimizar motoristas necessários; maximizar atendimento de demanda; garantir 100\% conformidade &
+Modelo robusto, escalável e alinhado ao Reg. 561/2006; 100\% compliance; indicadores claros \\ 
+
+\textbf{C\&OR (2025) – Break Scheduling in VRP} &
+Heurística aplicada ao VRP com inserção de pausas &
+Métodos construtivos e de melhoria; integração com rotação PDPTW &
+Estudo computacional com instâncias sintéticas de VRP; análise de impactos na rota &
+Inserir pausas obrigatórias minimizando efeitos no tempo total de rota &
+Redução de 6.1\% na distância total e 1.7\% no tempo de serviço; alta aplicabilidade operacional \\ 
+
+\textbf{Pillai \& Ulmanen (2019)} &
+Escalonamento com foco em conformidade regulatória &
+Modelo híbrido (MILP + heurísticas); verificação de violações &
+Análise de dados reais combinados com simulação &
+Minimizar violações ao Reg. 561/2006; otimizar escalas &
+Significativa redução de violações; metodologia híbrida eficaz; ponte entre teoria e prática \\ 
+
+\textbf{Blöchliger (2004)} &
+Roteirização com modelagem explícita de pausas e descansos &
+Formulações matemáticas e heurísticas específicas para VRP com descanso &
+Estudo seminal que introduz pausas diretamente no problema de roteirização &
+Representar legalmente pausas dentro das rotas; melhorar realismo operacional &
+Primeiro modelo geral de integração pausas-descanso-VRP; base teórica para métodos posteriores \\ 
+
+\textbf{Savelsbergh \& Sol (1995)} &
+Formulação estruturada do problema Pickup and Delivery (GPDP) &
+Modelos matemáticos; heurísticas clássicas para PDPTW &
+Trabalho fundamental que define formalmente a classe GPDP &
+Estabelecer base conceitual para problemas de coleta-entrega e variantes com tempo &
+Base teórica amplamente utilizada em trabalhos posteriores; referência estrutural \\ 
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Analise Comparativa Critica}
+
+A análise revela que cada trabalho atua em um eixo metodológico complementar. O estudo de Blöchliger (2004) introduz a integração fundamental entre pausas e roteirização, conceito que mais tarde é refinado no estudo C\&OR (2025), que aplica heurísticas mais eficientes ao VRP. Já Savelsbergh e Sol (1995) fornecem a estrutura matemática que dá base a praticamente todos os modelos de pickup-and-delivery e variantes modernas de VRP.
+
+Os trabalhos de Moreira (artigo antigo e artigo atualizado) avançam o estado da arte ao aplicar formulações exatas completas para o problema de escalonamento sob as normas europeias. O artigo atualizado apresenta o modelo mais completo da literatura no que diz respeito à conformidade temporal com todas as restrições do Regulamento (CE) n.º 561/2006, superando abordagens anteriores tanto em granularidade quanto em completude.
+
+O estudo de Pillai e Ulmanen (2019), por sua vez, atua em um espaço intermediário: combina MILP com heurísticas de correção, alcançando bons resultados de conformidade sem necessidade de modelos totalmente exatos em grandes horizontes.
+
+Conclui-se que a literatura é rica, porém fragmentada: modelos de VRP tratam principalmente do espaço e da rota; modelos regulatórios tratam principalmente do tempo e da conformidade. A contribuição desta dissertação está exatamente na integração profunda das restrições temporais com granularidade fina, oferecendo uma solução exata, escalável e operacionalmente aplicável.
+
+\section{Comparação das Técnicas Desenvolvidas com a Literatura e o Estado da Arte}
+
+% Esta seção apresenta uma análise comparativa entre as técnicas empregadas no simulador de escalonamento desenvolvido neste trabalho e aquelas encontradas na literatura clássica de escalonamento de motoristas, heurísticas e métodos exatos. Também é realizada uma comparação direta com o artigo de referência recente \cite{artigoEscalonamento2025} (1-s2.0-S0305054825000292-main'), que representa um dos trabalhos mais atuais e robustos da área.
+
+Esta seção apresenta uma análise comparativa entre as técnicas empregadas no simulador
+de escalonamento desenvolvido neste trabalho e aquelas encontradas na literatura
+clássica e contemporânea. A comparação é realizada à luz dos resultados computacionais
+obtidos no Capítulo~7, permitindo avaliar não apenas diferenças conceituais, mas
+também impactos práticos em termos de eficiência, escalabilidade e estabilidade
+das soluções.
+
+
+As contribuições introduzidas neste estudo incluem:
+(i) uma heurística construtiva matricial inédita baseada na distribuição temporal da demanda,
+(ii) um mecanismo sistemático de transformações elementares sobre a matriz de restrições,
+(iii) um método LNS guiado por densidade da matriz e
+(iv) um pipeline híbrido que integra heurística, LNS e MILP com realimentação estrutural.
+
+Tais abordagens diferenciam-se significativamente do estado da arte por introduzirem mecanismos de pré-processamento estrutural e tomada de decisão orientada pela geometria interna das restrições, o que não é reportado nos trabalhos existentes.
+
+A Tabela~\ref{tab:comparacao-tecnicas} sintetiza as diferenças metodológicas entre as abordagens, destacando a originalidade das soluções propostas neste simulador.
+
+
+\begin{table}[H]
+\centering
+\scriptsize
+\caption{Comparação entre as técnicas do simulador, literatura existente e o artigo 1-s2.0-S0305054825000292-main}
+\label{tab:comparacao-tecnicas}
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{p{3cm} p{3cm} p{3cm} p{3cm}}
+\toprule
+\textbf{Critério} &
+\textbf{Técnicas do Simulador Ottimizia} &
+\textbf{Literatura Clássica} &
+\textbf{Artigo 1-s2.0-S0305054825000292-main} \\ 
+\hline
+
+Modelo Matemático Base &
+ILP customizaiscretização fina (96 períodos de 15 min) e coeficientes reescalonáveis &
+ILP tradicional com discretização mais ampla (30–60 min) &
+ILP robusto, mas sem manipulação estrutural matricial \\ 
+\hline
+
+Heurística Construtiva &
+Heurística Greedy baseada em matriz período × motorista; minimização de gaps &
+Heurísticas por regras, sem estrutura matricial &
+Não utiliza heurística construtiva \\ 
+\hline
+
+Uso da Densidade da Matriz &
+\textbf{Sim} — densidade como métrica de pré-processamento e complexidade &
+Raramente utilizada ou discutida &
+Não emprega métrica de densidade \\ 
+\hline
+
+Transformações Elementares nas Restrições &
+\textbf{Original}: troca de linhas, multiplicação escalar, combinação linear &
+Inexistente na literatura de escalonamento &
+Não aplica tais transformações \\ 
+\hline
+
+Integração Heurística + MILP &
+Pipeline híbrido (Greedy $\rightarrow$ LNS $\rightarrow$ MILP) &
+Poucos trabalhos integram heurísticas sistematicamente &
+Não integra heurísticas ao MILP \\ 
+\hline
+
+Large Neighborhood Search (LNS) &
+LNS guiado por densidade e sensibilidade temporal &
+LNS clássico baseado em custo ou aleatoriedade &
+Não utiliza LNS \\ 
+\hline
+
+Reconstrução da Vizinhaça &
+Reconstrução via MILP local usando solve\_shift\_schedule &
+Diversas heurísticas locais, mas sem estrutura matricial &
+Não utiliza reconstrução iterativa \\ 
+\hline
+
+Granularidade Temporal &
+15 minutos (96 períodos) &
+30–60 minutos &
+Variável, mas menor granularidade que a deste trabalho \\ 
+\hline
+
+Detectores Automáticos de Degeneração &
+\textbf{Sim}: densidade, cobertura, sub/sobrecarga &
+Raramente abordado &
+Não contém detectores automáticos \\ 
+\hline
+
+Escalabilidade para Instâncias Grandes &
+Alta, devido ao pipeline híbrido + pré-processamento &
+Dependente do solver, frequentemente limitada &
+Limitada pelo tamanho do MILP \\ 
+\hline
+
+Originalidade Científica &
+\textbf{Alta}: combinação inédita de heurística matricial, operações lineares e LNS guiado &
+Média — técnicas amplamente estabelecidas &
+Média/Alta — foco em formulação precisa, mas sem heurísticas inovadoras \\ 
+\hline
+
+\end{tabularx}
+\end{table}
+
+Os resultados desta comparação indicam que o simulador implementa um conjunto de técnicas inéditas, particularmente relevantes pela natureza matricial das operações e pelo uso de métricas estruturais (como densidade) para guiar processos heurísticos e matheurísticos. Essa abordagem não foi identificada na literatura revisada, nem no artigo comparativo utilizado como referência, caracterizando assim uma contribuição original dentro do escopo de escalonamento de motorist
+
+\subsection{Extensões Recentes do Simulador e Alinhamento com Tendências Atuais}
+
+Além da formulação exata do escalonamento sob o Regulamento (CE) n.º 561/2006, o simulador foi estendido para incorporar uma arquitetura híbrida orientada a experimentos. Essa arquitetura agrega três camadas complementares: (i) uma heurística construtiva gulosa para geração rápida de soluções iniciais, (ii) um mecanismo matheurístico baseado em \textit{Large Neighborhood Search} (LNS) com reotimização local via solver inteiro e (iii) um módulo opcional de aprendizado de máquina supervisionado, empregado como camada de \textit{guidance} (não substitutiva) para decisões locais e estratégicas.
+
+Do ponto de vista da literatura, tais extensões convergem com tendências contemporâneas em otimização combinatória aplicada, nas quais métodos exatos permanecem como referência de qualidade, enquanto heurísticas e matheurísticas são utilizadas para ampliar escalabilidade, reduzir tempo computacional e viabilizar aplicações interativas. Nesse sentido, o simulador não se limita a “resolver um ILP”, mas estabelece uma plataforma de avaliação comparativa entre modos exato, heurístico e matheurístico, sob um conjunto de restrições legais complexas e altamente acopladas no tempo.
+
+\subsection{Heurística Construtiva como Baseline Experimental}
+
+A heurística gulosa (\textit{greedy initial allocation}) atua como gerador de soluções viáveis com baixo custo computacional, produzindo um baseline essencial para: (i) comparação objetiva contra soluções ótimas, (ii) inicialização de métodos de melhoria e (iii) geração de dados para treinamento supervisionado. Em contraste com abordagens clássicas puramente baseadas em regras, a implementação proposta estrutura a decisão de alocação de forma matricial (período $\times$ motorista), permitindo calcular indicadores de carga local, carga por motorista e lacunas de demanda (\textit{demand gap}) como sinais fundamentais para guiar a construção da solução.
+
+\subsection{Large Neighborhood Search com Reotimização via Solver Inteiro}
+
+O método LNS implementado utiliza o princípio de destruição e reconstrução parcial da solução. Em cada iteração, um subconjunto de períodos é liberado (vizinhaça) e as demais alocações são fixadas (\textit{fixed assignments}); em seguida, um subproblema restrito é reotimizado via solver inteiro. Essa abordagem combina duas propriedades desejáveis: (i) capacidade de exploração (metaheurística) e (ii) consistência com o modelo exato (reotimização com as mesmas restrições legais). Como consequência, obtém-se um mecanismo de melhoria incremental com controle explícito de esforço computacional (número de iterações, tamanho da vizinhaça e limites do solver).
+
+\subsection{Aprendizado de Máquina como Camada Opcional de \textit{Guidance}}
+
+O módulo de aprendizado de máquina foi concebido como camada opcional, com comportamento robusto por \textit{fallback}. Dois modelos supervisionados são utilizados: $f_1$, para estimar a atratividade de uma decisão motorista--período no contexto da heurística gulosa, e $f_2$, para estimar o potencial de melhoria de uma vizinhaça candidata no LNS. A integração é não-intrusiva: na ausência do ambiente de ML ou de modelos treinados, o simulador adota automaticamente escores heurísticos determinísticos, preservando reprodutibilidade e estabilidade experimental.
+
+A contribuição metodológica central desse componente está na construção de um pipeline endógeno de dados: o próprio simulador gera datasets sintéticos consistentes com o domínio, por meio da comparação entre soluções heurísticas e soluções ótimas (ou de alta qualidade) retornadas pelo solver inteiro. Essa estratégia evita dependência de dados externos e permite controlar distribuição de instâncias, sementes aleatórias e parâmetros regulatórios, oferecendo um ambiente experimental replicável e extensível.
+
+\subsection{Visualização Analítica e Instrumentação Experimental}
+
+Um diferencial relevante do simulador, quando comparado a implementações tipicamente descritas na literatura, é a instrumentação de métricas e gráficos orientados a diagnóstico. Além de indicadores operacionais (cobertura, subutilização e sobrecarga), o sistema incorpora visualizações de estrutura matricial (densidade e padrão de esparsidade), gráficos de convergência do LNS (histórico da função objetivo e marcação de melhorias) e gráficos auxiliares para análise temporal. Essas visualizações transformam o simulador em ferramenta de pesquisa aplicada, viabilizando estudos de sensibilidade, avaliação de trade-offs (qualidade versus tempo), e auditoria do comportamento dos algoritmos sob diferentes configurações de restrições.
+
+\bigskip
+
+%\begin{figure}[H]
+%\centering
+%\resizebox{\textwidth}{!}{
+%\begin{tikzpicture}[
+%    node distance=3mm,
+%    >=Latex,
+%    font=\small,
+%    box/.style={
+%        rectangle,
+%        rounded corners=1mm,
+%        draw=black,
+%        thick,
+%        align=center,
+%        minimum width=45mm,
+%        minimum height=8mm,
+%        fill=gray!8
+%    },
+%    wide/.style={
+%        rectangle,
+%        rounded corners=2mm,
+%        draw=black,
+%        thick,
+%        align=center,
+%        minimum width=76mm,
+%        minimum height=8mm,
+%        fill=gray!8
+%    },
+%    decision/.style={
+%        diamond,
+%        draw=black,
+%        thick,
+%        align=center,
+%        aspect=1.0,
+%        inner sep=1.0pt,
+%        fill=gray!8
+%    },
+%    note/.style={
+%        rectangle,
+%        draw=black,
+%        dashed,
+%        rounded corners=1mm,
+%        align=left,
+%        inner sep=1.0pt,
+%        fill=white
+%    }
+%]
+
+% -----------------------------
+% Title
+% -----------------------------
+%\node[wide] (title) {\textbf{Pipeline do Simulador Híbrido de Escalonamento}\\
+%\scriptsize (Exato CP-SAT \;|\; Heurística Greedy \;|\; LNS + Reotimização Local via CP-SAT \;|\; ML opcional com fallback)};
+
+% -----------------------------
+% Inputs / Setup
+% -----------------------------
+%\node[box, below=of title] (input) {Entrada\\
+%\scriptsize Demanda período (real) + parâmetros + restrições (Reg. 561/2006)};
+
+%\node[box, below=of input] (prep) {Pré-processamento\\
+%\scriptsize Discretização (15 min) + construção do modelo/matriz + estados iniciais};
+
+%\node[box, below=of prep] (struct) {Métricas estruturais\\
+%\scriptsize densidade/esparsidade, \\ períodos críticos, \\ indicadores base};
+
+% -----------------------------
+% Choose mode
+% -----------------------------
+%\node[decision, below=of struct] (mode) {Modo de\\resolução?};
+
+% branches
+%\node[box, below left=11mm and 26mm of mode] (exact) {Modo Exato\\
+%\scriptsize CP-SAT no modelo completo};
+
+%\node[box, below=14mm of mode] (greedy) {Modo Heurístico\\
+%\scriptsize Greedy initial allocation \\ (matriz período$\times$motorista)};
+
+%\node[box, below right=11mm and 26mm of mode] (lnsstart) {Modo LNS\\
+%\scriptsize melhoria iterativa \\ (destrói+reconstrói)};
+
+% -----------------------------
+% Greedy details (optional ML f1)
+% -----------------------------
+%\node[decision, below=of greedy] (ml1) {ML local\\$f_1$ disponível?};
+
+%\node[box, below left=5mm and 16mm of ml1] (score_det) {Score determinístico\\
+%\scriptsize regras heurísticas \\ (carga, folgas, gaps, limites)};
+%\node[box, below right=5mm and 16mm of ml1] (score_ml) {Score com $f_1$\\
+%\scriptsize prioridade motorista--período + contexto};
+
+%\node[box, below=of ml1, yshift=-20mm] (y0) {Solução inicial $y^{0}$\\
+%\scriptsize viável (ou quase-viável) + \\ marcação de períodos críticos};
+
+% -----------------------------
+% LNS loop (optional ML f2)
+% -----------------------------
+%\node[box, below=of lnsstart] (lnsloop) {Iteração LNS ($it=1..it_{\max}$)\\
+%\scriptsize definir destruição + reconstrução};
+
+%\node[decision, below=of lnsloop] (ml2) {ML vizinhança\\$f_2$ disponível?};
+
+%\node[box, below left=4mm and 20mm of ml2] (neigh_det) {Seleção determinística\\
+%\scriptsize densidade, janelas críticas, sobre/subcobertura};
+%\node[box, below right=4mm and 18mm of ml2] (neigh_ml) {Seleção guiada por $f_2$\\
+%\scriptsize prioriza vizinhanças com maior ganho esperado};
+
+%\node[box, below=of ml2, yshift=-20mm] (fix) {Fixação parcial\\
+%\scriptsize \textit{fixed assignments} fora da vizinhança};
+
+%\node[box, below=of fix] (submilp) {Reconstrução local\\
+%\scriptsize subproblema CP-SAT/MILP com limite de tempo};
+
+%\node[decision, below=of submilp ] (accept) {Melhorou\\$F(y)$?};
+
+%\node[box, below left=5mm and 14mm of accept] (keep) {Aceitar\\
+%\scriptsize $y \leftarrow y^{cand}$};
+%\node[box, below right=5mm and 14mm of accept] (reject) {Rejeitar / explorar\\
+%\scriptsize ajustar vizinhança/relaxação};
+
+%\node[decision, below=of accept, yshift=-20mm] (stop) {Parar?\\
+%\scriptsize sem melhoria / \\ limite it/tempo};
+
+% -----------------------------
+% Validation + Outputs
+% -----------------------------
+%\node[box, below=18mm of stop] (valid) {Validação e auditoria\\
+%\scriptsize conformidade legal (561/2006) + consistência temporal};
+
+%\node[wide, below=of valid] (out) {Saídas\\
+%\scriptsize solução final + indicadores (cobertura, sobrecarga, subutilização, estabilidade) + gráficos};
+
+% -----------------------------
+% Arrows: main flow
+% -----------------------------
+%\draw[->, thick] (title) -- (input);
+%\draw[->, thick] (input) -- (prep);
+%\draw[->, thick] (prep) -- (struct);
+%\draw[->, thick] (struct) -- (mode);
+
+%\draw[->, thick] (mode) -- node[above left]{\scriptsize Exato} (exact);
+%\draw[->, thick] (mode) -- node[right]{\scriptsize Heurístico} (greedy);
+%\draw[->, thick] (mode) -- node[above right]{\scriptsize LNS} (lnsstart);
+
+% exact to outputs
+%\draw[->, thick] (exact.south) |- (valid.west);
+
+% greedy path
+%\draw[->, thick] (greedy) -- (ml1);
+%\draw[->, thick] (ml1) -- node[above left]{\scriptsize não} (score_det);
+%\draw[->, thick] (ml1) -- node[above right]{\scriptsize sim} (score_ml);
+%\draw[->, thick] (score_det) |- (y0.west);
+%\draw[->, thick] (score_ml) |- (y0.east);
+
+% greedy can stop or go LNS
+%\draw[->, thick] (y0.south) |- (valid.west);
+%\draw[->, thick] (y0.east) .. controls +(18mm,-6mm) and +(-18mm,6mm) .. (lnsstart.west);
+
+% LNS path
+%\draw[->, thick] (lnsstart) -- (lnsloop);
+%\draw[->, thick] (lnsloop) -- (ml2);
+%\draw[->, thick] (ml2) -- node[above left]{\scriptsize não} (neigh_det);
+%\draw[->, thick] (ml2) -- node[above right]{\scriptsize sim} (neigh_ml);
+%\draw[->, thick] (neigh_det) |- (fix.west);
+%\draw[->, thick] (neigh_ml) |- (fix.east);
+
+%\draw[->, thick] (fix) -- (submilp);
+%\draw[->, thick] (submilp) -- (accept);
+
+%\draw[->, thick] (accept) -- node[above left]{\scriptsize sim} (keep);
+%\draw[->, thick] (accept) -- node[above right]{\scriptsize não} (reject);
+
+%\draw[->, thick] (keep) |- (stop.west);
+%\draw[->, thick] (reject) |- (stop.east);
+
+% loop back if not stopping
+%\draw[->, thick] (stop.west) -- ++(-18mm,0) |- node[pos=0.25,left]{\scriptsize não} (lnsloop.west);
+
+% stopping to validation/output
+%\draw[->, thick] (stop) -- node[right]{\scriptsize sim} (valid);
+%\draw[->, thick] (valid) -- (out);
+
+% -----------------------------
+% Notes (optional, can remove)
+% -----------------------------
+%\node[note, right=6mm of struct] (note1) {\scriptsize
+%\textbf{Notas:}\\
+%- Densidade/esparsidade guia dificuldade\\
+%- Períodos críticos: gaps, violações próximas\\
+%- Métricas também alimentam diagnóstico};
+
+%\node[note, right=6mm of submilp] (note2) {\scriptsize
+%\textbf{Garantia:}\\
+%Toda solução final é verificada\\
+%pelo CP-SAT com restrições legais.};
+
+%\end{tikzpicture}
+%}
+
+
+
+%\caption{Pipeline do simulador híbrido proposto: geração de solução inicial por heurística (com ML opcional $f_1$), melhoria iterativa por LNS (com seleção de vizinhanças opcional $f_2$), reconstrução local via CP-SAT/MILP com fixação parcial e validação final de conformidade com o Regulamento (CE) n.º 561/2006.}
+%\label{fig:pipeline-simulador-hibrido}
+%\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{template/figuras/fluxogeral.png}
+    \caption{Pipeline do simulador híbrido proposto: geração de solução inicial por heurística (com ML opcional $f_1$), melhoria iterativa por LNS (com seleção de vizinhanças opcional $f_2$), reconstrução local via CP-SAT/MILP com fixação parcial e validação final de conformidade com o Regulamento (CE) n.º 561/2006.}
+    \label{fig:pipeline-simulador-hibrido}
+\end{figure}
+
+Com base nas comparações apresentadas, torna-se possível posicionar o simulador
+desenvolvido nesta dissertação não apenas como uma implementação específica de
+um modelo de Programação Linear Inteira, mas como uma arquitetura híbrida orientada
+à experimentação e à investigação científica.
+
+
+\section{Pipeline Híbrido de Otimização}
+
+O simulador desenvolvido nesta dissertação adota uma arquitetura híbrida de otimização,
+na qual diferentes paradigmas algorítmicos são integrados de forma hierárquica e complementar.
+Essa abordagem foi concebida para conciliar rigor regulatório, eficiência computacional
+e flexibilidade operacional, características essenciais em problemas reais de
+escalonamento de motoristas sob o Regulamento (CE) n.º 561/2006.
+
+O pipeline híbrido proposto combina quatro camadas principais:
+(i) uma heurística construtiva para geração de soluções iniciais factíveis,
+(ii) uma análise estrutural baseada na densidade da matriz de restrições,
+(iii) um processo iterativo de melhoria via \textit{Large Neighborhood Search} (LNS)
+com reotimização local por MILP e
+(iv) uma camada opcional de aprendizagem de máquina para apoio à decisão heurística.
+A Figura~\ref{fig:pipeline-hibrido-final} ilustra esse fluxo de forma integrada.
+
+\subsection{Heurística Construtiva e Geração da Solução Inicial}
+
+O pipeline inicia-se com a leitura dos dados de entrada, compostos por demanda operacional
+real por período, parâmetros regulatórios e configurações do cenário.
+A partir dessas informações, uma heurística construtiva gulosa é aplicada para gerar
+uma escala inicial factível.
+
+Essa heurística opera de forma sequencial ao longo da linha do tempo discretizada,
+atribuindo motoristas elegíveis aos períodos conforme a demanda, respeitando
+as principais restrições regulatórias, como limites de condução contínua,
+pausas obrigatórias e descansos mínimos.
+O objetivo desta etapa não é alcançar a solução ótima, mas sim produzir rapidamente
+uma solução viável que sirva como ponto de partida para etapas posteriores de refinamento.
+
+\subsection{Atualização de Estado e Consistência Regulamentar}
+
+Após a alocação inicial, o simulador realiza uma atualização completa do estado
+regulatório de cada motorista, incluindo carga de trabalho acumulada,
+condução contínua, pausas e janelas de descanso diário, semanal e quinzenal.
+Essa etapa é fundamental para garantir que qualquer modificação subsequente
+na solução preserve a consistência com o histórico temporal, evitando violações
+indiretas das regras legais.
+
+\subsection{Análise Estrutural da Matriz de Restrições}
+
+Com a solução inicial estabelecida, o modelo procede à análise estrutural da matriz
+de restrições associada ao problema. Em particular, é avaliada a densidade da matriz,
+indicador que reflete o grau de acoplamento entre variáveis e restrições.
+
+A densidade é utilizada como critério decisório: se o modelo apresenta uma estrutura
+suficientemente esparsa e estável, a solução heurística pode ser considerada adequada,
+sendo aceita diretamente. Caso contrário, o pipeline avança para a fase de melhoria
+iterativa via LNS.
+
+\subsection{Large Neighborhood Search com Reotimização MILP}
+
+Na etapa de \textit{Large Neighborhood Search}, a solução corrente é parcialmente destruída,
+liberando subconjuntos específicos de decisões, como janelas temporais críticas
+ou grupos de motoristas com maior carga acumulada.
+O restante da solução é mantido fixo, preservando a consistência global.
+
+Para cada vizinhança liberada, é formulado um subproblema de Programação Linear Inteira,
+resolvido exatamente pelo solver CP-SAT.
+Essa estratégia permite explorar regiões promissoras do espaço de soluções
+com alto grau de rigor, sem o custo computacional de reotimizar o problema completo.
+
+Após a resolução do subproblema, a solução obtida é avaliada.
+Caso represente uma melhoria em relação à solução atual,
+ela é incorporada ao estado global; caso contrário, o processo retorna à etapa de LNS,
+selecionando uma nova vizinhança.
+
+\subsection{Camada Opcional de Aprendizagem de Máquina}
+
+De forma complementar, o pipeline incorpora uma camada opcional de aprendizagem de máquina.
+Modelos supervisionados podem ser utilizados para atribuir escores a pares motorista--período,
+auxiliando a heurística construtiva, bem como para priorizar vizinhanças com maior
+probabilidade de gerar melhorias no LNS.
+
+É importante destacar que essa camada não substitui o modelo matemático,
+nem altera diretamente restrições ou a função objetivo.
+Seu papel é exclusivamente o de orientar decisões heurísticas,
+mantendo o caráter determinístico e reproduzível do simulador.
+
+\subsection{Critério de Parada e Solução Final}
+
+O processo iterativo prossegue até que não sejam observadas melhorias adicionais,
+ou até que limites de iteração ou tempo computacional sejam atingidos.
+A solução final resultante é, então, submetida a uma validação completa
+das restrições legais, garantindo conformidade com o Regulamento (CE) n.º 561/2006.
+
+Esse pipeline híbrido permite explorar eficientemente o espaço de soluções,
+combinando rapidez inicial, refinamento iterativo e rigor matemático,
+alinhando-se plenamente às necessidades operacionais e científicas
+do escalonamento de motoristas em contextos reais.
+
+Em síntese, a revisão comparativa evidencia que a principal contribuição desta
+dissertação reside na integração profunda entre conformidade regulatória,
+modelagem temporal de alta granularidade e uma arquitetura híbrida de otimização,
+aspectos que não aparecem de forma combinada nos trabalhos revisados. Esse
+posicionamento consolida o simulador como uma contribuição original ao estado da
+arte em escalonamento de motoristas sob restrições legais complexas.
+
+

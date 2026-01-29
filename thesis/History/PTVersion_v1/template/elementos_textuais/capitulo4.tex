@@ -1,0 +1,504 @@
+\chapter{Metodologia}\label{capitulo4}
+
+\section{Introdução}
+
+Este capítulo descreve a abordagem metodológica adotada para o desenvolvimento do modelo de Programa{\c c}{\~a}o Linear Inteira (PLI) aplicado ao escalonamento de motoristas sob o Regulamento (CE) n.{\textordmasculine} 561/2006. A metodologia combina rigor matemático, técnicas de Pesquisa Operacional e ferramentas computacionais modernas, buscando reprodutibilidade, precisão e aplicabilidade prática.
+
+A pesquisa pode ser classificada como:
+\begin{itemize}
+    \item \textbf{Aplicada}: pois aborda um problema concreto do setor de transporte rodoviário.
+    \item \textbf{Quantitativa}: devido ao uso de modelagem matemática e experimentação.
+    \item \textbf{Metodológica}: por propor um artefato científico (um modelo ILP).
+    \item \textbf{Experimental}: pela realização de testes controlados em cen{\'a}rios variados.
+\end{itemize}
+
+Essa abordagem está alinhada aos fundamentos apresentados no \cite{hillier2015}, \cite{taha2017}, \cite{nemhauser1988}, bem como ao trabalho aplicado apresentado em \cite{moreira2025}.
+
+\section{Estrutura Geral da Pesquisa}
+
+A metodologia foi organizada em cinco macroetapas, ilustradas a seguir:
+
+\begin{enumerate}
+    \item Estudo da legislação europeia e identificação das restrições operacionais;
+    \item Formulação do modelo matemático;
+    \item Implementação computacional utilizando Python e OR-Tools;
+    \item Definição de cen{\'a}rios e experimentos;
+    \item Análise dos resultados e avaliação da conformidade legal.
+\end{enumerate}
+
+Cada etapa é detalhada nas seções seguintes.
+
+\section{Etapa 1: Estudo da Legislação Europeia}
+
+Nesta etapa, foi realizada uma análise minuciosa dos sistemática legais que regem a jornada dos motoristas profissionais na Uni{\~a}o Europeia, incluindo:
+
+\begin{itemize}
+    \item \textit{Regulamento (CE) n.{\textordmasculine} 561/2006};
+    \item \textit{Diretiva 2002/15/CE};
+    \item \textit{Regulamento (UE) n.{\textordmasculine} 165/2014}.
+\end{itemize}
+
+As restrições extraídas desses documentos foram traduzidas em condições formais, como:
+\begin{itemize}
+    \item limites de condu{\c c}{\~a}o diária, semanal e quinzenal;
+    \item pausas obrigatórias;
+    \item descanso diário normal ou reduzido;
+    \item descanso semanal;
+    \item regras de continuidade temporal.
+\end{itemize}
+
+O desafio principal foi converter regras textuais em inequações lineares, conforme discutido em \cite{pillai2019} e explorado experimentalmente em \cite{moreira2025}.
+
+\section{Etapa 2: Formulação Matemática}
+
+Com base nos requisitos legais e operacionais, o problema foi formalizado como um modelo de Programa{\c c}{\~a}o Linear Inteira (PLI). Os principais elementos definidos foram:
+
+\begin{itemize}
+    \item conjuntos (motoristas, per{\'\i}odos, janelas temporais);
+    \item vari{\'a}veis de decisão (alocação, descanso, início de jornada, condução acumulada);
+    \item parâmetros (demanda, limites legais, duração dos períodos);
+    \item função objetivo (minimização de motoristas alocados);
+    \item restrições (legais e operacionais).
+\end{itemize}
+
+A formulação foi construída com base em técnicas clássicas de otimização combinatoria \cite{nemhauser1988}, \cite{dantzig1963}, mas adaptada ao contexto legislativo europeu. O modelo é apresentado em detalhes no Capítulo~4, incluindo linearizações e implicações lógicas.
+
+\section{Etapa 3: Implementação Computacional}
+
+A implementação foi realizada em Python, com uso do solver CP-SAT \cite{googleORTools}, como ferramenta de solução. Essa etapa envolveu:
+
+\begin{itemize}
+    \item criação programática das vari{\'a}veis do modelo;
+    \item construção da matriz de restrições;
+    \item aplicação das regras legais e dos vínculos sequenciais;
+    \item configuração de parâmetros do solver, conforme critérios experimentais (limites de tempo, cortes, heur{\'\i}sticas);
+    \item desenvolvimento de uma interface interativa em Streamlit;
+    \item geração automática de relat{\'o}rios, gráficos e indicadores operacionais.
+\end{itemize}
+
+A linguagem Python facilitou o uso de estruturas de dados eficientes, como arraNumys \cite{numpyDocs} e \cite{tabelPpandasDocs}, além de permitir modularidade na construção do modelo.
+
+\section{Etapa 4: Definição dos Cenários Experimentais}
+
+Três tipos de cen{\'a}rio foram definidos para validação:
+
+\begin{itemize}
+    \item \textbf{7 dias}: cen{\'a}rio compacto, útil para validar restrições diárias.
+    \item \textbf{15 dias}: cen{\'a}rio intermediário, crítico para restrições quinzenais.
+    \item \textbf{30 dias}: cen{\'a}rio de escala real, avaliando o comportamento temporal do modelo.
+\end{itemize}
+
+Cada cen{\'a}rio utilizou uma curva de demanda variável, simulando altas e baixas operacionais típicas do setor.
+
+Parâmetros como duração de períodos, restrições legais e tamanho da força de trabalho foram configuráveis via interface.
+
+\section{Etapa 5: Análise dos Resultados}
+
+Após a execução do solver, foram analisados:
+
+\begin{itemize}
+    \item conformidade legal (restrições diárias, semanais e quinzenais);
+    \item cobertura da demanda por período;
+    \item sobrecarga e subutilização;
+    \item estabilidade temporal da alocação;
+    \item tempo computacional e qualidade da solução;
+    \item impacto da estrutura matricial no desempenho do solver.
+\end{itemize}
+
+A avaliação baseou-se em indicadores estatísticos e gráficos, discutidos no Capítulo~6.
+
+\section{Considerações Finais}
+
+A metodologia adotada busca assegurar:
+
+\begin{itemize}
+    \item rigor na formulação matemática;
+    \item consistência na execução computacional;
+    \item flexibilidade para análise de cen{\'a}rios;
+    \item reprodutibilidade científica.
+\end{itemize}
+
+O fluxo metodológico permite integrar legislação, modelagem e computação, resultando em uma solução robusta e aplicável para operações reais no setor de transporte rodoviário europeu.
+
+\subsection{Abordagem heurística e matheurística proposta}
+
+Embora o modelo de programação inteira mista (MILP) formulado neste trabalho permita obter soluções ótimas em instâncias de porte moderado, a sua aplicação direta em cenários de grande escala (muitos motoristas, múltiplos dias e diferentes perfis de demanda) pode tornar-se computacionalmente onerosa. Além disso, em ambientes operacionais dinâmicos, como o transporte rodoviário de mercadorias, nem sempre é necessário obter a solução ótima global; muitas vezes, soluções de boa qualidade obtidas em tempos reduzidos são preferíveis.
+
+Com esse contexto, propõe-se uma abordagem em três camadas: (i) uma heurística construtiva para gerar uma escala inicial factível, (ii) uma matheurística do tipo \textit{Large Neighborhood Search} (LNS), em que subproblemas são resolvidos exatamente pelo modelo MILP/CP-SAT, e (iii) um módulo de apoio baseado em aprendizagem de máquina (\textit{machine learning}) para guiar a seleção de vizinhanças promissoras e refinar decisões locais de alocação.
+
+A heurística construtiva opera em uma linha do tempo discretizada (intervalos de 15 minutos) e, para cada período, atribui motoristas elegíveis de forma gulosa, respeitando as principais restrições regulatórias (condução contínua máxima, pausas mínimas, descanso diário e semanal, limites semanais e quinzenais). Esta fase produz rapidamente uma solução inicial factível, ainda que potencialmente distante do ótimo.
+
+Na segunda camada, aplica-se uma matheurística LNS: a solução corrente é parcialmente destruída em sub-regiões (por exemplo, um dia específico, um subconjunto de motoristas ou janelas temporais críticas com sobrecarga de demanda), e um subproblema restrito é reotimizado com o modelo MILP proposto, sob limite de tempo. Assim, o modelo exato deixa de atuar sobre toda a instância e passa a ser utilizado como um \textit{mecanismo} de melhoria local, combinando a robustez de soluções exatas com a flexibilidade exploratória típica de heurísticas.
+
+Por fim, a terceira camada explora técnicas de aprendizagem de máquina para apoiar a heurística e a matheurística. A partir de instâncias menores, nas quais o MILP consegue atingir a solução ótima em tempo aceitável, constroem-se conjuntos de dados que relacionam padrões de alocação (por motorista, por período e por janela temporal) à qualidade da solução. Modelos supervisionados podem então ser treinados para: (a) atribuir escores heurísticos de preferência a pares motorista-período, auxiliando a etapa construtiva, e (b) estimar a probabilidade de melhoria ao selecionar determinadas vizinhanças na LNS, priorizando regiões da solução com maior potencial de ganho.
+
+Essa arquitetura híbrida (MILP + heurística + LNS + ML) permite, por um lado, preservar o rigor do modelo regulatório desenvolvido e, por outro, oferecer tempos de resposta compatíveis com cenários de apoio à decisão em contexto real, seja em ambiente acadêmico (simulações) ou em produto (como no contexto da plataforma Ottimizia).
+
+\subsubsection{Heurística construtiva para geração de escala inicial}
+
+A seguir apresenta-se a heurística construtiva proposta para geração de uma escala inicial factível.
+
+\begin{algorithm}[H]
+\caption{Heurística construtiva para escalonamento de motoristas}
+\label{alg:heuristica_construtiva}
+\DontPrintSemicolon
+\KwIn{
+    Conjunto de motoristas $D$; \\
+    Conjunto de períodos discretizados $T$ (intervalos de 15 minutos); \\
+    Demanda de motoristas por período $\mathrm{dem}(t)$; \\
+    Parâmetros regulatórios (limites de condução e trabalho, pausas e descansos).
+}
+\KwOut{
+    Escala inicial $y_{d,t} \in \{0,1\}$ indicando se o motorista $d$ trabalha no período $t$.
+}
+
+Inicializar $y_{d,t} \gets 0$, para todo $d \in D$, $t \in T$\;
+Inicializar o estado de cada motorista $d$ (tempo de condução acumulado, tempo de trabalho no dia, semana etc.)\;
+
+\ForEach{$t \in T$ em ordem cronológica}{
+    calcular $k \gets$ número de motoristas já alocados em $t$\;
+    \If{$k \ge \mathrm{dem}(t)$}{
+        \textbf{continuar} para o próximo período\;
+    }
+    determinar conjunto de candidatos elegíveis $C_t \subseteq D$ tais que, se escalados em $t$, não violam nenhuma restrição regulatória (condução máxima, pausa mínima, descanso diário/sem. etc.)\;
+    \While{$k < \mathrm{dem}(t)$ \textbf{e} $C_t \neq \emptyset$}{
+        \ForEach{$d \in C_t$}{
+            calcular um escore heurístico $\mathrm{score}(d,t)$, por exemplo:
+            \begin{itemize}
+                \item menor carga de trabalho acumulada na semana;
+                \item menor número de dias consecutivos trabalhados;
+                \item proximidade de completar um bloco consistente de trabalho ou condução.
+            \end{itemize}
+        }
+        selecionar $d^\star \in C_t$ com maior $\mathrm{score}(d^\star,t)$\;
+        definir $y_{d^\star,t} \gets 1$\;
+        atualizar o estado regulatório de $d^\star$ (tempo de condução contínua, total diário, semanal etc.)\;
+        remover $d^\star$ de $C_t$\;
+        atualizar $k \gets k + 1$\;
+    }
+    \If{$k < \mathrm{dem}(t)$}{
+        marcar o período $t$ como \textit{crítico} (demanda não atendida) para uso posterior na LNS\;
+    }
+}
+
+\ForEach{$d \in D$}{
+    pós-processar a escala de $d$ para inserir explicitamente blocos de pausa e descanso, caso ainda não tenham sido definidos de forma clara, garantindo conformidade regulatória final\;
+}
+
+\Return{$y_{d,t}$}\;
+\end{algorithm}
+
+\subsubsection{Matheurística LNS baseada em MILP}
+
+A heurística construtiva gera uma solução inicial $y$. Para melhorar essa solução, propõe-se uma matheurística do tipo \textit{Large Neighborhood Search} (LNS), na qual partes da escala são destruídas e reotimizadas por meio do modelo MILP.
+
+\begin{algorithm}[H]
+\caption{LNS matheurística para melhoria da escala}
+\label{alg:lns_matheuristica}
+\DontPrintSemicolon
+\KwIn{
+    Solução inicial $y$ (escala factível); \\
+    Conjunto de motoristas $D$, períodos $T$ e demais parâmetros; \\
+    Número máximo de iterações $\mathrm{it}_{\max}$; \\
+    Tempo máximo de resolução do subproblema MILP $t_{\max}^{\text{MILP}}$.
+}
+\KwOut{
+    Solução melhorada $y^{\text{best}}$.
+}
+
+Definir função objetivo $F(y)$ (por exemplo, número de motoristas utilizados, soma de horas extras, penalizações por slots não atendidos etc.)\;
+Inicializar $y^{\text{curr}} \gets y$ e $y^{\text{best}} \gets y$\;
+
+\For{$\mathrm{it} = 1$ \KwTo $\mathrm{it}_{\max}$}{
+    selecionar um tipo de vizinhança $V$ (por exemplo: dia, subconjunto de motoristas, janela crítica)\;
+    
+    \eIf{$V =$ ``dia''}{
+        escolher um dia $d_{\text{dia}}$ e definir subconjunto de períodos $T_V \subset T$ correspondentes a esse dia\;
+        definir subconjunto de motoristas $D_V \gets D$ (todos os motoristas são candidatos para aquele dia)\;
+    }{
+        \If{$V =$ ``motoristas''}{
+            escolher subconjunto de motoristas $D_V \subset D$ (por exemplo, os mais sobrecarregados)\;
+            definir subconjunto de períodos $T_V \gets T$ (todos os períodos)\;
+        }
+        \If{$V =$ ``janela crítica''}{
+            selecionar subconjunto de períodos $T_V \subset T$ com slots não atendidos ou muito próximos a violações\;
+            definir subconjunto de motoristas $D_V \subset D$ que atuam em $T_V$\;
+        }
+    }
+    
+    construir subproblema MILP restrito a $D_V$ e $T_V$:
+    \begin{itemize}
+        \item variáveis de decisão $y_{d,t}$ apenas para $d \in D_V$, $t \in T_V$;
+        \item manter fixas todas as demais decisões de $y^{\text{curr}}$ fora da vizinhança;
+        \item preservar todas as restrições regulatórias (diárias, semanais, quinzenais);
+        \item respeitar consistência com a solução fixa (por exemplo, limites semanais acumulados).
+    \end{itemize}
+    
+    resolver o subproblema MILP com limite de tempo $t_{\max}^{\text{MILP}}$, obtendo uma solução local $y^{V}$ (se viável)\;
+    
+    \If{foi encontrada solução viável $y^{V}$}{
+        construir uma solução candidata $y^{\text{cand}}$ substituindo, em $y^{\text{curr}}$, as decisões de $D_V \times T_V$ pelas provenientes de $y^{V}$\;
+        \If{$F(y^{\text{cand}}) < F(y^{\text{curr}})$}{
+            atualizar $y^{\text{curr}} \gets y^{\text{cand}}$\;
+            \If{$F(y^{\text{curr}}) < F(y^{\text{best}})$}{
+                atualizar $y^{\text{best}} \gets y^{\text{curr}}$\;
+            }
+        }
+    }
+}
+
+\Return{$y^{\text{best}}$}\;
+\end{algorithm}
+
+\subsubsection{Integração com aprendizagem de máquina}
+
+Para potencializar a eficiência da LNS, propõe-se o uso de modelos de aprendizagem de máquina para guiar a seleção de vizinhanças e priorizar regiões da solução com maior potencial de melhoria.
+
+\begin{algorithm}[H]
+\caption{Esquema geral de integração com aprendizagem de máquina}
+\label{alg:ml_guided_lns}
+\DontPrintSemicolon
+\KwIn{
+    Conjunto de instâncias de treinamento; \\
+    Soluções ótimas (ou de alta qualidade) obtidas via MILP em instâncias menores; \\
+    Heurística construtiva e LNS descritas anteriormente.
+}
+\KwOut{
+    Modelo de ML para apoio à decisão na LNS.
+}
+
+\textbf{Fase offline (treinamento)}:\;
+\ForEach{instância de treinamento}{
+    resolver o MILP até a otimalidade ou até um limite de tempo elevado, obtendo solução de referência $y^{\star}$\;
+    gerar solução heurística $y^{H}$ (via heurística construtiva)\;
+    extrair \textit{features} por período, motorista e janelas temporais (por exemplo: carga acumulada, folgas, distância até limites regulatórios, presença de slots não atendidos)\;
+    rotular:
+    \begin{itemize}
+        \item pares $(d,t)$ como bons/ruins com base na diferença entre $y^{H}$ e $y^{\star}$;
+        \item vizinhanças (conjuntos de períodos/motoristas) como promissoras se sua reotimização aproxima $y^{H}$ de $y^{\star}$.
+    \end{itemize}
+}
+treinar modelos supervisionados (por exemplo, gradiente reforçado ou \textit{gradient boosting}) para:
+\begin{itemize}
+    \item $f_1(d,t) \to$ estimar a qualidade de atribuir o motorista $d$ ao período $t$;
+    \item $f_2(V) \to$ estimar o ganho esperado de reotimizar uma vizinhança $V$.
+\end{itemize}
+
+\textbf{Fase online (uso na LNS)}:\;
+Na heurística construtiva, utilizar $f_1$ como componente do escore $\mathrm{score}(d,t)$\;
+Na LNS, ao selecionar vizinhanças, avaliar múltiplas opções $V_1,\dots,V_k$ e priorizar aquelas com maior $f_2(V_i)$\;
+
+\Return{modelos $f_1$ e $f_2$ integrados ao processo heurístico}\;
+\end{algorithm}
+
+% ============================================================
+% SEÇÃO DE METODOLOGIA — INTEGRAÇÃO COM OS INDICADORES DO SIMULADOR
+% ============================================================
+
+\section{Metodologia de Avaliação das Soluções de Escalonamento}
+\label{sec:metodologia-avaliacao}
+
+A avaliação das soluções geradas pelos métodos implementados no simulador
+--- Programação Inteira (exato), heurística construtiva e método matheurístico LNS ---
+baseia-se em um conjunto estruturado de indicadores quantitativos, gráficos analíticos
+e métricas consolidadas na literatura de scheduling e otimização combinatória
+\cite{pinedo2016scheduling}, \cite{talbi2009metaheuristics}, \cite{papadimitriou1998combinatorial}, \cite{santamaria2025driver}.
+
+Cada indicador descrito nesta seção contribui para a análise multidimensional de desempenho,
+permitindo verificar simultaneamente: qualidade relativa da solução, estabilidade temporal, segurança operacional,
+eficiência de cobertura e custo computacional.
+
+As subseções seguintes descrevem formalmente cada métrica, acompanhadas de suas figuras correspondentes.
+
+% ============================================================
+\subsection{Demanda por Período}
+\label{subsec:demanda-periodo}
+
+A curva de demanda representa o número de motoristas requeridos em cada intervalo de tempo.
+Esse gráfico caracteriza a carga operacional e estabelece a referência mínima de cobertura esperada.
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=\textwidth]{fig/demanda_periodo.pdf}
+    \caption{Demanda operacional por período.}
+    \label{fig:demanda-periodo}
+\end{figure}
+
+Picos de demanda visíveis na \autoref{fig:demanda-periodo}
+implicam maior pressão sobre o algoritmo, enquanto períodos de baixa carga
+permitem redistribuição estratégica de motoristas.
+
+% ============================================================
+\subsection{Escalonamento Gerado (Driver Scheduling)}
+\label{subsec:driver-scheduling}
+
+O gráfico da solução detalha a quantidade de motoristas alocados por período pelo modelo de otimização.
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=\textwidth]{fig/driver_scheduling.pdf}
+    \caption{Motoristas alocados por período na solução gerada.}
+    \label{fig:driver-scheduling}
+\end{figure}
+
+Comparações entre demanda (Figura~\ref{fig:demanda-periodo})
+e solução (Figura~\ref{fig:driver-scheduling})
+apontam aderência, excesso ou déficit operacional.
+
+% ============================================================
+\subsection{Taxa de Cobertura}
+\label{subsec:coverage-rate}
+
+A taxa de cobertura \(Coverage_t\) é definida como:
+
+\[
+Coverage_t = \frac{\text{Motoristas}_t}{Demanda_t}.
+\]
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=\textwidth]{fig/coverage_rate.pdf}
+    \caption{Taxa de cobertura por período.}
+    \label{fig:coverage-rate}
+\end{figure}
+
+Valores próximos de 1 indicam aderência adequada, enquanto valores inferiores apontam risco operacional.
+A \autoref{fig:coverage-rate} sintetiza esse comportamento visualmente.
+
+% ============================================================
+\subsection{Índice de Sobrecarga}
+\label{subsec:overload-index}
+
+O índice de sobrecarga é dado por:
+
+\[
+Overload_t = 
+\frac{
+    \max(0, \text{Motoristas}_t - Demanda_t)
+}{
+    Demanda_t
+}.
+\]
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=\textwidth]{fig/overload_index.pdf}
+    \caption{Índice de sobrecarga por período.}
+    \label{fig:overload-index}
+\end{figure}
+
+A \autoref{fig:overload-index} evidencia janelas nas quais há superdimensionamento da escala.
+
+% ============================================================
+\subsection{Índice de Subutilização}
+\label{subsec:underload-index}
+
+Definido por:
+
+\[
+Underload_t = 
+\frac{
+    \max(0, Demanda_t - \text{Motoristas}_t)
+}{
+    \text{Motoristas}_t
+}.
+\]
+
+\begin{figure}[H]
+    \centering
+    %\includegraphics[width=\textwidth]{fig/underload_index.pdf}
+    \caption{Índice de subutilização por período.}
+    \label{fig:underload-index}
+\end{figure}
+
+A \autoref{fig:underload-index} mostra períodos de déficit,
+fundamentais para análise de risco operacional.
+
+% ============================================================
+\subsection{Mapa de Calor de Cobertura}
+\label{subsec:coverage-heatmap}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/coverage_heatmap.pdf}
+    \caption{Mapa de calor de cobertura por período.}
+    \label{fig:coverage-heatmap}
+\end{figure}
+
+Esse mapa facilita a identificação de padrões estruturais, como clusters de subcobertura.
+
+% ============================================================
+\subsection{Mapa de Calor da Margem de Segurança}
+\label{subsec:safety-margin}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/safety_margin_heatmap.pdf}
+    \caption{Mapa de calor da margem de segurança operacional.}
+    \label{fig:safety-margin}
+\end{figure}
+
+A \autoref{fig:safety-margin} destaca períodos críticos associados a déficit ou superávit operacional.
+
+% ============================================================
+\subsection{Convergência do LNS}
+\label{subsec:lns-convergence}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/lns_convergence.pdf}
+    \caption{Evolução da função objetivo nas iterações do LNS.}
+    \label{fig:lns-convergence}
+\end{figure}
+
+Esse gráfico é fundamental para demonstrar o comportamento da matheurística,
+evidenciando melhora progressiva ou estagnação.
+
+% ============================================================
+\subsection{Relaxação do LNS}
+\label{subsec:lns-relaxation}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/lns_relaxation.pdf}
+    \caption{Nível de relaxação aplicado ao longo das iterações do LNS.}
+    \label{fig:lns-relaxation}
+\end{figure}
+
+Valores elevados sugerem exploração ampla;
+valores menores refletem intensificação.
+
+% ============================================================
+\subsection{Comparação entre Modos: Exato, Heurístico e LNS}
+\label{subsec:radar-chart}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/radar_comparison.pdf}
+    \caption{Comparação entre os modos de solução (Exato, Heurístico e LNS).}
+    \label{fig:radar-comparison}
+\end{figure}
+
+O radar da \autoref{fig:radar-comparison} sintetiza várias métricas,
+permitindo comparar os métodos em estabilidade, custo, aderência e eficiência.
+
+% ============================================================
+\subsection{Matriz de Restrições (Antes e Depois das Operações)}
+\label{subsec:constraint-matrices}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/initial_constraint_matrix.pdf}
+    \caption{Matriz inicial de restrições.}
+    \label{fig:initial-constraints}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=\textwidth]{fig/final_constraint_matrix.pdf}
+    \caption{Matriz final após transformações.}
+    \label{fig:final-constraints}
+\end{figure}
+
+Comparar as Figuras~\ref{fig:initial-constraints} e \ref{fig:final-constraints}
+revela o impacto direto das operações elementares sobre a densidade e estrutura do modelo.

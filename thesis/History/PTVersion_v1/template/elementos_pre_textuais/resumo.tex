@@ -1,0 +1,14 @@
+\begin{resumo}
+Este trabalho apresenta o desenvolvimento de um simulador avançado para o escalonamento de motoristas no transporte rodoviário europeu, fundamentado em um modelo de Programação Linear Inteira (PLI) que incorpora integralmente as exigências legais estabelecidas pelo Regulamento (CE) n.{\textordmasculine} 561/2006, pela Diretiva 2002/15/CE e pelo Regulamento (UE) n.{\textordmasculine} 165/2014. O modelo matemático foi formulado de modo a representar, de forma rigorosa, todas as restrições diárias, semanais e quinzenais de condução, pausas e períodos de descanso obrigatórios, incluindo dependências temporais complexas e janelas móveis de conformidade.
+
+A implementação computacional foi realizada em Python, utilizando o solver CP-SAT do OR-Tools, e integrada a uma interface interativa desenvolvida em Streamlit, permitindo a configuração de cenários, seleção dinâmica de restrições, definição de funções objetivo e visualização detalhada dos resultados. Além do modo exato de resolução, o simulador incorpora abordagens heurísticas e uma estratégia matheurística baseada em \textit{Large Neighborhood Search} (LNS), possibilitando a análise do comportamento do modelo em diferentes regimes de complexidade e escalabilidade.
+
+Adicionalmente, o trabalho propõe a integração experimental de modelos de aprendizado de máquina supervisionado, 
+utilizados para guiar decisões locais de alocação ($f_1$) e a seleção de vizinhanças no LNS ($f_2$), preservando sempre mecanismos de \textit{fallback} heurístico para garantir robustez e estabilidade operacional. O simulador disponibiliza um conjunto abrangente de indicadores de desempenho (KPIs), incluindo cobertura global da demanda, eficiência operacional, risco operacional, estabilidade temporal e custo estimado, bem como visualizações analíticas e mapas de calor que facilitam a interpretação dos resultados.
+
+Os experimentos computacionais conduzidos em horizontes de curto e médio prazo demonstram a capacidade do simulador em identificar soluções viáveis e analisar cenários inviáveis sob diferentes combinações de restrições, fornecendo suporte à tomada de decisão estratégica, tática e operacional. Como principal contribuição, este trabalho consolida um ambiente unificado de modelagem, simulação e análise para o escalonamento de motoristas sob a legislação europeia, avançando o estado da arte ao combinar otimização matemática, heurísticas, matheurísticas e aprendizado de máquina em um único framework experimental.
+\par
+\textbf{Palavras-chave}: Programação Linear Inteira; Escalonamento de Motoristas; Regulamento (CE) n.{\textordmasculine} 561/2006; Otimização; OR-Tools; Matheurísticas; Simulação.
+\end{resumo}
+
+

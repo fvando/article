@@ -1,0 +1,525 @@
+% \chapter{Modelo Matemático}\label{capitulo5}
+
+% \section{Introdução}
+
+% Este capítulo apresenta o modelo de Programa{\c c}{\~a}o Linear Inteira (PLI) desenvolvido para o escalonamento de motoristas sob o Regulamento (CE) n.{\textordmasculine} 561/2006. O objetivo do modelo é gerar escalas legalmente válidas, eficientes e capazes de atender à demanda operacional por período, incorporando todas as restrições definidas pela legislação europeia.
+
+% O modelo construído estende e aprofunda a formulação proposta em \cite{moreira2025}, incorporando maior detalhamento temporal, variáveis auxiliares e mecanismos de controle lógico adequados para implementação no solver CP-SAT do OR-Tools.
+
+% O modelo foi concebido de forma flexível, permitindo a adoção de diferentes funções objetivo conforme o cenário operacional analisado. Em particular, duas estratégias de otimização são consideradas no simulador desenvolvido: (i) a maximização da resposta à demanda, priorizando a cobertura operacional, e (ii) a minimização do número total de motoristas alocados, priorizando eficiência de recursos. Ambas as abordagens compartilham o mesmo conjunto de variáveis e restrições legais, diferenciando-se apenas na função objetivo e no tratamento da restrição de atendimento da demanda.
+
+% \section{Discretização Temporal}
+
+% O horizonte de planejamento é dividido em um conjunto de períodos discretos:
+% \[
+% T = \{1,2,\ldots, |T|\},
+% \]
+% onde cada período representa uma janela fixa de tempo com duração:
+% \[
+% \Delta \ \ (\text{em horas}).
+% \]
+
+% Essa discretização permite rastrear a condução acumulada, pausas, descansos e demais restrições temporais do modelo.
+
+% \section{Conjuntos e Índices}
+
+% \begin{itemize}
+%     \item \(D\): conjunto de motoristas (\(d \in D\));
+%     \item \(T\): conjunto de períodos discretizados (\(t \in T\));
+%     \item \(W\): janelas agregadas de planejamento:
+%     \begin{itemize}
+%         \item dias,
+%         \item semanas,
+%         \item quinzenas;
+%     \end{itemize}
+%     \item \(P\): parâmetros de demanda por período.
+% \end{itemize}
+
+% \section{Parâmetros do Modelo}
+
+% \begin{align*}
+% demanda_t     &: \text{demanda mínima de motoristas no período } t, \\
+% \Delta               &: \text{duração de cada período (em horas)}, \\
+% L^{\text{dia}}       &= 9 \quad \text{(limite diário de condução)}, \\
+% L^{\text{ext}}       &= 10 \quad \text{(extensão diária permitida 2 vezes/semana)}, \\
+% L^{\text{sem}}       &= 56 \quad \text{(limite semanal)}, \\
+% L^{14d}              &= 90 \quad \text{(limite em 14 dias)}, \\
+% R_{\text{dia}}       &= 11 \quad \text{(descanso diário normal)}, \\
+% R_{\text{dia-red}}   &= 9 \quad \text{(descanso diário reduzido)}, \\
+% R_{\text{sem}}       &= 45 \quad \text{(descanso semanal)}, \\
+% P_{\text{pausa}}     &= 4.5 \quad \text{(máximo contínuo de condução antes da pausa)}.
+% \end{align*}
+
+% Esses parâmetros refletem fielmente as exigências legais discutidas em \cite{eu5612006}, \cite{eu200215}.
+
+% \section{Variáveis de Decisão}
+
+% \subsection*{Variável Principal de Alocação}
+% \[
+% x_{d,t} =
+% \begin{cases}
+% 1, & \text{se o motorista } d \text{ trabalha no período } t, \\
+% 0, & \text{caso contrário}.
+% \end{cases}
+% \]
+
+% \subsection*{Variável de Descanso}
+% \[
+% r_{d,t} =
+% \begin{cases}
+% 1, & \text{se o motorista } d \text{ descansa no período } t, \\
+% 0, & \text{caso contrário}.
+% \end{cases}
+% \]
+
+% \subsection*{Variável de Início de Jornada}
+% \[
+% s_{d,t} =
+% \begin{cases}
+% 1, & \text{se a jornada de } d \text{ inicia em } t, \\
+% 0, & \text{caso contrário}.
+% \end{cases}
+% \]
+
+% \subsection*{Variável de Condução Acumulada}
+% \[
+% h_{d,t} \ge 0.
+% \]
+
+% \subsection*{Variável de Extensão Diária}
+% \[
+% z_{d,w} =
+% \begin{cases}
+% 1, & \text{se o motorista utiliza extensão diária na semana } w, \\
+% 0, & \text{caso contrário}.
+% \end{cases}
+% \]
+
+% \section{Funções-Objetivo do Modelo}
+
+% O modelo matemático proposto admite duas funções-objetivo alternativas,
+% selecionadas de acordo com o objetivo operacional definido no simulador.
+% Ambas compartilham o mesmo conjunto de variáveis e restrições legais,
+% diferindo apenas no critério de otimização adotado.
+
+% A variável \(u_t\) utilizada no modo de maximização da resposta à demanda
+% é diretamente explorada nos indicadores apresentados no Capítulo~6,
+% em especial nos índices de subutilização, cobertura e risco operacional.
+% Dessa forma, o modelo matemático estabelece uma ligação direta entre
+% a formulação teórica e os mecanismos analíticos do simulador.
+
+% \subsection{Maximização da Resposta à Demanda}
+
+% Neste modo, o objetivo do modelo é maximizar o atendimento da demanda
+% operacional ao longo do horizonte de planejamento, penalizando períodos
+% não cobertos.
+
+% Define-se a variável auxiliar:
+% \[
+% u_t \ge 0, \quad u_t \in \mathbb{R} \quad \text{(demanda não atendida no período } t).
+% \]
+
+% Sujeita à restrição:
+% \[
+% \sum_{d \in D} x_{d,t} + u_t = demanda_t, \quad \forall t \in T.
+% \]
+
+% A função-objetivo é então dada por:
+% \[
+% \max Z_1 = \sum_{t \in T} (demanda_t - u_t),
+% \]
+% ou, de forma equivalente,
+% \[
+% \min \sum_{t \in T} u_t.
+% \]
+
+% Esse critério prioriza a maximização da cobertura, sendo especialmente
+% adequado para cenários de alta variabilidade ou restrição severa de recursos.
+
+% \subsection{Minimização do Número Total de Motoristas}
+
+% Neste modo, o objetivo consiste em minimizar o uso total de motoristas
+% ao longo do horizonte de planejamento, assumindo que toda a demanda
+% deve ser integralmente atendida.
+
+% A função-objetivo é definida como:
+% \[
+% \min Z_2 = \sum_{d \in D} \sum_{t \in T} x_{d,t}.
+% \]
+
+% Esse critério busca eficiência operacional e redução de custos de mão de obra,
+% sendo apropriado para cenários estáveis ou de planejamento estratégico.
+
+% Observa-se que a minimização do somatório \(\sum_{d,t} x_{d,t}\)
+% corresponde à redução do volume total de trabalho alocado.
+% Caso seja desejado minimizar explicitamente o número de motoristas distintos,
+% pode-se introduzir uma variável binária \(u_d\) indicando se o motorista \(d\)
+% é utilizado no horizonte, com a restrição \(x_{d,t} \le u_d\).
+% No simulador desenvolvido, optou-se pela formulação apresentada,
+% por refletir diretamente o custo operacional associado à utilização efetiva da mão de obra.
+
+% \subsection{Observação sobre a Seleção do Critério}
+
+% No simulador desenvolvido, o usuário pode selecionar dinamicamente
+% qual função-objetivo será utilizada em cada experimento.
+% Essa escolha não altera a estrutura do modelo, apenas o critério de otimização,
+% permitindo análises comparativas entre estratégias focadas em cobertura
+% ou eficiência operacional.
+
+% \section{Restrições do Modelo}
+% \subsection{Atendimento da Demanda}
+
+% O tratamento da demanda depende do modo de otimização selecionado:
+
+% \begin{itemize}
+%     \item No modo de minimização de motoristas, a demanda constitui uma restrição rígida;
+%     \item No modo de maximização da resposta à demanda, admite-se demanda não atendida por meio de variáveis auxiliares.
+% \end{itemize}
+
+% Essa formulação permite analisar compromissos entre cobertura operacional e disponibilidade de recursos, sem comprometer a conformidade legal.
+
+% \subsection{Exclusividade de Estado por Período}
+% Cada motorista deve estar em trabalho ou descanso:
+% \[
+% x_{d,t} + r_{d,t} = 1, \quad \forall d,t.
+% \]
+
+% \subsection{Acúmulo de Condução}
+% \[
+% h_{d,t} \le h_{d,t-1} + \Delta x_{d,t}.
+% \]
+
+% A dinâmica de reinício do contador de condução após períodos de descanso
+% é implementada por meio de inequações com Big-M,
+% evitando a introdução de igualdades não lineares e mantendo a compatibilidade
+% com o solver CP-SAT.
+
+% Reinício após descanso (linearização com Big-M):
+% \[
+% h_{d,t} \le M (1 - r_{d,t}).
+% \]
+
+% \subsection{Limite Diário de Condução}
+% Para cada motorista e cada dia:
+% \[
+% \sum_{t \in w_{\text{dia}}} \Delta x_{d,t} \le L^{\text{dia}} + z_{d,w}.
+% \]
+
+% \subsection{Limite Semanal e Quinzenal}
+% \[
+% \sum_{t \in w_{\text{sem}}} \Delta x_{d,t} \le L^{\text{sem}},
+% \]
+% \[
+% \sum_{t \in w_{14d}} \Delta x_{d,t} \le L^{14d}.
+% \]
+
+% \subsection{Pausa Obrigatória após 4,5 horas}
+% \[
+% h_{d,t} \le P_{\text{pausa}} + M r_{d,t}.
+% \]
+
+% \subsection{Descanso Diário Normal ou Reduzido}
+
+% Para cada janela deslizante de 24 horas:
+% \[
+% \sum_{t \in \text{janela}_{24h}} \Delta r_{d,t} \ge R_{\text{dia}},
+% \]
+% ou, caso reduzido:
+% \[
+% \sum_{t \in \text{janela}_{24h}} \Delta r_{d,t} \ge R_{\text{dia-red}}.
+% \]
+
+% \subsection{Descanso Semanal}
+% \[
+% \sum_{t \in w_{\text{sem}}} \Delta r_{d,t} \ge R_{\text{sem}}.
+% \]
+
+% \subsection{Limite de Extensões Diárias}
+% \[
+% \sum_{w \in \text{semana}} z_{d,w} \le 2.
+% \]
+
+% \subsection{Continuidade da Jornada}
+% Evita alternância inválida entre estados:
+% \[
+% x_{d,t-1} - x_{d,t} \le r_{d,t}.
+% \]
+
+% \section{Discussão sobre Linearização}
+
+% O Regulamento (CE) n.{\textordmasculine} 561/2006 contém várias dependências temporais não-lineares, especialmente em regras de:
+
+% \begin{itemize}
+%     \item descanso diário e semanal,
+%     \item condução acumulada,
+%     \item pausas após condução contínua,
+%     \item limites quinzenais,
+%     \item inícios de jornada.
+% \end{itemize}
+
+% Para permitir resolução via PLI, foi necessário:
+
+% \begin{itemize}
+%     \item discretizar o horizonte em períodos fixos;
+%     \item introduzir variáveis auxiliares (\(h_{d,t}, r_{d,t}, s_{d,t}, z_{d,w}\));
+%     \item usar técnicas de linearização com Big-M;
+%     \item incorporar janelas móveis de 24h, 7 dias e 14 dias.
+% \end{itemize}
+
+% Esses cuidados tornam o modelo compatível com solvers inteiros como CP-SAT, que se aproveita de sua estrutura esparsa e temporal \cite{googleORTools}.
+
+% \section{Observações Computacionais}
+
+% O modelo completo apresenta:
+
+% \begin{itemize}
+%     \item dezenas de milhares de variáveis binárias;
+%     \item milhares de restrições lineares;
+%     \item matriz esparsa com estrutura quase diagonal;
+%     \item encadeamento temporal forte.
+% \end{itemize}
+
+% Ainda assim, o CP-SAT resolve cen{\'a}rios de 7 a 30 dias em poucos segundos, conforme validado no Capítulo~6, o que confirma sua aplicabilidade prática e alinhamento com estudos que aplicam otimização a problemas temporais complexos \cite{pillac2013,erdman2022}.
+
+% \section{Considerações Finais}
+
+% O modelo matemático apresentado formaliza rigorosamente o escalonamento de motoristas sob a legislação europeia. Com isso, fornece a base científica necessária para a implementação computacional descrita no capítulo seguinte e para as validações empíricas realizadas posteriormente.
+
+% Embora o modelo seja resolvido de forma exata, sua estrutura também permite a integração com heurísticas e métodos de aprendizado supervisionado, utilizados posteriormente para geração de soluções iniciais e exploração de vizinhanças, sem alterar a formulação matemática.
+
+\chapter{Modelo Matemático}\label{capitulo5}
+
+\section{Introdução}
+
+Este capítulo apresenta o modelo de Programação Linear Inteira (PLI)
+desenvolvido para o problema de escalonamento de motoristas no transporte
+rodoviário sob a regulamentação europeia, em particular o Regulamento
+(CE) n.º 561/2006.
+O objetivo do modelo é gerar escalas legalmente válidas, eficientes e
+capazes de atender à demanda operacional, respeitando simultaneamente
+limites de condução, pausas obrigatórias e períodos mínimos de descanso.
+
+Formulações baseadas em PLI têm sido amplamente utilizadas para problemas
+de escalonamento com fortes dependências temporais, sobretudo em contextos
+regulados como transporte, saúde e serviços críticos
+\cite{savelsbergh1997,pillac2013}.
+Neste trabalho, o modelo proposto estende a formulação apresentada em
+\cite{moreira2025}, incorporando maior granularidade temporal, variáveis
+auxiliares e uma estrutura de otimização compatível com o solver CP-SAT
+do OR-Tools \cite{googleORTools}.
+
+Diferentemente de abordagens puramente multiobjetivo, o modelo adota uma
+estrutura lexicográfica em duas fases, refletindo prioridades operacionais
+reais: primeiro garantir cobertura da demanda e minimizar o número de
+motoristas ativos, e somente depois refinar a solução por critérios de
+balanceamento e suavização de carga.
+
+\section{Discretização Temporal}
+
+O horizonte de planejamento é discretizado em períodos fixos de duração
+$\Delta = 15$ minutos, formando o conjunto:
+\[
+T = \{1,2,\ldots,|T|\}.
+\]
+
+Essa discretização reflete a frequência real de chegada dos pedidos de
+carga na operação analisada e permite representar de forma linear
+restrições originalmente não lineares, como janelas móveis de descanso
+e limites acumulados de condução \cite{pillac2013,erdman2022}.
+
+\section{Conjuntos e Índices}
+
+\begin{itemize}
+    \item $D$: conjunto de períodos discretizados ($d \in D$);
+    \item $T$: conjunto de motoristas ($t \in T$);
+    \item $W$: janelas agregadas de planejamento (dias, semanas e quinzenas).
+\end{itemize}
+
+\section{Parâmetros}
+
+\begin{align*}
+demanda_d      &: \text{demanda operacional no período } d,\\
+\Delta         &: \text{duração do período (15 minutos)},\\
+L^{dia}        &: \text{limite diário de condução},\\
+L^{sem}        &: \text{limite semanal de condução},\\
+L^{14d}        &: \text{limite quinzenal de condução},\\
+R^{dia}        &: \text{descanso diário mínimo},\\
+R^{sem}        &: \text{descanso semanal mínimo}.
+\end{align*}
+
+Esses parâmetros refletem diretamente as exigências do Regulamento
+(CE) n.º 561/2006 e da Diretiva 2002/15/CE \cite{eu5612006,eu200215}.
+
+\section{Variáveis de Decisão}
+
+\subsection*{Ativação do motorista}
+\[
+Z_t =
+\begin{cases}
+1, & \text{se o motorista } t \text{ é ativado},\\
+0, & \text{caso contrário}.
+\end{cases}
+\]
+
+\subsection*{Presença no período}
+\[
+Y_{d,t} =
+\begin{cases}
+1, & \text{se o motorista } t \text{ está presente no período } d,\\
+0, & \text{caso contrário}.
+\end{cases}
+\]
+
+\subsection*{Atendimento de demanda}
+\[
+X_{d,t} \in \mathbb{Z}_{+}, \quad 0 \le X_{d,t} \le \text{capacidade por slot}.
+\]
+
+\subsection*{Demanda não atendida}
+\[
+U_d \ge 0.
+\]
+
+\subsection*{Carga por motorista e carga máxima}
+\[
+L_t = \sum_{d \in D} X_{d,t}, \qquad L_{\max} \ge L_t.
+\]
+
+A separação entre variáveis de ativação, presença e carga segue práticas
+consolidadas na literatura de escalonamento, permitindo representar de
+forma explícita decisões operacionais e restrições legais
+\cite{savelsbergh1997,pinheiro2007staffscheduling}.
+
+\section{Função Objetivo Lexicográfica}
+
+O modelo utiliza uma estrutura de otimização em duas fases, resolvidas
+sequencialmente pelo solver.
+
+\subsection{Fase 1 — Cobertura e Minimização de Motoristas}
+
+A Fase 1 possui prioridade absoluta e busca:
+
+\begin{enumerate}
+    \item minimizar a demanda não atendida;
+    \item minimizar o número de motoristas ativados;
+    \item incentivar maior utilização dos motoristas ativos.
+\end{enumerate}
+
+A função objetivo é dada por:
+\[
+\min \;
+\alpha \sum_{d \in D} U_d
++ \beta \sum_{t \in T} Z_t
+- \gamma \sum_{d \in D} \sum_{t \in T} X_{d,t},
+\]
+com $\alpha \gg \beta \gg \gamma$, garantindo prioridade lexicográfica.
+
+Estruturas desse tipo são amplamente utilizadas quando múltiplos objetivos
+conflitantes precisam ser tratados de forma hierárquica
+\cite{pillac2013,erdman2022}.
+
+\subsection{Fase 2 — Balanceamento e Refinamento}
+
+Após fixar os valores ótimos de $\sum U_d$ e $\sum Z_t$, a Fase 2 refina
+a solução, buscando:
+
+\begin{itemize}
+    \item reduzir presença desnecessária;
+    \item penalizar excesso de carga acima de um limite suave;
+    \item suavizar picos de carga entre motoristas.
+\end{itemize}
+
+A função objetivo da Fase 2 é:
+\[
+\min \;
+\omega_1 \sum_{d,t} Y_{d,t}
++ \omega_2 \sum_{t} \max(0, L_t - L^{soft})
++ \omega_3 L_{\max}.
+\]
+
+Esses critérios promovem maior equidade e robustez operacional, sendo
+frequentemente empregados como etapa de refinamento em problemas de
+escalonamento \cite{savelsbergh1997}.
+
+\section{Restrições do Modelo}
+
+O modelo matemático incorpora um conjunto abrangente de restrições
+legais e operacionais derivadas do Regulamento (CE) n.º 561/2006.
+Entretanto, nem todas as restrições são necessariamente ativadas
+simultaneamente em todos os experimentos.
+
+No simulador desenvolvido, cada restrição pode ser ativada ou desativada
+de forma independente por meio de parâmetros de configuração,
+permitindo a análise controlada do impacto individual e combinado das
+regras legais sobre a solução.
+Essa abordagem possibilita estudos comparativos entre diferentes níveis
+de rigor regulatório, sem alterar a estrutura fundamental do modelo.
+
+Formalmente, o conjunto de restrições ativas em um experimento é definido
+por um vetor binário de ativação, sendo que apenas as restrições
+selecionadas são incluídas no modelo resolvido pelo solver.
+
+% \subsection{Atendimento da Demanda}
+% \[
+% \sum_{t \in T} X_{d,t} + U_d = demanda_d, \quad \forall d \in D.
+% \]
+
+\subsection{Atendimento da Demanda}
+
+Quando a restrição de cobertura obrigatória está ativada, o atendimento
+da demanda é modelado como uma restrição rígida:
+
+\[
+\sum_{t \in T} X_{d,t} + U_d = demanda_d, \quad \forall d \in D.
+\]
+
+Caso essa restrição não seja ativada, a variável $U_d$ passa a representar
+déficits operacionais admissíveis, utilizados exclusivamente para fins
+de avaliação e cálculo de indicadores, sem inviabilizar a solução.
+
+
+\subsection{Vinculação entre presença e ativação}
+\[
+Y_{d,t} \le Z_t, \quad \forall d,t.
+\]
+
+\subsection{Capacidade por período}
+\[
+X_{d,t} \le \text{capacidade} \cdot Y_{d,t}.
+\]
+
+\subsection{Limites legais de condução}
+
+As restrições apresentadas a seguir são incluídas no modelo apenas quando
+explicitamente ativadas no cenário experimental considerado.
+
+Restrições diárias, semanais e quinzenais são modeladas por janelas móveis,
+conforme exigido pelo Regulamento (CE) n.º 561/2006.
+
+\subsection{Pausas e descansos}
+Pausas após 4,5 horas de condução contínua e descansos diários e semanais
+são representados por restrições lineares baseadas em janelas deslizantes.
+
+\section{Discussão sobre Linearização}
+
+As regras legais apresentam dependências temporais não lineares, tratadas
+por meio de discretização, variáveis auxiliares e constantes Big-M.
+Essa abordagem é amplamente utilizada para manter a linearidade da
+formulação e compatibilidade com solvers inteiros modernos
+\cite{pillac2013,googleORTools}.
+
+\section{Observações Computacionais}
+
+O modelo apresenta dezenas de milhares de variáveis e restrições, mas
+possui matriz esparsa e forte estrutura temporal. Solvers modernos, como
+o CP-SAT, exploram essas características de forma eficiente, permitindo
+resolver cenários reais em tempos compatíveis com uso operacional
+\cite{erdman2022,googleORTools}.
+
+\section{Considerações Finais}
+
+O modelo matemático apresentado fornece uma base rigorosa e aderente à
+legislação europeia para o escalonamento de motoristas. Sua formulação
+lexicográfica reflete prioridades operacionais reais e viabiliza a
+integração com heurísticas e métodos matheurísticos discutidos nos
+capítulos seguintes, sem comprometer a consistência matemática.

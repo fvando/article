@@ -1,0 +1,73 @@
+\chapter{Conclusao e Trabalhos Futuros}\label{capitulo9}
+
+\section{Considerações Iniciais}
+
+Esta dissertação teve como objetivo central o desenvolvimento, implementação e avaliação de um modelo avançado de escalonamento de motoristas no transporte rodoviário europeu, fundamentado em Programação Linear Inteira (PLI) e plenamente aderente às exigências do Regulamento (CE) n.º 561/2006, bem como às diretivas complementares relativas a tempos de condução, pausas e períodos de descanso.
+
+Ao longo do trabalho, demonstrou-se que o problema de escalonamento de motoristas, quando tratado com granularidade temporal fina e com representação rigorosa das dependências legais acumulativas, apresenta elevada complexidade estrutural, tanto do ponto de vista matemático quanto computacional. Ainda assim, mostrou-se possível construir uma formulação exata, escalável e operacionalmente viável, desde que acompanhada de estratégias adequadas de modelagem, discretização temporal e exploração computacional.
+
+Este capítulo apresenta uma síntese integrada do trabalho desenvolvido, consolida os principais resultados obtidos, discute as contribuições científicas e metodológicas alcançadas, explicita as limitações identificadas e delineia caminhos promissores para pesquisas futuras.
+
+\section{Síntese do Trabalho Desenvolvido}
+
+A pesquisa evoluiu de uma formulação matemática clássica de escalonamento para o desenvolvimento de uma plataforma computacional híbrida, capaz de operar em diferentes modos de resolução e de oferecer um ambiente experimental completo para análise, validação e comparação de estratégias de otimização.
+
+Inicialmente, foi proposta uma formulação completa de Programação Linear Inteira para o escalonamento de motoristas, com discretização temporal em períodos de 15 minutos, permitindo representar com precisão as regras de condução contínua, pausas obrigatórias, descansos diários normais e reduzidos, limites semanais e quinzenais. Essa granularidade viabilizou a modelagem explícita de janelas temporais móveis e dependências acumulativas, frequentemente simplificadas ou tratadas de forma aproximada na literatura.
+
+Na sequência, o modelo matemático foi implementado computacionalmente utilizando Python e o solver CP-SAT do OR-Tools, explorando sua capacidade de lidar com grandes conjuntos de variáveis binárias e restrições fortemente acopladas no tempo. A implementação foi estruturada de forma modular, separando claramente as camadas de interface, modelagem, solver e pós-processamento.
+
+O trabalho avançou ainda mais ao estender o simulador para além da otimização exata, incorporando heurísticas construtivas, métodos matheurísticos baseados em Large Neighborhood Search (LNS) e mecanismos experimentais de aprendizado de máquina supervisionado. Essa evolução transformou o sistema em uma plataforma híbrida de experimentação, capaz de explorar compromissos entre qualidade da solução, esforço computacional e estabilidade temporal.
+
+\section{Principais Resultados e Evidências Empíricas}
+
+Os resultados experimentais obtidos ao longo do trabalho evidenciam a robustez e a aplicabilidade da abordagem proposta. Em cenários com horizontes de planejamento variando entre 7, 15 e 30 dias, o modelo foi capaz de gerar escalas plenamente conformes à legislação europeia, mantendo elevada aderência entre demanda operacional e cobertura efetiva.
+
+Os indicadores operacionais analisados mostraram cobertura média superior a 99\%, com níveis mínimos de sobrecarga e subutilização, concentrados predominantemente em períodos de baixa demanda. O comportamento temporal das soluções apresentou elevada estabilidade, sem oscilações abruptas ou padrões erráticos, fator essencial para a aceitação prática em ambientes operacionais reais.
+
+Do ponto de vista computacional, o solver CP-SAT demonstrou desempenho consistente, resolvendo instâncias com milhares de variáveis e restrições em tempos compatíveis com aplicações interativas e replanejamento frequente. Mesmo em cenários de maior escala, a combinação entre estrutura matricial esparsa e propagação eficiente de restrições permitiu convergência rápida e previsível.
+
+A comparação entre os diferentes modos de resolução evidenciou que a solução exata fornece uma referência ótima robusta, enquanto a heurística construtiva gulosa produz soluções viáveis quase instantaneamente. O método LNS mostrou-se particularmente eficaz ao permitir melhorias progressivas sobre soluções iniciais, aproximando-se da solução ótima com menor esforço computacional total.
+
+A integração opcional de aprendizado de máquina atuou como camada de \textit{guidance}, auxiliando decisões locais e estratégicas sem comprometer a estabilidade, a reprodutibilidade ou a validade legal das soluções.
+
+\section{Contribuições Científicas Consolidadas}
+
+As contribuições científicas desta dissertação podem ser consolidadas em múltiplas dimensões complementares.
+
+Em primeiro lugar, destaca-se a formulação matemática completa e detalhada do escalonamento de motoristas sob o Regulamento (CE) n.º 561/2006, com granularidade temporal fina e representação explícita de todas as principais restrições legais. Essa formulação avança o estado da arte ao superar simplificações comuns na literatura e ao demonstrar que a conformidade integral é compatível com desempenho computacional prático.
+
+Em segundo lugar, o trabalho introduz uma heurística construtiva matricial inédita, baseada na relação entre demanda, cobertura e carga acumulada por motorista. Essa abordagem difere de heurísticas baseadas exclusivamente em regras locais, ao explorar a estrutura matricial período $\times$ motorista como elemento central da tomada de decisão.
+
+Outra contribuição relevante reside na introdução de operações elementares sobre a matriz de restrições como ferramenta analítica e educacional. Embora tais operações sejam clássicas em álgebra linear, sua aplicação sistemática no contexto de escalonamento e otimização inteira é pouco explorada na literatura, abrindo novas possibilidades para análise estrutural e diagnóstico de modelos.
+
+O desenvolvimento de um pipeline híbrido integrando heurística, LNS e MILP constitui também uma contribuição metodológica importante, ao demonstrar que métodos exatos e metaheurísticos podem coexistir de forma sinérgica em um mesmo ambiente computacional, mantendo consistência legal e interpretabilidade.
+
+Por fim, a integração opcional e resiliente de aprendizado de máquina supervisionado como camada de apoio à decisão representa uma contribuição contemporânea, alinhada às tendências atuais de otimização orientada por dados, sem abdicar do rigor matemático.
+
+\section{Posicionamento Científico da Dissertação}
+
+Do ponto de vista do posicionamento científico, esta dissertação ocupa um espaço de interseção entre três grandes vertentes da literatura: (i) formulações exatas de escalonamento com foco em conformidade legal, (ii) heurísticas e metaheurísticas voltadas à escalabilidade e eficiência computacional e (iii) abordagens híbridas que exploram aprendizado de máquina como mecanismo de apoio.
+
+Enquanto grande parte da literatura trata esses eixos de forma isolada, o presente trabalho demonstra que é possível integrá-los em um único simulador, preservando rigor, reprodutibilidade e capacidade de análise comparativa. Essa integração amplia significativamente o escopo experimental e permite investigar, de forma sistemática, trade-offs entre qualidade da solução, tempo computacional e estabilidade operacional.
+
+Assim, o trabalho não se limita a propor um novo modelo matemático, mas oferece uma plataforma de experimentação científica capaz de sustentar análises empíricas profundas e extensões futuras.
+
+\section{Limitações Identificadas}
+
+Apesar dos resultados positivos, algumas limitações devem ser reconhecidas. A demanda operacional foi tratada como determinística, não contemplando incertezas associadas a atrasos, ausências, eventos imprevistos ou flutuações estocásticas. Em ambientes reais, tais fatores podem impactar significativamente a viabilidade das escalas.
+
+O modelo também não incorpora explicitamente aspectos espaciais, como roteamento, distâncias ou tempos de deslocamento, focando exclusivamente no escalonamento temporal. Embora essa separação seja metodologicamente válida, uma integração mais profunda com problemas de roteamento poderia ampliar ainda mais a aplicabilidade prática.
+
+No que se refere ao aprendizado de máquina, sua avaliação quantitativa ainda é limitada a cenários experimentais controlados. Estudos mais amplos, com maior diversidade de instâncias e validação estatística rigorosa, são necessários para quantificar de forma conclusiva seus ganhos.
+
+\section{Direções para Trabalhos Futuros}
+
+Diversas extensões naturais podem ser exploradas a partir desta pesquisa. Uma direção promissora consiste na incorporação de modelos estocásticos ou robustos, capazes de lidar explicitamente com incertezas operacionais. Outra possibilidade é a integração do escalonamento com modelos de roteamento de veículos, resultando em formulações conjuntas do tipo \textit{Driver Scheduling + Vehicle Routing}.
+
+A integração com dados telemáticos reais, provenientes de tacógrafos digitais e sistemas de gestão de frotas, representa outro avanço relevante, permitindo validação empírica em ambientes produtivos. O módulo de aprendizado de máquina pode ser expandido com técnicas mais avançadas, como aprendizado por reforço ou modelos híbridos supervisionados–não supervisionados.
+
+Por fim, a evolução do simulador para uma plataforma SaaS multiempresa abre caminho para aplicações industriais em larga escala, conectando pesquisa acadêmica, engenharia de software e tomada de decisão operacional.
+
+\section{Considerações Finais}
+
+Em síntese, esta dissertação demonstra que a combinação coerente de Programação Linear Inteira, heurísticas, matheurísticas e aprendizado de máquina constitui uma abordagem poderosa para o escalonamento de motoristas sob restrições legais complexas. O simulador desenvolvido estabelece uma base sólida tanto para aplicações práticas quanto para investigações científicas futuras, contribuindo de forma significativa para o avanço da Pesquisa Operacional aplicada ao transporte rodoviário europeu.

@@ -223,6 +223,7 @@ def run_lns(
     candidate_k: int = 6,
     periods_per_day: int = 96,
     random_seed: Optional[int] = None,
+    time_limit_per_iteration: int = 10,
 ) -> Tuple[np.ndarray, Dict[str, Any]]:
     """
     Executa Large Neighborhood Search (LNS) guiado por heurística + ML (f₂).
@@ -371,6 +372,7 @@ def run_lns(
             initial_allocation=None,
             fixed_assignments=fixed_assignments,
             mode="LNS",
+            time_limit_seconds=time_limit_per_iteration,
         )
 
         # ---- unpack defensivo (compatível com solver evoluído) ----

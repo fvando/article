@@ -1,0 +1,81 @@
+\chapter{Introdução}\label{capitulo1}
+
+Nesse contexto, o escalonamento de motoristas sob restrições regulatórias emerge como um problema de otimização combinatória de elevada complexidade, com impacto direto na eficiência operacional, nos custos e na conformidade legal das empresas de transporte
+
+Os elementos pré-textuais apresentados a seguir têm como finalidade orientar o leitor acerca da estrutura gráfica, simbólica e organizacional propostos, dedicada ao desenvolvimento de um modelo de Programação Linear Inteira para o escalonamento de motoristas sob o Regulamento (CE) n.{\textordmasculine} 561/2006.
+
+Ao longo do trabalho, diferentes tipos de representações são utilizados para apoiar a formulação matemática, a implementação computacional e a análise dos resultados. A Lista de Ilustrações reúne as figuras que apresentam, entre outros elementos, a interface do sistema construído, a estrutura da matriz de restrições e os gráficos derivados das simulações realizadas. As listas de Quadros e Tabelas são mantidas para conformidade com as normas acadêmicas, mesmo que o texto não contenha quadros ou tabelas formais. 
+
+A Lista de Abreviaturas e Siglas consolida os termos técnicos utilizados no campo da Pesquisa Operacional, da otimização e da legislação europeia aplicada ao transporte rodoviário, facilitando o acompanhamento da leitura. A Lista de Símbolos organiza as notações matemáticas empregadas na formulação do modelo, servindo como referência rápida para os capítulos que apresentam o formalismo teórico. 
+
+Por fim, o Sumário estrutura a organização geral do documento, permitindo uma navegação clara entre as seções que tratam desde o contexto e fundamentação teórica até os experimentos, resultados e conclusões finais. Esses elementos auxiliam na compreensão integral da pesquisa, conferindo ao trabalho maior clareza, rigor e acessibilidade.
+
+%\addcontentsline{toc}{chapter}{Elementos Pré-Textuais}
+
+\section{Contextualização}
+
+O transporte rodoviário de cargas constitui um componente central da economia europeia, assegurando fluxos contínuos de bens e garantindo a integração logística entre os Estados-Membros. Nesse contexto, os motoristas profissionais constituem o recurso humano central da operação, tornando a gestão das suas jornadas um fator crítico para a eficiência, segurança e conformidade legal do setor.
+
+Nos últimos anos, abordagens híbridas que combinam otimização exata, heurísticas e, de forma complementar, técnicas de aprendizado de máquina têm sido exploradas como forma de acelerar a convergência e melhorar a qualidade das soluções iniciais, especialmente em problemas de grande escala e natureza temporal.
+
+A União Europeia possui uma das regulamentações mais rigorosas do mundo no que diz respeito aos tempos de condução, pausas e períodos de descanso dos motoristas. O \textit{Regulamento (CE) n.{\textordmasculine} 561/2006}, complementado pela \textit{Diretiva 2002/15/CE} e pelo \textit{Regulamento (UE) n.{\textordmasculine} 165/2014}, estabelece limites estritos que visam proteger a sa{\'u}de dos motoristas, prevenir acidentes e promover condi{\c c}{\~o}es de trabalho seguras e humanizadas \cite{eu5612006, eu200215, eu1652014}. Essas normas afetam diretamente a forma como as escalas s{\~a}o constru{\'\i}das, exigindo aten{\c c}{\~a}o constante ao cumprimento de requisitos di{\'a}rios, semanais e quinzenais.
+
+Entretanto, na pr{\'a}tica, a elabora{\c c}{\~a}o manual de escalas {\'e} propensa a erros, especialmente em opera{\c c}{\~o}es de grande escala, caracterizadas por alta variabilidade de demanda, m{\'u}ltiplas janelas temporais, restri{\c c}{\~o}es acumulativas e depend{\^e}ncias temporais entre os per{\'\i}odos de trabalho. Pequenas decis{\~o}es tomadas em um per{\'\i}odo podem invalidar toda a escala futura, resultando em infra{\c c}{\~o}es legais, custos adicionais e riscos operacionais.
+
+Nesse cen{\'a}rio, abordagens matem{\'a}ticas baseadas em Programa{\c c}{\~a}o Linear Inteira (PLI) emergem como ferramentas adequadas para formalizar e resolver problemas de escalonamento, oferecendo rigor, precis{\~a}o e capacidade de lidar com m{\'u}ltiplas restri{\c c}{\~o}es simultaneamente \cite{hillier2015}, \cite{taha2017}, \cite{nemhauser1988}. De forma complementar, solvers modernos como o OR-Tools disponibilizam recursos computacionais avan{\c c}ados que permitem resolver modelos inteiros de grande escala em tempos reduzidos \cite{googleORTools}.
+
+Além do modelo de otimização em si, esta pesquisa também materializa um ambiente de simulação e análise, no qual o usuário pode configurar parâmetros operacionais, habilitar/desabilitar restrições legais e observar, de forma visual, como tais escolhas impactam a viabilidade, o número de motoristas necessários e a qualidade da cobertura da demanda. Esse ambiente inclui métricas e gráficos de diagnóstico (por exemplo, cobertura por slot, subutilização, sobrecarga, risco e estabilidade temporal), bem como análises estruturais do modelo por meio de visualizações de matrizes e medidas como densidade, oferecendo suporte à interpretação do comportamento do solver e à validação do modelo.
+
+
+Esta disserta{\c c}{\~a}o insere-se nesse contexto, propondo um modelo abrangente de PLI para o escalonamento de motoristas em conformidade com o Regulamento (CE) n.{\textordmasculine} 561/2006, apoiado por uma implementa{\c c}{\~a}o computacional interativa e orientada {\`a} simula{\c c}{\~a}o de cen{\'a}rios operacionais. Parte desse desenvolvimento foi previamente publicada em \cite{moreira2025}, que fundamenta e inspira a formula{\c c}{\~a}o aprofundada apresentada nesta pesquisa.
+
+\section{Problema da Pesquisa}
+
+O problema desta disserta{\c c}{\~a}o consiste em determinar como alocar motoristas ao longo de um horizonte temporal discretizado, de forma a: (i) atender {\`a} demanda operacional por per{\'\i}odo; (ii) respeitar o Regulamento (CE) n.{\textordmasculine} 561/2006; (iii) minimizar o n{\'u}mero total de motoristas utilizados;
+(iv) garantir escalas cont{\'\i}nuas, regulares e operacionalmente vi{\'a}veis; (v) permitir an{\'a}lises de sensibilidade para diferentes cen{\'a}rios.
+
+Adicionalmente, quando o modelo exato se torna computacionalmente custoso em instâncias maiores, torna-se relevante investigar estratégias de busca e melhoria incremental de soluções, incorporadas no próprio simulador, tais como heurísticas construtivas e busca em grandes vizinhanças, preservando a conformidade legal e permitindo análises comparativas entre modos de resolução.
+
+Trata-se de um contexto caracterizado pelas restrições acumulativas sobre condução diária, semanal e quinzenal; pela necessidade de pausas obrigatórias; pela variabilidade da demanda; pelas dependências temporais entre períodos sucessivos; e pelo grande número de combinações possíveis entre motoristas e períodos.
+
+\section{Quest{\~a}o da Pesquisa}
+
+\begin{quote}
+Como formular e implementar um modelo de Programa{\c c}{\~a}o Linear Inteira capaz de gerar escalas de motoristas legalmente v{\'a}lidas, operacionalmente adequadas e alinhadas ao Regulamento (CE) n.{\textordmasculine} 561/2006?
+\end{quote}
+
+\section{Objetivo Geral}
+
+Desenvolver, implementar e avaliar um modelo de Programa{\c c}{\~a}o Linear Inteira para o escalonamento de motoristas no transporte rodovi{\'a}rio europeu, assegurando conformidade com o Regulamento (CE) n.{\textordmasculine} 561/2006 e promovendo melhoria do desempenho operacional.
+
+\section{Objetivos Espec{\'\i}ficos}
+
+(i) Formular matematicamente o problema, definindo vari{\'a}veis, par{\^a}metros e restri{\c c}{\~o}es; (ii) Representar as exig{\^e}ncias legais do Regulamento (CE) n.{\textordmasculine} 561/2006 sob a forma de inequa{\c c}{\~o}es lineares; (iii) Implementar o modelo utilizando Python e o solver OR-Tools; (iv) Desenvolver uma interface interativa para simula{\c c}{\~a}o de cen{\'a}rios e visualiza{\c c}{\~a}o de resultados; (v) Validar o modelo em diferentes horizontes (7, 15 e 30 dias); (vi) Comparar a aloca{\c c}{\~a}o gerada com a demanda real ou simulada; (vii) Avaliar m{\'e}tricas de desempenho, como cobertura, subutiliza{\c c}{\~a}o e sobrecarga; (viii) Analisar a estabilidade do modelo e o impacto das transforma{\c c}{\~o}es matriciais. (ix) Implementar e avaliar modos complementares de resolução e melhoria de soluções (por exemplo, geração de solução inicial e busca em vizinhanças), bem como mecanismos de relaxação e registro de histórico de convergência; (x) Estruturar rotinas de experimentação com geração de instâncias/datasets e comparação sistemática de desempenho por meio de métricas e visualizações no simulador.
+
+\section{Justificativa}
+
+(i) \textbf{Relev{\^a}ncia legal e seguran{\c c}a rodovi{\'a}ria}: o descumprimento do Regulamento (CE) n.{\textordmasculine} 561/2006 implica multas, riscos {\`a} vida dos motoristas e impactos negativos na reputa{\c c}{\~a}o das empresas; (ii) \textbf{Complexidade operacional}: a variabilidade de demanda e a natureza acumulativa das restri{\c c}{\~o}es dificultam a elabora{\c c}{\~a}o manual de escalas; (iii) \textbf{Contribuição científica}: poucos trabalhos integram o Regulamento (CE) n.{\textordmasculine} 561/2006 a modelos inteiros formais; esta disserta{\c c}{\~a}o contribui para preencher essa lacuna, em linha com \cite{erdman2022}, \cite{moreira2025}; (iv) \textbf{Aplicabilidade industrial}: o modelo possui potencial de aplicação em empresas de transporte, podendo evoluir para solu{\c c}{\~o}es SaaS e integra{\c c}{\~a}o com sistemas telem{\'a}ticos.
+
+\section{Estrutura da Dissertação}
+
+Esta dissertação está organizada em nove capítulos, além das referências, apêndices e anexos, estruturados de forma a conduzir o leitor desde a contextualização do problema até a consolidação das contribuições científicas e perspectivas futuras.
+
+O \textbf{Capítulo 1} apresenta a introdução do trabalho, incluindo a contextualização do problema, a definição da questão de pesquisa, os objetivos geral e específicos, a justificativa do estudo e a descrição da estrutura da dissertação.
+
+O \textbf{Capítulo 2} é dedicado à revisão da literatura, abordando os fundamentos do transporte rodoviário europeu, as restrições regulatórias aplicáveis, os principais problemas de escalonamento, técnicas de modelagem com Programação Linear Inteira, metaheurísticas, o uso de solvers modernos como o OR-Tools CP-SAT, bem como trabalhos correlatos relevantes.
+
+O \textbf{Capítulo 3} apresenta as bases legais e normativas do escalonamento de motoristas, com uma análise detalhada do Regulamento (CE) n.º 561/2006, da Diretiva 2002/15/CE e do Regulamento (UE) n.º 165/2014, discutindo suas implicações diretas na formulação do modelo matemático.
+
+O \textbf{Capítulo 4} descreve a metodologia adotada na pesquisa, detalhando a estrutura geral do estudo, as etapas de formulação matemática, implementação computacional, definição dos cenários experimentais e os métodos de avaliação das soluções. Este capítulo também introduz a abordagem heurística e matheurística proposta, incluindo a utilização de Large Neighborhood Search (LNS) e a integração opcional com técnicas de aprendizagem de máquina.
+
+O \textbf{Capítulo 5} apresenta o modelo matemático proposto, incluindo a discretização temporal, a definição de conjuntos, parâmetros e variáveis de decisão, as funções objetivo e o conjunto completo de restrições que garantem a conformidade com a legislação europeia, além de uma discussão sobre linearização e observações computacionais.
+
+O \textbf{Capítulo 6} trata da implementação computacional do modelo, descrevendo a arquitetura geral da solução, a interface de parametrização, a construção da matriz de restrições, os modos de resolução do solver, os fluxos computacionais do simulador, bem como os mecanismos de visualização, análise iterativa e geração de indicadores operacionais.
+
+O \textbf{Capítulo 7} apresenta os resultados obtidos a partir dos experimentos realizados, incluindo a configuração dos cenários, a análise do comportamento da demanda, a comparação entre demanda e alocação, os indicadores operacionais, a avaliação dos diferentes modos de resolução e a síntese geral dos resultados.
+
+O \textbf{Capítulo 8} realiza uma revisão comparativa da literatura, confrontando os modelos e técnicas desenvolvidos neste trabalho com o estado da arte, incluindo uma análise crítica das abordagens existentes e a discussão do pipeline híbrido de otimização proposto.
+
+Por fim, o \textbf{Capítulo 9} apresenta as conclusões do trabalho, sintetizando as principais contribuições científicas, os resultados alcançados, as limitações identificadas e as direções para trabalhos futuros.
+
+As referências bibliográficas, o glossário, os apêndices e os anexos complementam o trabalho, fornecendo detalhamentos adicionais sobre formulações alternativas do modelo, cenários de simulação, parâmetros utilizados, estruturas de dados, fluxos da aplicação e documentação normativa.

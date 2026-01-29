@@ -1,0 +1,21 @@
+% \begin{resumo}[Abstract]
+%     \begin{otherlanguage*}{english}
+% This work presents the development of an advanced simulator for driver scheduling in European road freight transport, grounded in an Integer Linear Programming (ILP) model that incorporates the legal requirements established by Regulation (EC) No. 561/2006, Directive 2002/15/EC, and Regulation (EU) No. 165/2014. The mathematical model was formulated to represent all daily, weekly, and biweekly constraints related to driving times, breaks, and mandatory rest periods, including complex temporal dependencies and moving compliance windows.
+
+% The computational implementation was carried out in Python using the CP-SAT solver from OR-Tools and integrated into an interactive interface developed with Streamlit, allowing scenario configuration, dynamic selection of constraints, definition of objective functions, and detailed visualization of results. In addition to the exact solution mode, the simulator incorporates heuristic approaches and a matheuristic strategy based on Large Neighborhood Search (LNS), enabling the analysis of model behavior under different levels of complexity and scalability.
+
+% Furthermore, the work proposes the experimental integration of supervised machine learning models to guide local allocation decisions ($f_1$) and neighborhood selection within the LNS procedure ($f_2$), while preserving heuristic fallback mechanisms to maintain robustness and operational stability. The simulator provides a comprehensive set of performance indicators (KPIs), including global demand coverage, operational performance, operational risk, temporal stability, and estimated cost, as well as analytical visualizations and heatmaps to support result interpretation.
+
+% Computational experiments conducted over short- and medium-term planning horizons highlight the simulator’s ability to identify feasible solutions and analyze infeasible scenarios under different combinations of constraints, providing support for strategic, tactical, and operational decision-making. As its main contribution, this work consolidates a unified environment for modeling, simulation, and analysis of driver scheduling under European legislation, contributing to the state of the art by combining mathematical optimization, heuristics, matheuristics, and machine learning within a single experimental environment.
+% \par    
+% \textbf{Keywords}: Integer Linear Programming; Driver Scheduling; European Regulation 561/2006; Optimization; OR-Tools; Logistics.
+%     \end{otherlanguage*}
+% \end{resumo}
+
+\begin{abstract}
+Driver scheduling in European road freight transport constitutes a complex combinatorial optimization problem, mainly due to the strict regulatory constraints imposed by European legislation on driving times, mandatory breaks, and minimum rest periods, as established by Regulation (EC) No.~561/2006. In this context, this dissertation proposes an Integer Linear Programming (ILP) model for driver scheduling over discretized planning horizons, explicitly incorporating operational, temporal, and regulatory constraints, as well as demand satisfaction requirements.
+
+The proposed formulation supports different solution strategies, including exact optimization methods, constructive heuristics, and a Large Neighborhood Search (LNS) approach, enabling a systematic evaluation of the trade-off between solution quality and computational efficiency. Computational experiments were conducted using synthetically generated data and realistic operational scenarios, considering key performance indicators such as demand coverage, workforce utilization, and solution stability.
+
+The results demonstrate that the proposed model is capable of achieving high levels of demand coverage while reducing the total number of active drivers and maintaining strict compliance with regulatory constraints. Furthermore, heuristic and LNS-based approaches provide competitive solutions within significantly shorter computational times, preserving acceptable solution quality. These findings highlight the practical applicability of the proposed approach as a decision-support tool for driver scheduling in regulated road transport environments.
+\end{abstract}

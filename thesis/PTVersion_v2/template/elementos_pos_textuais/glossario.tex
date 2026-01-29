@@ -1,0 +1,91 @@
+% \chapter*{Glossário}
+% \addcontentsline{toc}{chapter}{Glossário}
+
+% \begin{description}
+
+% \item[Busca Heurística] 
+% Conjunto de técnicas utilizadas por algoritmos de otimização para acelerar a obtenção de soluções viáveis ou de alta qualidade, explorando regras de decisão guiadas, conhecimento do problema e estratégias de exploração direcionada do espaço de busca.
+
+% \item[Condução Acumulada] 
+% Total de horas de condução realizadas por um motorista ao longo de uma janela temporal móvel (diária, semanal ou quinzenal), utilizado para verificação de conformidade com os limites estabelecidos pelo Regulamento (CE) n.º 561/2006.
+
+% \item[Descanso Diário] 
+% Período mínimo contínuo de repouso exigido ao motorista dentro de cada ciclo de 24 horas, podendo assumir a forma de descanso diário normal ou reduzido, conforme definido na legislação europeia.
+
+% \item[Esparsidade] 
+% Característica estrutural de matrizes de otimização nas quais a maioria dos coeficientes é igual a zero. Matrizes esparsas favorecem a eficiência computacional de solvers como o CP-SAT, reduzindo custo de memória e tempo de propagação de restrições.
+
+% \item[Heurística Construtiva] 
+% Procedimento algorítmico responsável pela geração de uma solução inicial factível, por meio da atribuição incremental de decisões, respeitando restrições básicas do problema e servindo como ponto de partida para métodos exatos ou metaheurísticos.
+
+% \item[Janela Móvel] 
+% Intervalo temporal deslizante utilizado para avaliar restrições acumulativas, como limites de condução e descanso em janelas de 24 horas, 7 dias ou 14 dias, típico de problemas regulados por legislação trabalhista.
+
+% \item[Large Neighborhood Search (LNS)] 
+% Metaheurística baseada na destruição e reconstrução parcial de uma solução, na qual grandes subconjuntos de variáveis são temporariamente liberados e reotimizados, geralmente com apoio de modelos exatos.
+
+% \item[Matheurística] 
+% Abordagem híbrida que combina modelos matemáticos exatos (como Programação Linear Inteira) com heurísticas ou metaheurísticas, explorando simultaneamente rigor formal e eficiência computacional.
+
+% \item[Modelagem Determinística] 
+% Tipo de modelagem matemática em que todos os parâmetros do problema são considerados conhecidos e fixos, sem a introdução explícita de incerteza ou variabilidade estocástica.
+
+% \item[Pipeline Híbrido] 
+% Fluxo computacional estruturado que integra heurística construtiva, métodos matheurísticos (como LNS) e resolução exata via solver inteiro, permitindo melhorias iterativas da solução com controle do esforço computacional.
+
+% \item[Programação Linear Inteira (PLI)] 
+% Classe de problemas de otimização matemática na qual a função objetivo e as restrições são lineares, e parte ou todas as variáveis de decisão assumem valores inteiros ou binários.
+
+% \item[Solver CP-SAT] 
+% Solver híbrido da biblioteca OR-Tools que combina técnicas de Programação por Restrições, Satisfatibilidade Booleana (SAT) e otimização inteira, sendo particularmente eficiente para modelos com grande número de variáveis binárias e forte acoplamento lógico-temporal.
+
+% \item[Streamlit] 
+% Framework em Python para desenvolvimento rápido de interfaces interativas baseadas em aplicações web, utilizado neste trabalho para parametrização de cenários, execução do simulador e visualização de resultados.
+
+% \end{description}
+
+\chapter*{Glossário}
+\addcontentsline{toc}{chapter}{Glossário}
+
+\begin{description}
+
+\item[Busca Heurística] 
+Conjunto de técnicas utilizadas em algoritmos de otimização para acelerar a obtenção de soluções viáveis ou de alta qualidade, explorando regras de decisão guiadas, conhecimento específico do problema e estratégias direcionadas de exploração do espaço de busca.
+
+\item[Condução Acumulada] 
+Total de tempo de condução realizado por um motorista ao longo de uma janela temporal móvel (diária, semanal ou quinzenal), utilizado para verificação de conformidade com os limites máximos estabelecidos pelo Regulamento (CE) n.º 561/2006.
+
+\item[Descanso Diário] 
+Período mínimo contínuo de repouso exigido ao motorista dentro de cada ciclo de 24 horas, podendo assumir a forma de descanso diário normal ou reduzido, conforme definido na legislação europeia aplicável.
+
+\item[Esparsidade] 
+Característica estrutural de matrizes de otimização nas quais a maioria dos coeficientes é igual a zero. Matrizes esparsas favorecem a eficiência computacional de solvers, como o CP-SAT, ao reduzir o consumo de memória e acelerar a propagação de restrições.
+
+\item[Heurística Construtiva] 
+Procedimento algorítmico responsável pela geração de uma solução inicial factível, por meio da atribuição incremental de decisões, respeitando restrições básicas do problema e servindo como ponto de partida para métodos exatos, heurísticos ou metaheurísticos.
+
+\item[Janela Móvel] 
+Intervalo temporal deslizante utilizado para avaliar restrições acumulativas, como limites de condução e períodos de descanso em janelas de 24 horas, 7 dias ou 14 dias, típico de problemas regulados por legislação trabalhista e de transporte.
+
+\item[Large Neighborhood Search (LNS)] 
+Metaheurística baseada na destruição e reconstrução parcial de uma solução, na qual grandes subconjuntos de variáveis são temporariamente liberados e reotimizados, geralmente com apoio de modelos matemáticos exatos.
+
+\item[Matheurística] 
+Abordagem híbrida que combina modelos matemáticos exatos (como Programação Linear Inteira) com heurísticas ou metaheurísticas, explorando simultaneamente rigor formal e eficiência computacional na busca por soluções de alta qualidade.
+
+\item[Modelagem Determinística] 
+Tipo de modelagem matemática em que todos os parâmetros do problema são considerados conhecidos e fixos, sem a introdução explícita de incerteza ou variabilidade estocástica.
+
+\item[Pipeline Híbrido] 
+Fluxo computacional estruturado que integra heurística construtiva, métodos matheurísticos (como LNS) e resolução exata via solver inteiro, permitindo melhorias iterativas da solução com controle explícito do esforço computacional.
+
+\item[Programação Linear Inteira (PLI)] 
+Classe de problemas de otimização matemática na qual a função objetivo e as restrições são lineares, e parte ou todas as variáveis de decisão assumem valores inteiros ou binários.
+
+\item[Solver CP-SAT] 
+Solver híbrido da biblioteca OR-Tools que combina técnicas de Programação por Restrições, Satisfatibilidade Booleana (SAT) e otimização inteira, sendo particularmente eficiente para modelos com grande número de variáveis binárias e forte acoplamento lógico-temporal.
+
+\item[Streamlit] 
+Framework em Python para o desenvolvimento rápido de interfaces interativas baseadas em aplicações web, utilizado neste trabalho para a parametrização de cenários, execução do simulador e visualização de resultados.
+
+\end{description}

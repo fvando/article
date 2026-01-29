@@ -1,0 +1,119 @@
+\begin{anexosenv}
+\partanexos
+
+\chapter{Resumo Estruturado do Regulamento (CE) n.º 561/2006}
+
+Este anexo apresenta um resumo das principais disposições do Regulamento (CE)
+n.º~561/2006, organizado em formato tabular para facilitar consulta durante a
+interpretação do modelo de escalonamento.
+
+\section*{Limites de Condução}
+
+\begin{table}[h!]
+\centering
+\caption{Limites de Condução}
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Parâmetro} & \textbf{Descrição} \\ \hline
+Condução diária & Máximo de 9 horas; permitido estender para 10 horas até 2 vezes por semana. \\ \hline
+Condução semanal & Máximo de 56 horas. \\ \hline
+Condução quinzenal (2 semanas) & Máximo de 90 horas acumuladas. \\ \hline
+\end{tabular}
+\end{table}
+
+\section*{Pausas Obrigatórias}
+
+\begin{table}[h!]
+\centering
+\caption{Regras de Pausa}
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Condição} & \textbf{Descrição} \\ \hline
+Pausa após condução contínua & 45 minutos após no máximo 4h30 de condução. \\ \hline
+Divisão da pausa & Permitido dividir em 15 min + 30 min. \\ \hline
+\end{tabular}
+\end{table}
+
+\section*{Repousos Diários}
+
+\begin{table}[h!]
+\centering
+\caption{Repousos Diários}
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Tipo} & \textbf{Descrição} \\ \hline
+Repouso regular diário & Mínimo 11 horas. \\ \hline
+Repouso diário fracionado & 3h + 9h (total mínimo 12h). \\ \hline
+Repouso reduzido diário & Mínimo de 9 horas, até 3 vezes entre dois repousos semanais. \\ \hline
+\end{tabular}
+\end{table}
+
+\section*{Repouso Semanal}
+
+\begin{table}[h!]
+\centering
+\caption{Repousos Semanais}
+\begin{tabular}{|p{5cm}|p{8cm}|}
+\hline
+\textbf{Tipo} & \textbf{Descrição} \\ \hline
+Repouso semanal regular & Mínimo de 45 horas. \\ \hline
+Repouso semanal reduzido & Mínimo de 24 horas, compensação obrigatória em até 3 semanas. \\ \hline
+\end{tabular}
+\end{table}
+
+\chapter{Glossário Técnico}
+
+\begin{description}
+
+\item[PLI — Programação Linear Inteira:]  
+Modelo matemático onde todas as variáveis são inteiras, utilizado para problemas
+de decisão e alocação.
+
+\item[MIP — Mixed Integer Programming:]  
+Problemas que combinam variáveis inteiras e contínuas, resolvidos via métodos
+como Branch-and-Bound.
+
+\item[MIP Gap:]  
+Medida do quão distante a solução corrente está da solução ótima, calculada como:
+\[
+\text{Gap} = \frac{|Z^* - Z_{best}|}{Z^*}.
+\]
+
+\item[Presolve:]  
+Conjunto de transformações aplicadas pelo solver antes da otimização, reduzindo
+o tamanho do modelo.
+
+\item[Cutting Planes (Cuts):]  
+Restrições adicionais que eliminam regiões inviáveis da relaxação linear,
+acelerando convergência.
+
+\item[OR-Tools:]  
+Pacote de otimização do Google usado para resolver problemas de rota,
+scheduling e alocação.
+
+\item[Window Time (Janela de Tempo):]  
+Intervalo permitido para início ou término de uma tarefa.
+
+\item[Feasibility Pump:]  
+Heurística para encontrar soluções inteiras rapidamente em MIP.
+
+\chapter{Fluxo Geral da Aplicação}
+
+Este anexo apresenta o fluxo geral da aplicação desenvolvida para implementação do modelo de Programação Linear Inteira aplicado ao escalonamento de motoristas sob o Regulamento (CE) n.{\textordmasculine} 561/2006.
+
+O diagrama foi construído utilizando a linguagem PlantUML e ilustra, de forma abstrata e didática, todas as etapas principais da ferramenta: configuração dos parâmetros via interface, construção programática das variáveis e restrições, execução do solver CP-SAT e geração dos resultados analíticos. 
+
+Esse nível de detalhamento permite compreender a arquitetura e o funcionamento da solução sem expor o código-fonte propriamente dito, que é de natureza confidencial e constitui segredo comercial da organização.
+
+A Figura~\ref{fig:plantuml-fluxo} apresenta a visão geral do fluxo da aplicação.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\textwidth]{template/figuras/sequence.png}
+\caption{Fluxo geral da aplicação desenvolvido em PlantUML.}
+\label{fig:plantuml-fluxo}
+\end{figure}
+
+\end{description}
+
+\end{anexosenv}
