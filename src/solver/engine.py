@@ -346,7 +346,7 @@ def solve_shift_schedule(
             for t in range(limit_workers): solver.Add(L[t] <= Lmax)
 
             S, E = {}, {}
-            SHIFT_MIN = min(36, num_periods)  # Dynamic: avoid infeasibility on short horizons
+            SHIFT_MIN = min(16, num_periods)  # RELAXADO: 4h (16 slots) para viabilidade e hint acceptance
             SHIFT_MAX = min(52, num_periods)
             for t in range(limit_workers):
                 for d in range(num_periods):

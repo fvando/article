@@ -2290,7 +2290,7 @@ with st.expander(t("global_params"), expanded=True):
         solver_param_type = st.selectbox(t("lbl_solver"), ["SCIP", "GLOP"], key="solver")
         acceptable_percentage = st.number_input(t("lbl_density"), min_value=0.01, key="acceptable_density")
         enable_symmetry_breaking = st.checkbox(t("lbl_symmetry"), value=False)
-        max_time_seconds = st.number_input(t("lbl_time"), min_value=10, value=60, step=10, help="Max solver runtime per instance")
+        max_time_seconds = st.number_input(t("lbl_time"), min_value=10, value=300, step=10, help="Max solver runtime per instance")
 
     with col3:
         st.write(t("col_iter"))
