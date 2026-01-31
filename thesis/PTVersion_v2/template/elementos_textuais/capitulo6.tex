@@ -1,8 +1,8 @@
-\chapter{Implementação Computacional}\label{capitulo5}
+\chapter{Implementação Computacional}\label{cap:implementacao}
 \section{Introdução}
 
 Este capítulo descreve a implementação computacional do modelo matemático
-apresentado no Capítulo~4, bem como o desenvolvimento de um simulador
+apresentado no Capítulo~\ref{cap:metodologia}, bem como o desenvolvimento de um simulador
 interativo concebido para apoiar a análise, validação e experimentação
 de estratégias de escalonamento de motoristas sob o Regulamento
 (CE) n.{\textordmasculine}~561/2006.
@@ -59,7 +59,7 @@ planejamento de transporte.
 Este capítulo apresenta, portanto, a arquitetura, os principais módulos
 e os fluxos computacionais do simulador desenvolvido, estabelecendo a
 base operacional necessária para os experimentos e análises apresentados
-no Capítulo~6.
+no Capítulo~\ref{cap:resultados}.
 
 \section{Arquitetura Geral da Solução}
 
@@ -521,19 +521,15 @@ problema de escalonamento de motoristas sob regulamentação europeia.
 
 \section{Execução do Solver}
 
- Após a definição completa do modelo matemático e da matriz de restrições, o
- problema de escalonamento é submetido ao processo de resolução por meio do
- solver CP-SAT, integrante da biblioteca OR-Tools. Embora o modelo seja
- formulado como um problema de Programação Linear Inteira, o CP-SAT adota uma
- abordagem híbrida, combinando técnicas de programação por restrições,
- satisfatibilidade booleana e otimização inteira.
+escala.
 
- Essa escolha permite explorar de forma eficiente a forte estrutura temporal e
- a esparsidade do modelo, superando limitações frequentemente observadas em
- solvers MILP tradicionais quando aplicados a problemas regulados de grande
- escala.
+\subsection{Resolução Lexicográfica em Duas Fases}
 
- \subsection{Inicialização e Parâmetros do Solver}
+Uma das contribuições técnicas centrais desta implementação é a estruturação da resolução em duas fases lexicográficas, visando garantir a robustez operacional. Na primeira fase, o solver foca exclusivamente na minimização da demanda não atendida ($\sum U_d$). Esta fase garante que o sistema encontre a escala que melhor atende aos requisitos de transporte, independentemente do custo em termos de recursos humanos.
+
+Uma vez obtido o valor mínimo de demanda não atendida, este valor é fixado como uma restrição rígida e o modelo avança para a segunda fase. Nesta etapa, o objetivo passa a ser a minimização dos recursos mobilizados ($\sum Z_t$), buscando a eficiência de custos sem comprometer o nível de serviço alcançado na fase anterior. Essa abordagem em camadas reflete a hierarquia de prioridades de uma operação de transporte real.
+
+\subsection{Inicialização e Parâmetros do Solver}
 
  O simulador inicializa o solver com um conjunto explícito de parâmetros
  computacionais, que podem ser configurados diretamente pela interface. Entre
@@ -597,9 +593,15 @@ problema de escalonamento de motoristas sob regulamentação europeia.
  No modo LNS, o solver é invocado repetidamente para resolver subproblemas
  restritos, nos quais apenas subconjuntos de variáveis são liberados a cada
  iteração. Esse processo permite melhorar progressivamente a solução, mantendo
- controle explícito sobre o esforço computacional.
+controle explícito sobre o esforço computacional.
 
- \subsection{Extração da Solução}
+\subsection{Mecanismo de Segurança: Fallback Heurístico}
+
+Para assegurar a operabilidade do simulador em qualquer circunstância, foi implementado um mecanismo de \textit{fallback} (recuperação de falhas). Caso o solver CP-SAT atinja o limite de tempo sem encontrar uma solução viável (especialmente em cenários de alta complexidade como o de 15 ou 30 dias), o sistema não retorna um erro ou uma solução vazia.
+
+Em vez disso, o simulador detecta o estado de interrupção e automaticamente recupera a melhor solução viável gerada pela \textit{Heurística Construtiva} na etapa de inicialização. Essa solução de segurança garante que o usuário sempre tenha uma base de planejamento disponível, marcada nos relatórios como uma solução de \textit{fallback}, preservando a estabilidade da ferramenta mesmo sob estresse computacional extremo.
+
+\subsection{Extração da Solução}
 
  Uma vez concluída a execução, o simulador extrai de forma sistemática os
  valores das variáveis de decisão, construindo:

@@ -37,10 +37,10 @@ internacional, ADR, refrigerado, entre outras. Nesta formulação estendida,
 restrições de compatibilidade foram adicionadas:
 
 \[
-x_{ij} \leq cat(i,j)
+x_{ij} \leq \text{cat}(i,j)
 \]
 
-onde $cat(i,j)$ é uma matriz binária que define compatibilidade entre categorias e
+onde $\text{cat}(i,j)$ é uma matriz binária que define compatibilidade entre categorias e
 tarefas. Essa abordagem permitiu analisar impactos da especialização.
 
 \section{Modelo com Múltiplos Períodos (Planeamento Semanal)}
@@ -77,44 +77,40 @@ Este apêndice documenta integralmente os cenários experimentais utilizados par
 avaliar o modelo de escalonamento, bem como os parâmetros adotados no solver
 OR-Tools e restrições específicas aplicadas durante os testes.
 
-\section{Descrição Geral dos Cenários}
-Foram configurados três cenários principais:
+\section{Perfis de Simulação (Profiles)}
+
+Os experimentos foram conduzidos utilizando perfis de configuração padronizados, garantindo reprodutibilidade e consistência nas análises de curto e médio prazo.
 
 \begin{itemize}
-    \item \textbf{Cenário 1 — Operação Diária Regular:}  
-    25 motoristas, 40 tarefas, predominância de viagens locais, baixa variabilidade
-    temporal.
+    \item \textbf{Perfil P2 (STRICT\_24H):}
+    Cenário base de 24 horas com 96 períodos de 15 minutos. Ativação rigorosa das restrições de condução diária (9h), pausas obrigatórias (45 min) e repouso diário mínimo (11h). Utilizado para validação fundamental da conformidade legal.
 
-    \item \textbf{Cenário 2 — Alta Demanda com Conflitos de Horário:}  
-    40 motoristas, 70 tarefas, múltiplos períodos sobrepostos, ocorrências de
-    turnos com início simultâneo e forte impacto das janelas temporais.
+    \item \textbf{Perfil W1 (WEEKLY\_CORE):}
+    Horizonte estendido de 7 dias (672 períodos). Incorpora o limite semanal de condução (56h) e o repouso semanal, além das regras diárias recorrentes. Focado na análise de sustentabilidade da escala em ciclos semanais.
 
-    \item \textbf{Cenário 3 — Operação Internacional:}  
-    20 motoristas com categorias distintas, viagens transfronteiriças,
-    restrições completas do Regulamento 561/2006, incluindo pausas e repousos
-    semanais reduzidos.
+    \item \textbf{Perfil B1 (BIWEEKLY\_CORE):}
+    Horizonte de 15 dias (1440 períodos). Ativa o conjunto completo de restrições do Regulamento (CE) n.º 561/2006, incluindo o limite quinzenal de condução (90h) e as regras de compensação de repouso. Representa o teste de estresse máximo para o solver.
 \end{itemize}
 
-\section{Configurações do Solver (CP-SAT / OR-Tools)}
+\section{Configurações do Solver (CP-SAT)}
 
-Embora o solver CP-SAT não seja um MILP clássico, utiliza mecanismos análogos
-a \emph{presolve}, cortes e heurísticas internas, configurados implicitamente
-ou via parâmetros de alto nível.
-
-As principais configurações aplicadas ao OR-Tools foram:
+O solver CP-SAT da biblioteca Google OR-Tools foi configurado com parâmetros específicos para equilibrar a exploração do espaço de soluções e o tempo de execução:
 
 \begin{itemize}
-    \item \textbf{\textbf{Critério de otimalidade relativa:} tolerância implícita configurada
-por limite de tempo e critérios internos do CP-SAT.}.  
-    \item \textbf{MaxTime:} 600 segundos (10 minutos).  
-    \item \textbf{Presolve:} ativado.  
-    \item \textbf{Cuts:} automáticas.  
-    \item \textbf{Heurísticas internas do CP-SAT:} ativadas automaticamente
-(busca guiada por SAT, propagação de restrições e heurísticas de viabilidade)  
+    \item \textbf{Solver Engine:} Google OR-Tools CP-SAT (v9.x).
+    \item \textbf{Parallel Workers:} 8 threads (paralelismo ativado para busca concorrente).
+    \item \textbf{Max Time:}
+    \begin{itemize}
+        \item 30 segundos para cenários de 24h;
+        \item 300 segundos para cenários de 7 dias;
+        \item 600 segundos para cenários de 15 dias.
+    \end{itemize}
+    \item \textbf{Presolve:} Ativado (Standard).
+    \item \textbf{Log Search Progress:} Ativado para monitoramento de convergência e gap.
+    \item \textbf{Linearization Level:} 1 (ativado para restrições lógicas complexas).
 \end{itemize}
 
-O tempo de execução variou entre 4s e 35s para os cenários básicos, e até 2m15s
-para os cenários de escala ampliada.
+O tempo de execução variou entre menos de 5 segundos para o perfil P2 e o limite máximo para o perfil B1, demonstrando a escalabilidade da abordagem.
 
 \section{Restrições Consideradas}
 Foram aplicadas integralmente as seguintes exigências:
@@ -240,38 +236,59 @@ Valor ótimo ou incumbente final obtido pelo solver, conforme o critério de par
 Este apêndice apresenta a formulação completa do modelo de Programação Linear
 Inteira utilizado na dissertação.
 
-\section{Variáveis de Decisão}
+\[
+X_{d,t} \in \{0, 1, \dots, \text{cap}\}
+\]
+indicando a carga (número de tarefas) atribuída ao motorista $t$ no período $d$.
 
 \[
-x_{ij} = 
+Y_{d,t} = 
 \begin{cases}
-1 & \text{se o motorista } i \text{ realiza a tarefa } j,\\
+1 & \text{se o motorista } t \text{ está presente no período } d,\\
 0 & \text{caso contrário}.
 \end{cases}
 \]
 
 \[
-h_{i}^\text{dia},\; h_{i}^\text{sem}: \text{horas acumuladas diário e semanal}.
+Z_t = 
+\begin{cases}
+1 & \text{se o motorista } t \text{ é ativado},\\
+0 & \text{caso contrário}.
+\end{cases}
+\]
+
+\[
+L_t: \text{carga total acumulada do motorista } t.
 \]
 
 \section{Função Objetivo}
 
-\[
-\min Z = \sum_{i,j} c_{ij}x_{ij},
-\]
 
-onde $c_{ij}$ representa custos operacionais, distância, categoria ou penalidades.
+\subsection*{Fase 1: Cobertura e Minimização de Recursos}
+\[
+\min Z_1 = \alpha \sum_{d \in D} U_d + \beta \sum_{t \in T} Z_t - \gamma \sum_{d \in D} \sum_{t \in T} X_{d,t},
+\]
+Sujeito às restrições de cobertura e limites legais.
+
+\subsection*{Fase 2: Balanceamento e Suavização (Opcional)}
+Após fixar os valores ótimos de $U_d$ e $Z_t$:
+\[
+\min Z_2 = \omega_1 \sum_{d,t} Y_{d,t} + \omega_2 \sum_{t} \xi_t + \omega_3 L_{\max},
+\]
+onde $\xi_t$ representa o excesso de carga acima do \textit{soft limit} e $L_{\max}$ é a carga máxima (Makespan).
+
+Os pesos configurados garantem $\alpha \gg \beta \gg \gamma$ e $\omega_1, \omega_2, \omega_3$ definem a preferência de qualidade da escala.
 
 \section{Restrições}
 
-\subsection{Atribuição Única}
+\subsection{Cobertura de Demanda}
 \[
-\sum_{i} x_{ij} = 1 \quad \forall j.
+\sum_{t \in T} X_{d,t} + U_d = \text{demanda}_d \quad \forall d.
 \]
 
 \subsection{Limite de Condução Diária}
 \[
-h_i^\text{dia} = \sum_{j} d_j x_{ij} \le 9 + e_i.
+\sum_{d \in \text{Dia}} X_{d,t} \le L^{\text{dia}}.
 \]
 
 \subsection{Janelas de Tempo}
@@ -279,14 +296,14 @@ h_i^\text{dia} = \sum_{j} d_j x_{ij} \le 9 + e_i.
 s_j x_{ij} \ge a_j, \qquad s_j x_{ij} + d_j \le b_j.
 \]
 
-\subsection{Compatibilidade Motorista–Tarefa}
+\subsection{Compatibilidade Motorista--Tarefa (Opcional)}
 \[
-x_{ij} \leq comp(i,j).
+X_{d,t} \le \text{cap} \cdot \text{comp}(d,t).
 \]
 
 \subsection{Acúmulo Semanal}
 \[
-h_i^\text{sem} = \sum_{j} d_j x_{ij} \le 56.
+\sum_{d \in \text{Semana}} X_{d,t} \le L^{\text{sem}}.
 \]
 
 \section{Modelo Final}

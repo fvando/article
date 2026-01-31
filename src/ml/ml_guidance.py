@@ -12,7 +12,7 @@ except ImportError:
     lgb = None
 
 
-ML_ENABLED = False  # <<< CONTROLE GLOBAL
+ML_ENABLED = True  # <<< CONTROLE GLOBAL
 
 # ============================================================
 # PATHS
@@ -30,22 +30,21 @@ F2_MODEL_PATH = os.path.join(MODELS_DIR, "f2_lgbm.txt")
 # ============================================================
 
 F1_FEATURES = [
-    "driver",
+    # "driver",
     "period",
     "need",
-    "local_load",
-    "driver_load",
+    # "local_load",
+    # "driver_load",
     "demand_gap",
-    "total_workers",
 ]
 
 F2_FEATURES = [
     "num_periods",
-    "uncovered_need",
+    # "uncovered_need",
     "avg_load",
     "load_variance",
-    "heur_total_workers",
-    "opt_total_workers",
+    # "heur_total_workers",
+    # "opt_total_workers",
 ]
 
 

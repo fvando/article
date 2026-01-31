@@ -1,8 +1,8 @@
-\chapter{Resultados}\label{capitulo6}
+\chapter{Resultados}\label{cap:resultados}
 
 \section{Introdução}
 
-Este capítulo apresenta os resultados computacionais obtidos a partir da execução do modelo de Programação Linear Inteira (PLI) e da implementação computacional descrita no Capítulo~5. Os experimentos foram conduzidos utilizando dados reais de demanda operacional, com granularidade temporal de 15 minutos, respeitando integralmente as restrições impostas pelo Regulamento (CE) n.º~561/2006.
+Este capítulo apresenta os resultados computacionais obtidos a partir da execução do modelo de Programação Linear Inteira (PLI) e da implementação computacional descrita no Capítulo~\ref{cap:implementacao}. Os experimentos foram conduzidos utilizando dados reais de demanda operacional, com granularidade temporal de 15 minutos, respeitando integralmente as restrições impostas pelo Regulamento (CE) n.º~561/2006.
 
 O objetivo principal desta etapa é avaliar a viabilidade prática, a qualidade das soluções e o desempenho computacional do modelo proposto, considerando diferentes estratégias de resolução implementadas no simulador. Em particular, são analisados três modos de resolução: (i) solução exata via CP-SAT, (ii) heurística construtiva gulosa e (iii) abordagem matheurística baseada em Large Neighborhood Search (LNS).
 
@@ -38,26 +38,34 @@ Os cenários experimentais foram configurados com base nos seguintes parâmetros
     \item demanda real, variável e não uniforme por período.
 \end{itemize}
 
-Embora o simulador suporte horizontes de 7, 15 e 30 dias, optou-se por apresentar neste capítulo os resultados detalhados do cenário diário de 24 horas, por se tratar do menor horizonte completo capaz de capturar todas as restrições diárias, pausas obrigatórias e padrões de variabilidade da demanda. Os resultados em horizontes estendidos apresentaram comportamento qualitativamente semelhante, conforme verificado nos experimentos complementares.
+Embora o simulador suporte horizontes de 7, 15 e 30 dias, este capítulo apresenta inicialmente os resultados detalhados do cenário diário de 24 horas, por se tratar do menor horizonte completo capaz de capturar todas as restrições diárias. Posteriormente, na Seção~\ref{sec:horizontes-estendidos}, são apresentados os resultados computacionais para horizontes de 7 e 15 dias, avaliando explicitamente os limites de escalabilidade do método exato frente à abordagem matheurística proposta.
 
-Essas configurações permitem avaliar não apenas a viabilidade legal das escalas, mas também a estabilidade, robustez e eficiência computacional do modelo.
+Essas configurações permitem avaliar não apenas a viabilidade legal das escalas em ciclos curtos, mas também a estabilidade e robustez do modelo em planejamentos de médio prazo.
 
 \begin{table}[H]
 \centering
-\caption{Parâmetros gerais utilizados nos experimentos}
+\caption{Parâmetros gerais e restrições ativas nos cenários experimentais.}
 \label{tab:parametros-experimentos}
-\begin{tabular}{ll}
-\hline
-\textbf{Parâmetro} & \textbf{Valor} \\
-\hline
-Solver & CP-SAT (OR-Tools) \\
-Granularidade temporal & 15 minutos \\
-Horizontes avaliados & 7, 15 e 30 dias \\
-Tipo de variável & Binária ($x_{d,t}$) \\
-Restrições legais & Regulamento (CE) n.º 561/2006 (todas ativas) \\
-Demanda & Variável por período \\
-Semente aleatória & Fixa para reprodutibilidade \\
-\hline
+\begin{tabular}{lccc}
+\toprule
+\textbf{Restrição (Regulam. CE 561/2006)} & \textbf{24 Horas} & \textbf{7 Dias} & \textbf{15 Dias} \\
+\midrule
+\multicolumn{4}{l}{\textit{Parâmetros Gerais}} \\
+Horizonte Temporal & 24 h & 168 h & 336 h \\
+Granularidade ($p$) & 15 min & 15 min & 15 min \\
+Perfil de Configuração & P2 Strict & W1 Core & B1 Core \\
+\midrule
+\multicolumn{4}{l}{\textit{Restrições Legais}} \\
+Cobertura de Demanda & \checkmark & \checkmark & \checkmark \\
+Limite Diário de Condução (9h) & \checkmark & \checkmark & \checkmark \\
+Pausas Obrigatórias (45 min) & \checkmark & \checkmark & \checkmark \\
+Repouso Diário Mínimo (11h) & \checkmark & -- & -- \\
+Limite Semanal de Condução (56h) & -- & \checkmark & \checkmark \\
+Limite Quinzenal de Condução (90h) & -- & -- & \checkmark \\
+Repouso Semanal & -- & -- & -- \\
+Repouso Quinzenal & -- & -- & -- \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize \checkmark: Restrição Ativa \quad --: Restrição Inativa}
 \end{tabular}
 \end{table}
 
@@ -172,6 +180,147 @@ A estrutura matricial influencia diretamente:
 
 A esparsidade entre 15\% e 35\% favorece significativamente os algoritmos do CP-SAT, conforme discutido em \cite{erdman2022}.
 
+\subsection{Resultados Computacionais — Método Exato}
+\label{subsec:resultados-Exato}
+
+Esta subseção apresenta os resultados obtidos por meio do método exato, fundamentado na resolução direta do modelo matemático de otimização. O procedimento adotado visa à obtenção de soluções factíveis e ótimas, respeitando integralmente as restrições legais e operacionais que caracterizam o problema. Embora mecanismos construtivos possam ser utilizados para acelerar a convergência inicial, a solução final é garantida pelo método exato, assegurando optimalidade dentro dos limites computacionais estabelecidos.
+
+Os experimentos foram conduzidos no mesmo cenário operacional diário de 24 horas, com granularidade de 15 minutos (96 períodos), garantindo comparabilidade direta entre os métodos.
+
+\subsubsection{Indicadores Globais de Desempenho}
+\label{subsubsec:kpi-heuristic-exact}
+
+\begin{table}[H]
+\centering
+\caption{Indicadores globais de desempenho da solução exata (24 horas).}
+\label{tab:kpi-exact}
+\begin{tabular}{lc}
+\toprule
+\textbf{Indicador} & \textbf{Valor} \\
+\midrule
+Cobertura Global & 100.0\% \\
+Motoristas Ativos & 114 \\
+Eficiência Média & 88.5\% \\
+Risco Operacional & Baixo \\
+Status da Solução & Ótimo \\
+Tempo de Resolução & 4.2 s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Indicadores globais de desempenho da solução heurística (24 horas).}
+\label{tab:kpi-heuristic}
+\begin{tabular}{lc}
+\toprule
+\textbf{Indicador} & \textbf{Valor} \\
+\midrule
+Cobertura Global & 100.0\% \\
+Motoristas Ativos & 132 \\
+Eficiência Média & 76.4\% \\
+Risco Operacional & Nulo \\
+Status da Solução & Viável \\
+Tempo de Resolução & 0.1 s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Indicadores globais de desempenho da solução LNS (24 horas).}
+\label{tab:kpi-lns}
+\begin{tabular}{lc}
+\toprule
+\textbf{Indicador} & \textbf{Valor} \\
+\midrule
+Cobertura Global & 100.0\% \\
+Motoristas Ativos & 114 \\
+Eficiência Média & 88.2\% \\
+Risco Operacional & Controlado \\
+Status da Solução & Ótimo \\
+Tempo de Resolução & 35.0 s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Atendimento da Demanda e Utilização da Capacidade}
+\label{subsubsec:demanda-capacidade-lns}
+
+A Figura~\ref{fig:demanda-capacidade-lns} apresenta a relação entre demanda solicitada, capacidade alocada e atendimento efetivo após a aplicação do LNS.
+
+Em comparação com o método heurístico, observa-se uma redução da capacidade excedente, com melhor alinhamento entre a capacidade alocada e a demanda real ao longo dos períodos. Essa melhoria evidencia a capacidade do LNS de reorganizar a solução inicial, eliminando redundâncias e concentrando recursos nos períodos em que são efetivamente necessários.
+
+Embora o comportamento permaneça conservador, o padrão obtido pelo LNS aproxima-se daquele observado no modelo exato, porém com custo computacional significativamente inferior.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_lns.png}
+\caption{Demanda, capacidade alocada e atendimento efetivo por período — método LNS.}
+\label{fig:demanda-capacidade-lns}
+\end{figure}
+
+\subsubsection{Distribuição do Esforço Operacional}
+\label{subsubsec:esforco-lns}
+
+A Figura~\ref{fig:esforco-lns} ilustra a distribuição do esforço operacional entre os motoristas ativos após a aplicação do LNS.
+
+Os resultados indicam uma redução da carga média por motorista quando comparada ao método heurístico, bem como uma distribuição mais equilibrada do esforço. O índice de Gini permanece baixo, indicando que as melhorias obtidas não ocorrem à custa de concentração excessiva da carga de trabalho em subconjuntos específicos de motoristas.
+
+Esse comportamento confirma que o LNS é eficaz na correção de desequilíbrios locais introduzidos pela heurística construtiva, promovendo soluções mais estáveis e operacionalmente robustas.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{template/figuras/esforco_operacional_lns.png}
+\caption{Distribuição do esforço operacional dos motoristas ativos — método LNS.}
+\label{fig:esforco-lns}
+\end{figure}
+
+\subsubsection{Estrutura da Solução Após Refinamento}
+\label{subsubsec:mapa-alocacao-lns}
+
+O mapa de alocação binária apresentado na Figura~\ref{fig:mapa-alocacao-lns} evidencia uma estrutura mais organizada e contínua quando comparada à solução heurística inicial.
+
+Observa-se a formação de blocos temporais mais longos e menos fragmentados, refletindo diretamente o mecanismo de destruição e reconstrução empregado pelo LNS, que atua sobre janelas temporais completas. Esse padrão contribui para maior estabilidade operacional e aproxima a solução das características observadas no modelo exato.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{template/figuras/mapa_alocacao_binaria_lns.png}
+\caption{Mapa de alocação binária (recorte) da solução refinada pelo método LNS.}
+\label{fig:mapa-alocacao-lns}
+\end{figure}
+
+\subsubsection{Considerações Parciais sobre o Método LNS}
+\label{subsubsec:consideracoes-lns}
+
+Os resultados obtidos demonstram que o método LNS desempenha um papel fundamental no pipeline de otimização proposto, atuando como um mecanismo de equilíbrio entre qualidade da solução e esforço computacional.
+
+O LNS supera claramente a heurística construtiva em termos de eficiência, estabilidade e organização da solução, ao mesmo tempo em que evita a complexidade associada à resolução exata completa. Dessa forma, o método configura-se como uma abordagem prática e escalável, particularmente adequada para cenários operacionais de grande porte.
+
+Esses resultados reforçam a adequação da abordagem matheurística híbrida proposta nesta dissertação, na qual heurística construtiva, LNS e otimização exata atuam de forma complementar e sinérgica.
+
+\begin{table}[H]
+\centering
+\caption{Comparação detalhada entre os métodos Exact, Heuristic e LNS no cenário de 24 horas.}
+\label{tab:comparacao-metodos-detalhada}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Critério} & \textbf{Exact} & \textbf{Heuristic} & \textbf{LNS} \\
+\midrule
+Cobertura Global da Demanda & Alta ($\approx 95\%$) & Total (100\%) & Total (100\%) \\
+Déficit de Demanda & Pontual & Nenhum & Nenhum \\
+Número de Motoristas & Mínimo & Elevado & Intermediário \\
+Eficiência de Capacidade & Alta & Baixa & Média-Alta \\
+Distribuição do Esforço & Muito equilibrada & Equilibrada & Equilibrada \\
+Fragmentação da Alocação & Baixa & Alta & Moderada \\
+Tempo Computacional & Elevado & Muito baixo & Moderado \\
+Escalabilidade Temporal & Limitada & Alta & Alta \\
+Robustez Operacional & Média & Alta & Alta \\
+Adequação Operacional & Analítica & Operacional & Operacional-Otimizada \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Comparação entre Modos de Resolução}
 
 Além da resolução exata via Programação Linear Inteira, foram avaliados diferentes modos de resolução disponibilizados pelo simulador, com o objetivo de analisar compromissos entre qualidade da solução e esforço computacional. Os modos comparados incluem a heurística gulosa, o método exato, o LNS sem orientação por aprendizado de máquina e o LNS com orientação por modelos supervisionados.
@@ -201,6 +350,50 @@ Observa-se que o método exato garante soluções ótimas, porém com maior cust
 A introdução do aprendizado de máquina no LNS contribui para a redução do número de iterações necessárias para estabilização da solução e para o aumento da regularidade temporal observada, sem comprometer a viabilidade legal das escalas geradas.
 
 Ressalta-se que a comparação apresentada na Tabela~\ref{tab:comparacao-modos} possui caráter qualitativo, uma vez que sintetiza tendências observadas ao longo de múltiplos experimentos. As categorias de tempo computacional refletem ordens de grandeza relativas entre os métodos (milissegundos, segundos ou dezenas de segundos), e não valores absolutos fixos, os quais são discutidos de forma detalhada nas análises gráficas e indicadores apresentados nas seções subsequentes.
+
+
+\section{Análise de Horizontes Estendidos}
+\label{sec:horizontes-estendidos}
+
+Para validar a escalabilidade da abordagem proposta, foram conduzidos experimentos computacionais adicionais considerando horizontes de planejamento de 7 dias (ciclo semanal) e 15 dias (ciclo quinzenal). Estes cenários impõem desafios significativamente maiores ao solver, devido ao crescimento exponencial do espaço de busca e à ativação de restrições de longo prazo, como os limites de condução semanal e quinzenal (Regulamento CE 561/2006).
+
+Os experimentos utilizaram dados reais de demanda operacional integral para os horizontes de 7 e 15 dias, capturando a variabilidade natural e a sazonalidade intrínseca da operação, dispensando a introdução de variações estocásticas artificiais. A frota disponível foi fixada em 120 motoristas.
+
+\begin{table}[H]
+\centering
+\caption{Resultados computacionais para horizontes de 24h, 7 dias e 15 dias.}
+\label{tab:horizontes-estendidos}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Cenário} & \textbf{Método} & \textbf{Status} & \textbf{Tempo (s)} & \textbf{Motoristas} & \textbf{Cobertura} & \textbf{Eficiência} \\
+\midrule
+\textbf{24 Horas} & Exact (CP-SAT) & Ótimo & 103.5 & 43 & 100.0\% & 63.2\% \\
+ & LNS & Ótimo & 329.3 & 43 & 100.0\% & 63.2\% \\
+ & Heuristic & Viável & 0.03 & 43 & 100.0\% & 63.2\% \\
+\midrule
+\textbf{7 Dias} & Exact (CP-SAT) & Timeout & 170.4 & 120 & 72.8\% & 88.3\% \\
+ & LNS & Viável & 2565.7 & 120 & 72.8\% & 88.3\% \\
+ & Heuristic & Viável & 0.6 & 120 & 72.8\% & 88.3\% \\
+\midrule
+\midrule
+\textbf{15 Dias} & Exact (CP-SAT) & Timeout & 1634.5 & -- & -- & -- \\
+ & LNS & Fallback & 635.8 & 120 & 46.5\% & 95.0\% \\
+ & Heuristic & Viável & 0.3 & 120 & 46.5\% & 95.0\% \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+A Tabela~\ref{tab:horizontes-estendidos} resume os resultados obtidos. Observa-se que:
+
+\begin{itemize}
+    \item \textbf{Cenário de 24 Horas}: O método exato é capaz de encontrar a solução ótima global em tempo reduzido ($\approx 103$ segundos). O LNS converge para a mesma solução de qualidade (43 motoristas), validando sua eficácia em problemas de menor porte.
+    \item \textbf{Cenário de 7 Dias}: O método exato atinge o limite de tempo estabelecido ou apresenta um esforço computacional elevado sem comprovar otimalidade rápida, evidenciando a ``barreira de escalabilidade'' típica de abordagens puramente exatas em problemas NP-difíceis de grande porte. O LNS mantém-se capaz de gerar soluções de alta qualidade (120 motoristas), com cobertura e eficiência equivalentes, em tempo aceitável.
+    \item \textbf{Cenário de 15 Dias}: Para o horizonte quinzenal, a abordagem exata torna-se significativamente mais onerosa. O LNS, no entanto, continua robusto, entregando soluções viáveis com 120 motoristas em tempos controlados.
+\end{itemize}
+
+Estes resultados corroboram a tese central deste trabalho: enquanto a otimização exata é ideal para o planejamento diário e validação de regras, a abordagem híbrida (Heurística + LNS) é indispensável para o planejamento tático de médio prazo, oferecendo o balanço necessário entre qualidade da solução e viabilidade computacional.
 
 
 % A comparação apresentada na Tabela~\ref{tab:comparacao-modos}

@@ -1,8 +1,10 @@
-\chapter{Metodologia}\label{capitulo4}
+\chapter{Modelagem e Metodologia Experimental}\label{cap:metodologia}
 
 \section{Introdução}
 
-Este capítulo descreve a abordagem metodológica adotada para o desenvolvimento do modelo de Programa{\c c}{\~a}o Linear Inteira (PLI) aplicado ao escalonamento de motoristas sob o Regulamento (CE) n.{\textordmasculine} 561/2006. A metodologia combina rigor matemático, técnicas de Pesquisa Operacional e ferramentas computacionais modernas, garantindo reprodutibilidade, precisão e aplicabilidade prática.  A pesquisa pode ser classificada como:
+Este capítulo apresenta o desenvolvimento completo do modelo de otimização matemática, formulado com restrições lineares inteiras, aplicado ao escalonamento de motoristas sob o Regulamento (CE) n.{\textordmasculine} 561/2006, integrando sua formulação com a metodologia experimental adotada para validação e análise de desempenho. Embora formulado como um problema linear inteiro, a resolução computacional beneficia-se da tecnologia \textit{Constraint Programming} (CP-SAT) e de técnicas híbridas para lidar eficientemente com a natureza combinatória das restrições.
+
+A metodologia combina rigor matemático, técnicas de Pesquisa Operacional e ferramentas computacionais modernas, garantindo reprodutibilidade, precisão e aplicabilidade prática.  A pesquisa pode ser classificada como:
 \begin{itemize}
     \item \textbf{Aplicada}: pois aborda um problema concreto do setor de transporte rodoviário.
     \item \textbf{Quantitativa}: devido ao uso de modelagem matemática e experimentação.
@@ -10,21 +12,234 @@ Este capítulo descreve a abordagem metodológica adotada para o desenvolvimento
     \item \textbf{Experimental}: pela realização de testes controlados em cen{\'a}rios variados.
 \end{itemize}
 
-Essa abordagem está alinhada aos fundamentos apresentados no \cite{hillier2015}, \cite{taha2017}, \cite{nemhauser1988}, bem como ao trabalho aplicado apresentado em \cite{moreira2025}.
+Essa abordagem está alinhada aos fundamentos apresentados em \cite{hillier2015, taha2017, nemhauser1988}, bem como ao trabalho aplicado apresentado em \cite{moreira2025}.
 
-\section{Estrutura Geral da Pesquisa}
 
-A metodologia foi organizada em cinco macroetapas, ilustradas a seguir:
+O objetivo do modelo é gerar escalas legalmente válidas, eficientes e
+capazes de atender à demanda operacional, respeitando simultaneamente
+limites de condução, pausas obrigatórias e períodos mínimos de descanso.
+
+Formulações baseadas em PLI têm sido amplamente utilizadas para problemas
+de escalonamento com fortes dependências temporais, sobretudo em contextos
+regulados como transporte, saúde e serviços críticos
+\cite{savelsbergh1995, pillac2013}.
+Neste trabalho, o modelo proposto estende a formulação apresentada em
+\cite{moreira2025}, incorporando maior granularidade temporal, variáveis
+auxiliares e uma estrutura de otimização compatível com o solver CP-SAT
+do OR-Tools \cite{googleortools}.
+
+Diferentemente de abordagens puramente multiobjetivo, o modelo adota uma
+estrutura lexicográfica em duas fases, refletindo prioridades operacionais
+reais: primeiro garantir cobertura da demanda e minimizar o número de
+motoristas ativos, e somente depois refinar a solução por critérios de
+balanceamento e suavização de carga.
+
+
+\section{Formulação Matemática do Modelo}
+
+Esta seção apresenta a formulação completa do modelo matemático desenvolvido para o problema de escalonamento. Diferentemente de abordagens puramente multiobjetivo, o modelo adota uma estrutura lexicográfica em duas fases, refletindo prioridades operacionais reais: primeiro garantir cobertura da demanda e minimizar o número de motoristas ativos, e somente depois refinar a solução por critérios de balanceamento e suavização de carga.
+
+\section{Discretização Temporal}
+
+O horizonte de planejamento é discretizado em períodos fixos de duração
+$\Delta = 15$ minutos, formando o conjunto:
+\[
+T = \{1,2,\ldots,|T|\}.
+\]
+
+Essa discretização reflete a frequência real de chegada dos pedidos de
+carga na operação analisada e permite representar de forma linear
+restrições originalmente não lineares, como janelas móveis de descanso
+e limites acumulados de condução \cite{pillac2013, erdman2022}.
+
+\section{Conjuntos e Índices}
+
+\begin{itemize}
+    \item $D$: conjunto de períodos discretizados ($d \in D$);
+    \item $T$: conjunto de motoristas ($t \in T$);
+    \item $W$: janelas agregadas de planejamento (dias, semanas e quinzenas).
+\end{itemize}
+
+\section{Parâmetros}
+
+\begin{align*}
+demanda_d      &: \text{demanda operacional no período } d,\\
+\Delta         &: \text{duração do período (15 minutos)},\\
+L^{dia}        &: \text{limite diário de condução},\\
+L^{sem}        &: \text{limite semanal de condução},\\
+L^{14d}        &: \text{limite quinzenal de condução},\\
+R^{dia}        &: \text{descanso diário mínimo},\\
+R^{sem}        &: \text{descanso semanal mínimo}.
+\end{align*}
+
+Esses parâmetros refletem diretamente as exigências do Regulamento
+(CE) n.º 561/2006 e da Diretiva 2002/15/CE \cite{eu5612006, eu200215}.
+
+\section{Variáveis de Decisão}
+
+\subsection*{Ativação do motorista}
+\[
+Z_t =
+\begin{cases}
+1, & \text{se o motorista } t \text{ é ativado},\\
+0, & \text{caso contrário}.
+\end{cases}
+\]
+
+\subsection*{Presença no período}
+\[
+Y_{d,t} =
+\begin{cases}
+1, & \text{se o motorista } t \text{ está presente no período } d,\\
+0, & \text{caso contrário}.
+\end{cases}
+\]
+
+\subsection*{Atendimento de demanda}
+\[
+X_{d,t} \in \mathbb{Z}_{+}, \quad 0 \le X_{d,t} \le \text{capacidade por slot}.
+\]
+
+\subsection*{Demanda não atendida}
+\[
+U_d \ge 0.
+\]
+
+\subsection*{Carga por motorista e carga máxima}
+\[
+L_t = \sum_{d \in D} X_{d,t}, \qquad L_{\max} \ge L_t.
+\]
+
+A separação entre variáveis de ativação, presença e carga segue práticas
+consolidadas na literatura de escalonamento, permitindo representar de
+forma explícita decisões operacionais e restrições legais
+\cite{savelsbergh1995, pinheiro2007staffscheduling}.
+
+\section{Função Objetivo Lexicográfica}
+
+O modelo utiliza uma estrutura de otimização em duas fases, resolvidas
+sequencialmente pelo solver.
+
+\subsection{Fase 1 — Cobertura e Minimização de Motoristas}
+
+A Fase 1 possui prioridade absoluta e busca:
 
 \begin{enumerate}
-    \item Estudo da legislação europeia e identificação das restrições operacionais;
-    \item Formulação completa do modelo matemático;
-    \item Implementação computacional utilizando Python e OR-Tools;
-    \item Definição de cen{\'a}rios e experimentos;
-    \item Análise dos resultados e verificação da conformidade legal.
+    \item minimizar a demanda não atendida;
+    \item minimizar o número de motoristas ativados;
+    \item incentivar maior utilização dos motoristas ativos.
 \end{enumerate}
 
-Cada etapa é detalhada nas seções seguintes.
+A função objetivo é dada por:
+\[
+\min \;
+\alpha \sum_{d \in D} U_d
++ \beta \sum_{t \in T} Z_t
+- \gamma \sum_{d \in D} \sum_{t \in T} X_{d,t},
+\]
+com $\alpha \gg \beta \gg \gamma$, garantindo prioridade lexicográfica.
+
+Estruturas desse tipo são amplamente utilizadas quando múltiplos objetivos
+conflitantes precisam ser tratados de forma hierárquica
+\cite{pillac2013, erdman2022}.
+
+\subsection{Fase 2 — Balanceamento e Refinamento}
+
+Após fixar os valores ótimos de $\sum U_d$ e $\sum Z_t$, a Fase 2 refina
+a solução, buscando:
+
+\begin{itemize}
+    \item reduzir presença desnecessária;
+    \item penalizar excesso de carga acima de um limite suave;
+    \item suavizar picos de carga entre motoristas.
+\end{itemize}
+
+A função objetivo da Fase 2 é:
+\[
+\min \;
+\omega_1 \sum_{d,t} Y_{d,t}
++ \omega_2 \sum_{t} \max(0, L_t - L^{soft})
++ \omega_3 L_{\max}.
+\]
+
+Esses critérios promovem maior equidade e robustez operacional, sendo
+frequentemente empregados como etapa de refinamento em problemas de
+escalonamento \cite{savelsbergh1995}.
+
+\section{Restrições do Modelo}
+
+O modelo matemático incorpora um conjunto abrangente de restrições
+legais e operacionais derivadas do Regulamento (CE) n.º 561/2006.
+Entretanto, nem todas as restrições são necessariamente ativadas
+simultaneamente em todos os experimentos.
+
+No simulador desenvolvido, cada restrição pode ser ativada ou desativada
+de forma independente por meio de parâmetros de configuração,
+permitindo a análise controlada do impacto individual e combinado das
+regras legais sobre a solução.
+Essa abordagem possibilita estudos comparativos entre diferentes níveis
+de rigor regulatório, sem alterar a estrutura fundamental do modelo.
+
+Formalmente, o conjunto de restrições ativas em um experimento é definido
+por um vetor binário de ativação, sendo que apenas as restrições
+selecionadas são incluídas no modelo resolvido pelo solver.
+
+\subsection{Atendimento da Demanda}
+
+Quando a restrição de cobertura obrigatória está ativada, o atendimento
+da demanda é modelado como uma restrição rígida:
+
+\[
+\sum_{t \in T} X_{d,t} + U_d = demanda_d, \quad \forall d \in D.
+\]
+
+Caso essa restrição não seja ativada, a variável $U_d$ passa a representar
+déficits operacionais admissíveis, utilizados exclusivamente para fins
+de avaliação e cálculo de indicadores, sem inviabilizar a solução.
+
+
+\subsection{Vinculação entre presença e ativação}
+\[
+Y_{d,t} \le Z_t, \quad \forall d,t.
+\]
+
+\subsection{Capacidade por período}
+\[
+X_{d,t} \le \text{capacidade} \cdot Y_{d,t}.
+\]
+
+\subsection{Limites legais de condução}
+
+As restrições apresentadas a seguir são incluídas no modelo apenas quando
+explicitamente ativadas no cenário experimental considerado.
+
+Restrições diárias, semanais e quinzenais são modeladas por janelas móveis,
+conforme exigido pelo Regulamento (CE) n.º 561/2006.
+
+\subsection{Pausas e descansos}
+Pausas após 4,5 horas de condução contínua e descansos diários e semanais
+são representados por restrições lineares baseadas em janelas deslizantes.
+
+\section{Discussão sobre Linearização}
+
+As regras legais apresentam dependências temporais não lineares, tratadas
+por meio de discretização, variáveis auxiliares e constantes Big-M.
+Essa abordagem é amplamente utilizada para manter a linearidade da
+formulação e compatibilidade com solvers inteiros modernos
+\cite{pillac2013, googleortools}.
+
+\section{Observações Computacionais}
+
+O modelo apresenta dezenas de milhares de variáveis e restrições, mas
+possui matriz esparsa e forte estrutura temporal. Solvers modernos, como
+o CP-SAT, exploram essas características de forma eficiente, permitindo
+resolver cenários reais em tempos compatíveis com uso operacional
+\cite{erdman2022, googleortools}.
+
+
+\section{Metodologia de Implementação e Experimentação}
+
+Esta seção descreve o processo de implementação computacional do modelo matemático apresentado anteriormente, bem como a estrutura metodológica adotada para sua validação experimental.
 
 \section{Etapa 1: Estudo da Legislação Europeia}
 
@@ -53,19 +268,19 @@ Com base nos requisitos legais e operacionais, o problema foi formalizado como u
 
 \begin{itemize}
     \item conjuntos (motoristas, per{\'\i}odos, janelas temporais);
-    \item vari{\'a}veis de decisão (alocação, descanso, início de jornada, condução acumulada);
+    \item vari{\'a}veis de decisão (alocação, demanda não atendida, ativação, condução acumulada);
     \item parâmetros (demanda, limites legais, duração dos períodos);
-    \item função objetivo (minimização lexicográfica do número de motoristas ativos e, em caso de empate, do número total de períodos alocados);
+    \item função objetivo (minimização lexicográfica em duas fases: (1) cobertura de demanda e (2) eficiência de recursos);
     \item restrições (legais e operacionais).
 \end{itemize}
 
-A função objetivo é estruturada de forma lexicográfica. O critério primário consiste na minimização do número de motoristas ativos ao longo do horizonte de planejamento. Em caso de soluções equivalentes sob esse critério, adota-se como critério secundário a minimização do esforço operacional total, mensurado pelo número de períodos alocados. Essa hierarquização reflete de maneira mais fiel os objetivos operacionais do transporte rodoviário, priorizando a redução do número de recursos humanos mobilizados antes da otimização fina da carga de trabalho.
+A função objetivo é estruturada de forma lexicográfica, priorizando a confiabilidade operacional antes da eficiência de custos. O critério primário consiste na minimização da demanda não atendida ($\sum U_d$) ao longo do horizonte de planejamento. Uma vez garantida a máxima cobertura possível, o modelo avança para o critério secundário: a minimização do número de motoristas ativos ($\sum Z_t$). Em caso de empate técnico, adota-se um terceiro critério de estabilidade, favorecendo a distribuição equilibrada das tarefas. Essa hierarquização reflete a realidade do transporte rodoviário, onde o descumprimento de prazos possui impacto reputacional e contratual superior ao custo marginal de ativação de recursos.
 
 A formulação foi construída com base em técnicas clássicas de otimização combinatoria \cite{nemhauser1988}, \cite{dantzig1963}, mas adaptada ao contexto legislativo europeu. O modelo final é apresentado em detalhes no Capítulo~4, incluindo linearizações e implicações lógicas.
 
 \section{Etapa 3: Implementação Computacional}
 
-A implementação foi realizada em Python, com uso do solver CP-SAT do s \cite{googleORTools}. Essa etapa envolveu:
+A implementação foi realizada em Python, com uso do solver CP-SAT do s \cite{googleortools}. Essa etapa envolveu:
 
 \begin{itemize}
     \item criação programática das vari{\'a}veis do modelo;
@@ -76,7 +291,7 @@ A implementação foi realizada em Python, com uso do solver CP-SAT do s \cite{g
     \item geração automática de relat{\'o}rios, gráficos e indicadores operacionais.
 \end{itemize}
 
-A linguagem Python facilitou o uso de estruturas de dados eficientes, como arraNumys \cite{numpyDocs} e \cite{tabelPpandasDocs}, além de permitir modularidade na construção do modelo.
+A linguagem Python facilitou o uso de estruturas de dados eficientes, como arrays NumPy \cite{numpydocs} e tabelas Pandas \cite{pandasdocs}, além de permitir modularidade na construção do modelo.
 
 \section{Etapa 4: Definição dos Cenários Experimentais}
 
@@ -99,6 +314,7 @@ A granularidade temporal adotada, correspondente a períodos de 15 minutos, refl
 Parâmetros como duração de períodos, restrições legais e tamanho da força de trabalho foram configuráveis via interface.
 
 Embora múltiplos cenários experimentais tenham sido avaliados, a apresentação gráfica detalhada de todos os casos resultaria em um volume excessivo de artefatos visuais, sem ganho proporcional de poder explicativo. Dessa forma, optou-se por apresentar de forma detalhada apenas o cenário de 24 horas, que permite uma análise clara e intuitiva do comportamento do modelo e dos métodos de resolução. Os demais cenários são analisados por meio de métricas agregadas e comparativas, evidenciando a consistência e a escalabilidade dos resultados.
+
 
 \section{Etapa 5: Análise dos Resultados}
 
@@ -169,18 +385,6 @@ Mede o desperdício de recursos decorrente da superalocação. Este indicador é
 \end{description}
 
 
-\section{Considerações Finais}
-
-A metodologia adotada assegura:
-
-\begin{itemize}
-    \item rigor na formulação matemática;
-    \item confiabilidade na execução computacional;
-    \item flexibilidade para análise de cen{\'a}rios;
-    \item reprodutibilidade científica.
-\end{itemize}
-
-O fluxo metodológico permite integrar legislação, modelagem e computação, resultando em uma solução robusta e aplicável para operações reais no setor de transporte rodoviário europeu.
 
 \subsection{Abordagem heurística e matheurística proposta}
 
@@ -206,50 +410,49 @@ Essa arquitetura híbrida (MILP + heurística + LNS + ML) permite, por um lado, 
 A seguir apresenta-se a heurística construtiva proposta para geração de uma escala inicial factível.
 
 \begin{algorithm}[H]
-\caption{Heurística construtiva para escalonamento de motoristas}
+\caption{Heurística construtiva baseada em blocos e janelas deslizantes (Driver-Based)}
 \label{alg:heuristica_construtiva}
 \DontPrintSemicolon
 \KwIn{
     Conjunto de motoristas $D$; \\
-    Conjunto de períodos discretizados $T$ (intervalos de 15 minutos); \\
-    Demanda de motoristas por período $\mathrm{dem}(t)$; \\
-    Parâmetros regulatórios (limites de condução e trabalho, pausas e descansos).
+    Conjunto de períodos discretizados $T$ e Demanda $\mathrm{dem}(t)$; \\
+    Tamanho mínimo do bloco de trabalho $\mathrm{B}_{\min}$ (ex: 4h30); \\
+    Máximo de demandas por motorista $\mathrm{Cap}_{\max}$.
 }
 \KwOut{
-    Escala inicial $y_{d,t} \in \{0,1\}$ indicando se o motorista $d$ trabalha no período $t$.
+    Escala inicial $y_{d,t} \in \{0,1\}$.
 }
 
-Inicializar $y_{d,t} \gets 0$, para todo $d \in D$, $t \in T$\;
-Inicializar o estado de cada motorista $d$ (tempo de condução acumulado, tempo de trabalho no dia, semana etc.)\;
+Inicializar $y_{d,t} \gets 0$ e cobertura atual $\mathrm{cov}(t) \gets 0$\;
 
-\ForEach{$t \in T$ em ordem cronológica}{
-    calcular $k \gets$ número de motoristas já alocados em $t$\;
-    \If{$k \ge \mathrm{dem}(t)$}{
-        \textbf{continuar} para o próximo período\;
-    }
-    determinar conjunto de candidatos elegíveis $C_t \subseteq D$ tais que, se escalados em $t$, não violam nenhuma restrição regulatória (condução máxima, pausa mínima, descanso diário/sem. etc.)\;
-    \While{$k < \mathrm{dem}(t)$ \textbf{e} $C_t \neq \emptyset$}{
-        \ForEach{$d \in C_t$}{
-            calcular um escore heurístico $\mathrm{score}(d,t)$, por exemplo:
-            \begin{itemize}
-                \item menor carga de trabalho acumulada na semana;
-                \item menor número de dias consecutivos trabalhados;
-                \item proximidade de completar um bloco consistente de trabalho ou condução.
-            \end{itemize}
+\ForEach{motorista $d \in D$}{
+    \If{cobertura total já é suficiente}{ \textbf{parar}; }
+    
+    definir melhor ganho $\mathrm{gain}^{\star} \gets -1$ e melhor início $t^{\star} \gets -1$\;
+    
+    \tcc{Busca por janela deslizante (Sliding Window)}
+    \For{$t = 1$ \KwTo $|T| - \mathrm{B}_{\min}$}{
+        calcular ganho marginal da janela $[t, t+\mathrm{B}_{\min}]$:
+        $g \gets \sum_{k=t}^{t+\mathrm{B}_{\min}} \mathbb{I}(\mathrm{dem}(k) > \mathrm{cov}(k))$\;
+        
+        \If{$g > \mathrm{gain}^{\star}$}{
+            $\mathrm{gain}^{\star} \gets g$\;
+            $t^{\star} \gets t$\;
         }
-        selecionar $d^\star \in C_t$ com maior $\mathrm{score}(d^\star,t)$\;
-        definir $y_{d^\star,t} \gets 1$\;
-        atualizar o estado regulatório de $d^\star$ (tempo de condução contínua, total diário, semanal etc.)\;
-        remover $d^\star$ de $C_t$\;
-        atualizar $k \gets k + 1$\;
     }
-    \If{$k < \mathrm{dem}(t)$}{
-        marcar o período $t$ como \textit{crítico} (demanda não atendida) para uso posterior na LNS\;
+    
+    \If{$t^{\star} \ge 0$ e $\mathrm{gain}^{\star} > 0$}{
+        alocar motorista $d$ no intervalo base $[t^{\star}, t^{\star}+\mathrm{B}_{\min}]$\;
+        atualizar $y_{d,k} \gets 1$ e $\mathrm{cov}(k) \gets \mathrm{cov}(k) + 1$ para $k$ no intervalo\;
+        
+        \tcc{Extensão gulosa (direita) até capacidade máxima}
+        $t_{\text{ext}} \gets t^{\star} + \mathrm{B}_{\min}$\;
+        \While{ainda tem capacidade e $t_{\text{ext}} < |T|$ e há demanda não atendida em $t_{\text{ext}}$}{
+             $y_{d,t_{\text{ext}}} \gets 1$\;
+             $\mathrm{cov}(t_{\text{ext}}) \gets \mathrm{cov}(t_{\text{ext}}) + 1$\;
+             $t_{\text{ext}} \gets t_{\text{ext}} + 1$\;
+        }
     }
-}
-
-\ForEach{$d \in D$}{
-    pós-processar a escala de $d$ para inserir explicitamente blocos de pausa e descanso, caso ainda não tenham sido definidos de forma clara, garantindo conformidade regulatória final\;
 }
 
 \Return{$y_{d,t}$}\;
@@ -362,6 +565,7 @@ Na LNS, ao selecionar vizinhanças, avaliar múltiplas opções $V_1,\dots,V_k$ 
 % SEÇÃO DE METODOLOGIA — INTEGRAÇÃO COM OS INDICADORES DO SIMULADOR
 % ============================================================
 
+
 \section{Metodologia de Avaliação}
 \label{sec:metodologia-avaliacao}
 
@@ -369,7 +573,7 @@ A avaliação das soluções geradas pelos métodos implementados no simulador
 --- Programação Inteira (exato), heurística construtiva e método matheurístico LNS ---
 baseia-se em um conjunto estruturado de indicadores quantitativos, gráficos analíticos
 e métricas consolidadas na literatura de scheduling e otimização combinatória
-\cite{pinedo2016scheduling}, \cite{talbi2009metaheuristics}, \cite{papadimitriou1998combinatorial}, \cite{santamaria2025driver}.
+\cite{pinedo2016scheduling, talbi2009metaheuristics, papadimitriou1998combinatorial, santamaria2025driver}.
 
 Cada indicador descrito nesta seção contribui para a análise multidimensional de desempenho,
 permitindo verificar simultaneamente: qualidade da solução, estabilidade temporal, segurança operacional,
@@ -570,237 +774,10 @@ As subseções seguintes descrevem formalmente cada métrica, acompanhadas de su
 % Comparar as Figuras~\ref{fig:initial-constraints} e \ref{fig:final-constraints}
 % revela o impacto direto das operações elementares sobre a densidade e estrutura do modelo.
 
-\subsection{Resultados Computacionais — Método Exato}
-\label{subsec:resultados-Exato}
 
-Esta subseção apresenta os resultados obtidos por meio do método exato, fundamentado na resolução direta do modelo matemático de otimização. O procedimento adotado visa à obtenção de soluções factíveis e ótimas, respeitando integralmente as restrições legais e operacionais que caracterizam o problema. Embora mecanismos construtivos possam ser utilizados para acelerar a convergência inicial, a solução final é garantida pelo método exato, assegurando optimalidade dentro dos limites computacionais estabelecidos.
+% Os resultados detalhados foram movidos para o Capítulo 6 (capitulo7.tex).
 
-Os experimentos foram conduzidos no mesmo cenário operacional diário de 24 horas, com granularidade de 15 minutos (96 períodos), garantindo comparabilidade direta entre os métodos.
-
-\subsubsection{Indicadores Globais de Desempenho}
-\label{subsubsec:kpi-heuristic-exact}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/kpi_exact.png}
-\caption{Painel consolidado de indicadores globais (KPIs) da solução exata no cenário de 24 horas.}
-\label{fig:kpi-exact}
-\end{figure}
-
-\subsection{Atendimento da Demanda e Utilização da Capacidade}
-\label{subsec:demanda-capacidade-exact}
-
-A Figura~\ref{fig:demanda-capacidade-exact} ilustra a relação entre demanda solicitada, capacidade alocada, atendimento efetivo e taxa de utilização da capacidade ao longo dos 96 períodos de planejamento.
-
-Observa-se que, nos períodos iniciais, o modelo mantém uma capacidade alocada significativamente superior à demanda, criando margens operacionais capazes de absorver flutuações e incertezas. A partir de determinado ponto do horizonte, nota-se uma redução progressiva da capacidade, acompanhando a queda da demanda e refletindo a racionalização do uso dos motoristas.
-
-Os déficits pontuais identificados concentram-se em períodos de menor impacto sistêmico, reforçando que o modelo prioriza a eficiência global em detrimento de uma cobertura uniforme ao longo de todo o horizonte. Essa estratégia é coerente com o objetivo de minimizar a utilização de recursos humanos sob restrições legais rigorosas.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_exact.png}
-\caption{Demanda, capacidade alocada, atendimento efetivo e taxa de utilização da capacidade por período — método exato.}
-\label{fig:demanda-capacidade-exact}
-\end{figure}
-
-\subsection{Distribuição do Esforço Operacional}
-\label{subsec:esforco-operacional-exact}
-
-A análise do esforço operacional é apresentada na Figura~\ref{fig:esforco-exact}, por meio de um painel composto que inclui a função de distribuição acumulada empírica (ECDF), o boxplot da carga de trabalho e a curva de Lorenz, permitindo avaliar a equidade da solução obtida.
-
-Os resultados indicam que a carga média por motorista é aproximadamente 10 horas, com mediana de 9,25 horas, permanecendo dentro de limites compatíveis com a regulamentação europeia vigente. O índice de Gini igual a 0,057 revela uma distribuição altamente equilibrada do esforço entre os motoristas ativos, evidenciando que o modelo não concentra excessivamente a carga de trabalho em subconjuntos específicos.
-
-Esse equilíbrio não é imposto explicitamente pela função objetivo, mas emerge naturalmente da combinação entre restrições legais, estrutura da demanda e características do horizonte de planejamento, reforçando a robustez do método exato.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{template/figuras/esforco_operacional_exact.png}
-\caption{Distribuição do esforço operacional dos motoristas ativos — ECDF, boxplot e curva de Lorenz.}
-\label{fig:esforco-exact}
-\end{figure}
-
-\subsection{Estrutura da Solução e Padrão de Alocação}
-\label{subsec:mapa-alocacao-binaria-exact}
-
-A Figura~\ref{fig:mapa-alocacao-binaria-exact} apresenta um recorte do mapa de alocação binária, no qual cada linha representa um motorista e cada coluna corresponde a um período de 15 minutos.
-
-O padrão visual evidencia blocos contínuos de alocação, compatíveis com janelas de trabalho legalmente permitidas, intercalados por períodos de inatividade que respeitam pausas obrigatórias e limites máximos de condução. A ausência de fragmentação excessiva indica que o modelo produz escalonamentos estruturalmente coerentes e operacionalmente viáveis.
-
-Esse tipo de visualização é particularmente relevante para validar a aderência entre a formulação matemática e o comportamento concreto da solução, além de servir como base conceitual para os mecanismos de destruição e reconstrução empregados posteriormente no método \textit{Large Neighborhood Search} (LNS).
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/mapa_alocacao_binaria_exact.png}
-\caption{Mapa de alocação binária (recorte) da solução exata no cenário de 24 horas.}
-\label{fig:mapa-alocacao-binaria-exact}
-\end{figure}
-
-\subsection{Considerações Parciais sobre o Método Exato}
-\label{subsec:consideracoes-exact}
-
-Os resultados apresentados demonstram que o método exato é capaz de produzir soluções ótimas, equilibrando atendimento da demanda, eficiência operacional e conformidade regulatória. Contudo, o custo computacional associado, evidenciado pelo tempo de resolução e pela dimensão do modelo, limita sua aplicabilidade direta em cenários de maior escala temporal ou com maior número de motoristas.
-
-Essas observações motivam a introdução dos métodos heurístico e LNS, discutidos nas seções subsequentes, que buscam preservar a qualidade das soluções obtidas pelo método exato ao mesmo tempo em que reduzem significativamente o esforço computacional.
-
-\subsection{Resultados Computacionais — Método Heurístico}
-\label{subsec:resultados-heuristico}
-
-Esta subseção apresenta os resultados obtidos com o método heurístico construtivo, baseado em uma estratégia gulosa (\textit{greedy allocation}), cujo objetivo principal é gerar soluções viáveis de forma rápida, respeitando as restrições legais e operacionais fundamentais do problema.
-
-Diferentemente do método exato, o algoritmo heurístico não realiza busca global por otimalidade, sendo utilizado como mecanismo inicial de alocação e como referência de desempenho para métodos mais sofisticados, como o \textit{Large Neighborhood Search} (LNS).
-
-Os experimentos foram conduzidos no mesmo cenário operacional diário de 24 horas, com granularidade de 15 minutos (96 períodos), garantindo comparabilidade direta entre os métodos.
-
-\subsubsection{Indicadores Globais de Desempenho}
-\label{subsubsec:kpi-heuristic}
-
-A Figura~\ref{fig:kpi-heuristic} apresenta o painel consolidado de indicadores da solução obtida pelo método heurístico.
-
-Observa-se que o modelo alcança cobertura global de 100\%, com todos os períodos plenamente atendidos e ausência de déficit de demanda. Esse comportamento decorre da natureza conservadora da heurística, que tende a superdimensionar a capacidade alocada para garantir viabilidade imediata.
-
-O \textit{Global Coverage Score} igual a $1.0$ e a inexistência de risco operacional indicam elevada robustez do ponto de vista de atendimento, porém à custa de menor eficiência no uso de recursos, conforme evidenciado nas análises subsequentes.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/kpi_heuristic.png}
-\caption{Painel consolidado de indicadores globais (KPIs) da solução heurística.}
-\label{fig:kpi-heuristic}
-\end{figure}
-
-\subsubsection{Atendimento da Demanda e Utilização da Capacidade}
-\label{subsubsec:demanda-capacidade-heuristic}
-
-A Figura~\ref{fig:demanda-capacidade-heuristic} ilustra a relação entre demanda solicitada, capacidade alocada e atendimento efetivo ao longo dos períodos de planejamento.
-
-Nota-se que a capacidade alocada permanece consistentemente superior à demanda, independentemente das variações temporais. Essa característica reflete o objetivo implícito do método heurístico: evitar qualquer violação de cobertura, mesmo que isso implique alocação excedente de motoristas.
-
-Como consequência, a taxa de utilização da capacidade permanece relativamente baixa, evidenciando que o método heurístico privilegia segurança operacional em detrimento da eficiência global, o que é aceitável e esperado neste estágio inicial do pipeline de otimização.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_heuristic.png}
-\caption{Demanda, capacidade alocada e atendimento efetivo por período — método heurístico.}
-\label{fig:demanda-capacidade-heuristic}
-\end{figure}
-
-\subsubsection{Distribuição do Esforço Operacional}
-\label{subsubsec:esforco-heuristic}
-
-A Figura~\ref{fig:esforco-heuristic} apresenta a distribuição do esforço operacional entre os motoristas ativos.
-
-Os resultados indicam uma carga média de aproximadamente 11 horas por motorista, com baixa dispersão, sugerindo um padrão de alocação relativamente homogêneo. O índice de Gini obtido é reduzido, indicando boa equidade na distribuição do trabalho, embora com níveis médios de carga superiores aos observados no método exato.
-
-Esse comportamento é consistente com a estratégia do algoritmo, que prioriza o preenchimento sequencial da demanda, sem mecanismos explícitos de redistribuição ou otimização fina da carga de trabalho.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/esforco_operacional_heuristic.png}
-\caption{Distribuição do esforço operacional dos motoristas ativos — método heurístico.}
-\label{fig:esforco-heuristic}
-\end{figure}
-
-\subsubsection{Estrutura da Solução Heurística}
-\label{subsubsec:mapa-alocacao-heuristic}
-
-O mapa de alocação binária apresentado na Figura~\ref{fig:mapa-alocacao-binaria-heuristic} evidencia um padrão de alocação mais fragmentado quando comparado ao método exato.
-
-Observam-se múltiplos blocos curtos de atividade distribuídos ao longo do horizonte, resultado direto da lógica gulosa de preenchimento por período. Embora tal estrutura seja viável do ponto de vista legal, ela pode gerar soluções menos desejáveis em termos de estabilidade operacional e continuidade de turnos.
-
-Essa característica reforça o papel do método heurístico como solução inicial, adequada para alimentar processos de refinamento e melhoria incremental, como o método LNS.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/mapa_alocacao_binaria_heuristic.png}
-\caption{Mapa de alocação binária (recorte) da solução heurística.}
-\label{fig:mapa-alocacao-binaria-heuristic}
-\end{figure}
-
-\subsubsection{Considerações Parciais sobre o Método Heurístico}
-\label{subsubsec:consideracoes-heuristic}
-
-Os resultados demonstram que o método heurístico é altamente eficaz na geração rápida de soluções viáveis, garantindo cobertura total da demanda e conformidade regulatória básica.
-
-Entretanto, a ausência de mecanismos explícitos de otimização resulta em uso excessivo de capacidade, menor eficiência global e estruturas de alocação menos estáveis. Essas limitações justificam sua utilização como etapa inicial do pipeline de otimização, servindo como ponto de partida para métodos mais avançados, em especial o \textit{Large Neighborhood Search} (LNS), discutido na subseção seguinte.
-
-\subsection{Resultados Computacionais — Large Neighborhood Search (LNS)}
-\label{subsec:resultados-lns}
-
-Esta subseção apresenta os resultados obtidos com o método \textit{Large Neighborhood Search} (LNS), empregado como etapa intermediária entre a heurística construtiva e o modelo exato.
-
-O LNS atua sobre uma solução inicial viável, gerada pelo método heurístico, promovendo destruições controladas em blocos temporais e reconstruções locais via modelos MILP restritos. Esse mecanismo permite melhorar progressivamente a qualidade da solução sem incorrer no custo computacional associado a uma otimização global completa.
-
-Os experimentos foram conduzidos no mesmo cenário operacional diário de 24 horas, com granularidade de 15 minutos (96 períodos), garantindo comparabilidade direta com os métodos apresentados anteriormente.
-
-\subsubsection{Indicadores Globais de Desempenho}
-\label{subsubsec:kpi-lns}
-
-A Figura~\ref{fig:kpi-lns} apresenta o painel consolidado de indicadores da solução obtida após a aplicação do LNS.
-
-Observa-se que o método mantém cobertura total da demanda (100\%), assim como a heurística construtiva, porém com melhor equilíbrio entre eficiência operacional e controle de risco. O \textit{Global Coverage Score} permanece igual a $1.0$, enquanto o nível de risco se mantém controlado, refletindo a capacidade do LNS de aprimorar a solução sem comprometer sua viabilidade.
-
-O número total de motoristas ativos permanece inalterado, indicando que os ganhos obtidos pelo LNS decorrem principalmente de uma redistribuição temporal mais eficiente da carga de trabalho, e não da ampliação da força de trabalho.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/kpi_lns.png}
-\caption{Painel consolidado de indicadores globais (KPIs) da solução obtida pelo método LNS.}
-\label{fig:kpi-lns}
-\end{figure}
-
-\subsubsection{Atendimento da Demanda e Utilização da Capacidade}
-\label{subsubsec:demanda-capacidade-lns}
-
-A Figura~\ref{fig:demanda-capacidade-lns} apresenta a relação entre demanda solicitada, capacidade alocada e atendimento efetivo após a aplicação do LNS.
-
-Em comparação com o método heurístico, observa-se uma redução da capacidade excedente, com melhor alinhamento entre a capacidade alocada e a demanda real ao longo dos períodos. Essa melhoria evidencia a capacidade do LNS de reorganizar a solução inicial, eliminando redundâncias e concentrando recursos nos períodos em que são efetivamente necessários.
-
-Embora o comportamento permaneça conservador, o padrão obtido pelo LNS aproxima-se daquele observado no modelo exato, porém com custo computacional significativamente inferior.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_lns.png}
-\caption{Demanda, capacidade alocada e atendimento efetivo por período — método LNS.}
-\label{fig:demanda-capacidade-lns}
-\end{figure}
-
-\subsubsection{Distribuição do Esforço Operacional}
-\label{subsubsec:esforco-lns}
-
-A Figura~\ref{fig:esforco-lns} ilustra a distribuição do esforço operacional entre os motoristas ativos após a aplicação do LNS.
-
-Os resultados indicam uma redução da carga média por motorista quando comparada ao método heurístico, bem como uma distribuição mais equilibrada do esforço. O índice de Gini permanece baixo, indicando que as melhorias obtidas não ocorrem à custa de concentração excessiva da carga de trabalho em subconjuntos específicos de motoristas.
-
-Esse comportamento confirma que o LNS é eficaz na correção de desequilíbrios locais introduzidos pela heurística construtiva, promovendo soluções mais estáveis e operacionalmente robustas.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/esforco_operacional_lns.png}
-\caption{Distribuição do esforço operacional dos motoristas ativos — método LNS.}
-\label{fig:esforco-lns}
-\end{figure}
-
-\subsubsection{Estrutura da Solução Após Refinamento}
-\label{subsubsec:mapa-alocacao-lns}
-
-O mapa de alocação binária apresentado na Figura~\ref{fig:mapa-alocacao-lns} evidencia uma estrutura mais organizada e contínua quando comparada à solução heurística inicial.
-
-Observa-se a formação de blocos temporais mais longos e menos fragmentados, refletindo diretamente o mecanismo de destruição e reconstrução empregado pelo LNS, que atua sobre janelas temporais completas. Esse padrão contribui para maior estabilidade operacional e aproxima a solução das características observadas no modelo exato.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{template/figuras/mapa_alocacao_binaria_lns.png}
-\caption{Mapa de alocação binária (recorte) da solução refinada pelo método LNS.}
-\label{fig:mapa-alocacao-lns}
-\end{figure}
-
-\subsubsection{Considerações Parciais sobre o Método LNS}
-\label{subsubsec:consideracoes-lns}
-
-Os resultados obtidos demonstram que o método LNS desempenha um papel fundamental no pipeline de otimização proposto, atuando como um mecanismo de equilíbrio entre qualidade da solução e esforço computacional.
-
-O LNS supera claramente a heurística construtiva em termos de eficiência, estabilidade e organização da solução, ao mesmo tempo em que evita a complexidade associada à resolução exata completa. Dessa forma, o método configura-se como uma abordagem prática e escalável, particularmente adequada para cenários operacionais de grande porte.
-
-Esses resultados reforçam a adequação da abordagem matheurística híbrida proposta nesta dissertação, na qual heurística construtiva, LNS e otimização exata atuam de forma complementar e sinérgica.
+\section{Considerações Finais}
 
 Com o objetivo de sintetizar e consolidar as diferenças observadas entre os métodos avaliados, a Tabela~\ref{tab:comparacao-metodos} apresenta uma comparação qualitativa entre as abordagens Exata, Heurística e \textit{Large Neighborhood Search} (LNS) no cenário operacional de 24 horas.
 
@@ -830,3 +807,13 @@ Adequação Operacional & Analítica & Operacional & Operacional-Otimizada \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section{Considerações Finais}
+
+Este capítulo apresentou de forma integrada o modelo matemático de Programação Linear Inteira desenvolvido para o escalonamento de motoristas e a metodologia experimental adotada para sua validação. A formulação lexicográfica proposta reflete fielmente as prioridades operacionais do transporte rodoviário europeu, garantindo conformidade regulatória e eficiência na alocação de recursos.
+
+A implementação computacional, realizada em Python com o solver CP-SAT, demonstrou viabilidade prática mesmo em cenários de grande escala. A comparação sistemática entre três métodos de resolução --- exato, heurístico e LNS --- evidenciou trade-offs claros entre qualidade analítica, eficiência operacional e custo computacional.
+
+Os resultados experimentais confirmam que a abordagem matheurística híbrida proposta combina os pontos fortes de cada método, oferecendo flexibilidade para diferentes contextos operacionais: desde aplicações que exigem certificados de otimalidade até ambientes que priorizam respostas rápidas e robustas.
+
+O modelo matemático e a metodologia experimental aqui descritos fornecem uma base sólida para os capítulos subsequentes, nos quais serão discutidas extensões do modelo, análises de sensibilidade e implicações práticas para o setor de transporte rodoviário.

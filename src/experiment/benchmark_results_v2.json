@@ -1,0 +1,98 @@
+[
+    {
+        "scenario": "24h",
+        "mode": "Heuristic",
+        "time_s": 0.03,
+        "active_drivers": 43,
+        "total_assigned_slots": 912,
+        "coverage_pct": 100.0,
+        "efficiency_pct": 63.1578947368421,
+        "operational_risk": 0.0,
+        "status": "HEURISTIC"
+    },
+    {
+        "scenario": "24h",
+        "mode": "LNS",
+        "time_s": 329.28,
+        "active_drivers": 43,
+        "total_assigned_slots": 912,
+        "coverage_pct": 100.0,
+        "efficiency_pct": 63.1578947368421,
+        "operational_risk": 0.0,
+        "status": "LNS"
+    },
+    {
+        "scenario": "24h",
+        "mode": "Exact",
+        "time_s": 103.54,
+        "active_drivers": 43,
+        "total_assigned_slots": 912,
+        "coverage_pct": 100.0,
+        "efficiency_pct": 63.1578947368421,
+        "operational_risk": 0.0,
+        "status": "6"
+    },
+    {
+        "scenario": "7d",
+        "mode": "Heuristic",
+        "time_s": 0.6,
+        "active_drivers": 120,
+        "total_assigned_slots": 3064,
+        "coverage_pct": 72.76641550053822,
+        "efficiency_pct": 88.25065274151436,
+        "operational_risk": 0.2723358449946179,
+        "status": "HEURISTIC"
+    },
+    {
+        "scenario": "7d",
+        "mode": "LNS",
+        "time_s": 2565.69,
+        "active_drivers": 120,
+        "total_assigned_slots": 3064,
+        "coverage_pct": 72.76641550053822,
+        "efficiency_pct": 88.25065274151436,
+        "operational_risk": 0.2723358449946179,
+        "status": "LNS"
+    },
+    {
+        "scenario": "7d",
+        "mode": "Exact",
+        "time_s": 170.4,
+        "active_drivers": 120,
+        "total_assigned_slots": 3064,
+        "coverage_pct": 72.76641550053822,
+        "efficiency_pct": 88.25065274151436,
+        "operational_risk": 0.2723358449946179,
+        "status": "6"
+    },
+    {
+        "scenario": "15d",
+        "mode": "Heuristic",
+        "time_s": 0.32,
+        "active_drivers": 120,
+        "total_assigned_slots": 3897,
+        "coverage_pct": 46.45590264709572,
+        "efficiency_pct": 95.02181164998717,
+        "operational_risk": 0.5354409735290427,
+        "status": "HEURISTIC"
+    },
+    {
+        "scenario": "15d",
+        "mode": "LNS",
+        "time_s": 635.81,
+        "active_drivers": 120,
+        "total_assigned_slots": 3897,
+        "coverage_pct": 46.45590264709572,
+        "efficiency_pct": 95.02181164998717,
+        "operational_risk": 0.5354409735290427,
+        "status": "TIMEOUT_FALLBACK",
+        "error": "Time limit reached, returned best known (Heuristic)"
+    },
+    {
+        "scenario": "15d",
+        "mode": "Exact",
+        "time_s": 1634.5,
+        "status": "CRASHED",
+        "error": "Process terminated abnormally"
+    }
+]
