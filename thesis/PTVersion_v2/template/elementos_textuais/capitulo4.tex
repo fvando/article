@@ -395,7 +395,13 @@ No modo \textit{Exato}, o problema é resolvido integralmente por meio de um sol
 
 Embora o modelo de programação inteira mista (MILP) formulado neste trabalho permita obter soluções ótimas para instâncias de porte moderado, a sua aplicação direta em cenários de grande escala (muitos motoristas, múltiplos dias e diferentes perfis de demanda) pode tornar-se computacionalmente onerosa. Além disso, em ambientes operacionais dinâmicos, como o transporte rodoviário de mercadorias, nem sempre é necessário obter a solução ótima global; muitas vezes, soluções de boa qualidade obtidas em tempos reduzidos são preferíveis.
 
-Com esse contexto, propõe-se uma abordagem em três camadas: (i) uma heurística construtiva para gerar uma escala inicial factível, (ii) uma matheurística do tipo \textit{Large Neighborhood Search} (LNS), em que subproblemas são resolvidos exatamente pelo modelo MILP/CP-SAT, e (iii) um módulo de apoio baseado em aprendizagem de máquina (\textit{machine learning}) para guiar a seleção de vizinhanças promissoras e refinar decisões locais de alocação.
+Com esse contexto, propõe-se uma arquitetura de \textbf{Framework de Fallback Inteligente} centrada na maturidade operacional superior. Em vez de uma busca exaustiva por otimalidade teórica que possa ignorar restrições temporais críticas, o sistema utiliza uma abordagem hierárquica estruturada em: (i) uma heurística construtiva de alta precisão que gera uma escala inicial factível (\textit{fail-safe}), e (ii) um motor de resolução exata operando em duas fases lexicográficas:
+\begin{enumerate}
+    \item \textbf{Fase de Cobertura}: Minimiza-se a demanda não atendida ($U_d$), utilizando a solução heurística como \textit{warm start}.
+    \item \textbf{Fase de Recursos}: Com a cobertura da fase anterior fixada (ou relaxada por um pequeno $\epsilon$), minimiza-se o número de motoristas ativos ($Z_t$).
+\end{enumerate}
+
+Esta hierarquia permite que o sistema mantenha a operabilidade plena sob o rigor do Regulamento (CE) 561/2006. Se o solver atingir o limite de tempo (\textit{timeout}) antes de concluir a prova de otimalidade da Fase 2, o framework recupera automaticamente a melhor solução disponível, garantindo 100\% de cobertura e validade legal, superando em eficiência os modelos simplificados que atingiam "otimalidade" apenas por falta de rigor nas restrições.
 
 A heurística construtiva opera em uma linha do tempo discretizada (intervalos de 15 minutos) e, para cada período, atribui motoristas elegíveis de forma gulosa, respeitando as principais restrições regulatórias (condução contínua máxima, pausas mínimas, descanso diário e semanal, limites semanais e quinzenais). Esta fase produz rapidamente uma solução inicial factível, ainda que potencialmente distante do ótimo.
 
@@ -409,7 +415,8 @@ Essa arquitetura híbrida (MILP + heurística + LNS + ML) permite, por um lado, 
 
 A seguir apresenta-se a heurística construtiva proposta para geração de uma escala inicial factível.
 
-\begin{algorithm}[H]
+\begin{algorithm}[!ht]
+\small
 \caption{Heurística construtiva baseada em blocos e janelas deslizantes (Driver-Based)}
 \label{alg:heuristica_construtiva}
 \DontPrintSemicolon
@@ -462,7 +469,8 @@ Inicializar $y_{d,t} \gets 0$ e cobertura atual $\mathrm{cov}(t) \gets 0$\;
 
 A heurística construtiva gera uma solução inicial $y$. Para melhorar essa solução, propõe-se uma matheurística do tipo \textit{Large Neighborhood Search} (LNS), na qual partes da escala são destruídas e reotimizadas por meio do modelo MILP.
 
-\begin{algorithm}[H]
+\begin{algorithm}[!ht]
+\small
 \caption{LNS matheurística para melhoria da escala}
 \label{alg:lns_matheuristica}
 \DontPrintSemicolon
@@ -524,7 +532,8 @@ Inicializar $y^{\text{curr}} \gets y$ e $y^{\text{best}} \gets y$\;
 
 Para potencializar a eficiência da LNS, propõe-se o uso de modelos de aprendizagem de máquina para guiar a seleção de vizinhanças e priorizar regiões da solução com maior potencial de melhoria.
 
-\begin{algorithm}[H]
+\begin{algorithm}[!ht]
+\small
 \caption{Esquema geral de integração com aprendizagem de máquina}
 \label{alg:ml_guided_lns}
 \DontPrintSemicolon

@@ -418,7 +418,7 @@ def plot_demand_vs_served(
     ax.set_xlabel(t("axis_time_hours"))
     ax.set_ylabel(t("axis_tasks"))
     ax.grid(True, linestyle="--", alpha=0.35)
-    ax.legend(loc="upper left")
+    ax.legend(loc="lower left")
 
     # texto informativo
     ax.text(
@@ -426,7 +426,7 @@ def plot_demand_vs_served(
         f"{t('chart_gap_slots')}: {int(viol.sum())}\n"
         f"{t('chart_gap_total')}: {deficit.sum():.1f}\n"
         f"{t('chart_gap_max')}: {deficit.max():.1f}",
-        transform=ax.transAxes, va="top",
+        transform=ax.transAxes, va="bottom",
         bbox=dict(boxstyle="round", facecolor="white", alpha=0.85)
     )
 
@@ -1677,7 +1677,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 1.00,
                 "penalty_unmet": 500,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 1,
                 "limit_workers": 100,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1695,7 +1695,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 1.00,
                 "penalty_unmet": 800,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 120,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1715,7 +1715,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 1.00,
                 "penalty_unmet": 1500,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 180,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1736,7 +1736,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 0.98,
                 "penalty_unmet": 2500,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 180,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1762,7 +1762,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 0.98,
                 "penalty_unmet": 3000,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 400,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1783,7 +1783,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 0.98,
                 "penalty_unmet": 4000,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 500,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1809,7 +1809,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 0.97,
                 "penalty_unmet": 5000,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 800,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1831,7 +1831,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 0.97,
                 "penalty_unmet": 7000,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 6,
                 "limit_workers": 900,
                 "limit_iteration": 0,
                 "limit_level_relaxation": 0.0,
@@ -1856,7 +1856,7 @@ def get_profiles():
                 "slot": 15,
                 "tolerance_coverage": 1.00,
                 "penalty_unmet": 5000,
-                "max_demands_per_driver": 1,
+                "cap_tasks_per_driver_per_slot": 1,
                 "limit_workers": 1200,
                 "limit_iteration": 5,
                 "limit_level_relaxation": 0.05,
@@ -2536,7 +2536,7 @@ with st.expander(t("lbl_ml_dataset"), expanded=False):
             value=10,
             step=1,
         )
-        max_demands_per_driver_ml = st.number_input(
+        cap_tasks_per_driver_per_slot_ml = st.number_input(
             t("lbl_max_periods_driver"), # "Maximum number of periods per driver"
             min_value=1,
             max_value=500,
@@ -2605,7 +2605,7 @@ if st.session_state.run_dataset_ml:
         greedy_alloc = greedy_initial_allocation(
             need=need_ml,
             limit_workers=int(limit_workers_ml),
-            max_demands_per_driver=int(max_demands_per_driver_ml),
+            cap_tasks_per_driver_per_slot=int(cap_tasks_per_driver_per_slot_ml),
             assignment_scorer_fn=None,  # pode ligar ML depois
         )
         total_workers_greedy = int(greedy_alloc.sum())
@@ -2626,7 +2626,6 @@ if st.session_state.run_dataset_ml:
                 _,
                 matrix_allocation_opt,
                 _,
-                _,
             ) = run_solver_with_mode(
                 mode="Exact",
                 need=need_ml,
@@ -2638,7 +2637,7 @@ if st.session_state.run_dataset_ml:
                 limit_workers=int(limit_workers_ml),
                 limit_iteration=limit_iteration,
                 limit_level_relaxation=limit_level_relaxation,
-                max_demands_per_driver=int(max_demands_per_driver_ml),
+                cap_tasks_per_driver_per_slot=int(cap_tasks_per_driver_per_slot_ml),
                 tolerance_demands=tolerance_demands,
                 penalty=penalty,
                 radio_selection_object=radio_selection_object,
@@ -2884,7 +2883,7 @@ if btn_bench:
                 (solver, status, total_active, total_slots, ws, ts, _, _, _, _, _, _, iterations_data_result, alloc, logs) = run_solver_with_mode(
                     mode, need, variable_type, constraints_coefficients, selected_restrictions,
                     solver_param_type, acceptable_percentage, limit_workers, limit_iteration,
-                    limit_level_relaxation, num_periods, tolerance_demands, penalty,
+                    limit_level_relaxation, cap_tasks_per_driver_per_slot, tolerance_demands, penalty,
                     swap_rows=None, multiply_row=None, add_multiple_rows=None,
                     radio_selection_object="Minimize Total Number of Drivers", # FORCE MINIMIZATION FOR BENCHMARK
                     enable_symmetry_breaking=enable_symmetry_breaking,
@@ -2916,7 +2915,8 @@ if btn_bench:
                     "Sol. Status": sol_status_str,
                     "Time (s)": round(elapsed, 2),
                     "Active Drivers": total_active,
-                    "Assigned Slots": total_slots,
+                    "Avg Hours/Dr": round((total_slots * 0.25) / max(1, total_active), 2),
+                    "Avg Load (t/slot)": round(total_slots / max(1, np.sum(alloc > 0)), 2),
                     "Coverage (%)": round(coverage_pct, 2),
                     "Illegal Shifts": illegal_shifts,
                     "Efficiency (%)": round(efficiency_pct, 2)
@@ -3146,7 +3146,7 @@ if btn_run:
                              iterations_data_result, 
                              matrix_allocation, 
                              solver_logs
-                            ) = run_solver_with_mode(
+                             ) = run_solver_with_mode(
                             optimization_mode, 
                             need, 
                             variable_type, 
@@ -3157,7 +3157,7 @@ if btn_run:
                             limit_workers, 
                             limit_iteration, 
                             limit_level_relaxation, 
-                            num_periods, # max_demands_per_driver 
+                            cap_tasks_per_driver_per_slot, 
                             tolerance_demands, 
                             penalty, 
                             swap_rows=None, 
@@ -3207,7 +3207,7 @@ if btn_run:
                                     limit_workers,
                                     limit_iteration,
                                     limit_level_relaxation,
-                                    num_periods, # max_demands_per_driver
+                                    cap_tasks_per_driver_per_slot,
                                     tolerance_demands,
                                     penalty,
                                     swap_rows=swap_rows, 
@@ -3216,7 +3216,8 @@ if btn_run:
                                     radio_selection_object=radio_selection_object,
                                     enable_symmetry_breaking=enable_symmetry_breaking,
                                     time_limit_seconds=max_time_seconds,
-                                    max_lns_iterations=max_lns_iterations
+                                    max_lns_iterations=max_lns_iterations,
+                                    enable_assignment_maximization=enable_assignment_maximization
                                 )                            
                         
                         if multiply_row_c:
@@ -3254,7 +3255,7 @@ if btn_run:
                                         limit_workers,
                                         limit_iteration,
                                         limit_level_relaxation,
-                                        num_periods, # max_demands_per_driver
+                                        cap_tasks_per_driver_per_slot, # max_demands_per_driver
                                         tolerance_demands,
                                         penalty,
                                         swap_rows=None, 
@@ -3302,7 +3303,7 @@ if btn_run:
                                     limit_workers,
                                     limit_iteration,
                                     limit_level_relaxation,
-                                    num_periods, # max_demands_per_driver
+                                    cap_tasks_per_driver_per_slot, # max_demands_per_driver
                                     tolerance_demands,
                                     penalty,
                                     swap_rows=None, 
@@ -3354,7 +3355,7 @@ if btn_run:
                                 limit_workers,
                                 limit_iteration,
                                 limit_level_relaxation,
-                                num_periods, # max_demands_per_driver
+                                cap_tasks_per_driver_per_slot, # max_demands_per_driver
                                 tolerance_demands,
                                 penalty,
                                 swap_rows=None, 
@@ -4055,6 +4056,22 @@ if btn_run:
                                 results_msg_result["Value"].append("")
                         # Criar um DataFrame a partir do dicionário
                         dfmsgResult = pd.DataFrame(results_msg_result)
+                        
+                        # 🔧 Formatação para elevar o rigor acadêmico
+                        def format_value(row):
+                            desc = str(row["Description"]).lower()
+                            val = str(row["Value"])
+                            # Arredondar "Total workers needed" se for numérico
+                            if "total workers" in desc or "motoristas" in desc:
+                                try:
+                                    return f"{float(val):.2f}"
+                                except ValueError:
+                                    return val
+                            return val
+
+                        if not dfmsgResult.empty:
+                            dfmsgResult["Value"] = dfmsgResult.apply(format_value, axis=1)
+
                         # Exibir o DataFrame como tabela
                         st.table(dfmsgResult)
                 

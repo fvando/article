@@ -1,0 +1,1208 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{blochliger2004}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=cf45fe86b6d77d7f10b785b5e7c4c263}{%
+           family={Blöchliger},
+           familyi={B\bibinitperiod},
+           given={Ivo},
+           giveni={I\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{fullhash}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{fullhashraw}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{bibnamehash}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{authorbibnamehash}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{authornamehash}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{authorfullhash}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \strng{authorfullhashraw}{cf45fe86b6d77d7f10b785b5e7c4c263}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{OR spectrum}
+      \field{number}{1}
+      \field{title}{Modeling staff scheduling problems. A tutorial}
+      \field{volume}{26}
+      \field{year}{2004}
+      \field{pages}{115\bibrangedash 142}
+      \range{pages}{28}
+    \endentry
+    \entry{dantzig1963}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=212fe65a17e797b6dbce0c3731498b2c}{%
+           family={Dantzig},
+           familyi={D\bibinitperiod},
+           given={George\bibnamedelima B.},
+           giveni={G\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {Princeton}%
+      }
+      \list{publisher}{1}{%
+        {Princeton University Press}%
+      }
+      \strng{namehash}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{fullhash}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{fullhashraw}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{bibnamehash}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{authorbibnamehash}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{authornamehash}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{authorfullhash}{212fe65a17e797b6dbce0c3731498b2c}
+      \strng{authorfullhashraw}{212fe65a17e797b6dbce0c3731498b2c}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Linear Programming and Extensions}
+      \field{year}{1963}
+    \endentry
+    \entry{numpydocs}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=ac8f9f6d402eb41cc08675c881fbc576}{%
+           family={Developers},
+           familyi={D\bibinitperiod},
+           given={NumPy},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{fullhash}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{fullhashraw}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{bibnamehash}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{authorbibnamehash}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{authornamehash}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{authorfullhash}{ac8f9f6d402eb41cc08675c881fbc576}
+      \strng{authorfullhashraw}{ac8f9f6d402eb41cc08675c881fbc576}
+      \field{sortinit}{D}
+      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{NumPy Documentation}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://numpy.org/doc/
+      \endverb
+      \verb{url}
+      \verb https://numpy.org/doc/
+      \endverb
+    \endentry
+    \entry{erdman2022}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=564a9637d4a30ebfaf3bf6e8d2f846d1}{%
+           family={Erdman},
+           familyi={E\bibinitperiod},
+           given={Andreas},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=10664dbca679afcd7d0278d3e19d0fa0}{%
+           family={Koch},
+           familyi={K\bibinitperiod},
+           given={Stefan},
+           giveni={S\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{4a229ebde1464333dc57523d309f1be4}
+      \strng{fullhash}{4a229ebde1464333dc57523d309f1be4}
+      \strng{fullhashraw}{4a229ebde1464333dc57523d309f1be4}
+      \strng{bibnamehash}{4a229ebde1464333dc57523d309f1be4}
+      \strng{authorbibnamehash}{4a229ebde1464333dc57523d309f1be4}
+      \strng{authornamehash}{4a229ebde1464333dc57523d309f1be4}
+      \strng{authorfullhash}{4a229ebde1464333dc57523d309f1be4}
+      \strng{authorfullhashraw}{4a229ebde1464333dc57523d309f1be4}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Operations Research}
+      \field{title}{Driver scheduling in road freight transportation: A literature review}
+      \field{volume}{140}
+      \field{year}{2022}
+      \field{pages}{105641}
+      \range{pages}{1}
+    \endentry
+    \entry{goel2010}{article}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=d0e0e2a431d5ddcbea4a1e8dffb0e8de}{%
+           family={Goel},
+           familyi={G\bibinitperiod},
+           given={Asvin},
+           giveni={A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{fullhash}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{fullhashraw}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{bibnamehash}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{authorbibnamehash}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{authornamehash}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{authorfullhash}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \strng{authorfullhashraw}{d0e0e2a431d5ddcbea4a1e8dffb0e8de}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Transportation Science}
+      \field{number}{1}
+      \field{title}{Vehicle scheduling and routing with driver's working hours}
+      \field{volume}{44}
+      \field{year}{2010}
+      \field{pages}{14\bibrangedash 36}
+      \range{pages}{23}
+    \endentry
+    \entry{googleortools}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=8b36e9207c24c76e6719268e49201d94}{%
+           family={Google},
+           familyi={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{8b36e9207c24c76e6719268e49201d94}
+      \strng{fullhash}{8b36e9207c24c76e6719268e49201d94}
+      \strng{fullhashraw}{8b36e9207c24c76e6719268e49201d94}
+      \strng{bibnamehash}{8b36e9207c24c76e6719268e49201d94}
+      \strng{authorbibnamehash}{8b36e9207c24c76e6719268e49201d94}
+      \strng{authornamehash}{8b36e9207c24c76e6719268e49201d94}
+      \strng{authorfullhash}{8b36e9207c24c76e6719268e49201d94}
+      \strng{authorfullhashraw}{8b36e9207c24c76e6719268e49201d94}
+      \field{sortinit}{G}
+      \field{sortinithash}{32d67eca0634bf53703493fb1090a2e8}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{OR-Tools: The Operations Research Tools}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://developers.google.com/optimization
+      \endverb
+      \verb{url}
+      \verb https://developers.google.com/optimization
+      \endverb
+    \endentry
+    \entry{hillier2015}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=a2d49726c132531b1469a93e10a53b00}{%
+           family={Hillier},
+           familyi={H\bibinitperiod},
+           given={Frederick\bibnamedelima S.},
+           giveni={F\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c87576796149a4151600af30cf2ea238}{%
+           family={Lieberman},
+           familyi={L\bibinitperiod},
+           given={Gerald\bibnamedelima J.},
+           giveni={G\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {McGraw-Hill}%
+      }
+      \strng{namehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{fullhash}{c558306b0340f781e1b382a8b168942c}
+      \strng{fullhashraw}{c558306b0340f781e1b382a8b168942c}
+      \strng{bibnamehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authorbibnamehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authornamehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authorfullhash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authorfullhashraw}{c558306b0340f781e1b382a8b168942c}
+      \field{extraname}{1}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{10}
+      \field{title}{Introduction to Operations Research}
+      \field{year}{2015}
+    \endentry
+    \entry{hillier2021}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=a2d49726c132531b1469a93e10a53b00}{%
+           family={Hillier},
+           familyi={H\bibinitperiod},
+           given={Frederick\bibnamedelima S.},
+           giveni={F\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=c87576796149a4151600af30cf2ea238}{%
+           family={Lieberman},
+           familyi={L\bibinitperiod},
+           given={Gerald\bibnamedelima J.},
+           giveni={G\bibinitperiod\bibinitdelim J\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {McGraw-Hill}%
+      }
+      \strng{namehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{fullhash}{c558306b0340f781e1b382a8b168942c}
+      \strng{fullhashraw}{c558306b0340f781e1b382a8b168942c}
+      \strng{bibnamehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authorbibnamehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authornamehash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authorfullhash}{c558306b0340f781e1b382a8b168942c}
+      \strng{authorfullhashraw}{c558306b0340f781e1b382a8b168942c}
+      \field{extraname}{2}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{11}
+      \field{title}{Introduction to Operations Research}
+      \field{year}{2021}
+    \endentry
+    \entry{pinheiro2007staffscheduling}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=7305999a3d66d29645695c7fa0e824c2}{%
+           family={Marcal},
+           familyi={M\bibinitperiod},
+           given={A.\bibnamedelimi S.},
+           giveni={A\bibinitperiod\bibinitdelim S\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=cdeac7e8e715640ed8d7970ca61b20b3}{%
+           family={Costa},
+           familyi={C\bibinitperiod},
+           given={G.},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{7297f28f43b7bc89449c196482651cdd}
+      \strng{fullhash}{7297f28f43b7bc89449c196482651cdd}
+      \strng{fullhashraw}{7297f28f43b7bc89449c196482651cdd}
+      \strng{bibnamehash}{7297f28f43b7bc89449c196482651cdd}
+      \strng{authorbibnamehash}{7297f28f43b7bc89449c196482651cdd}
+      \strng{authornamehash}{7297f28f43b7bc89449c196482651cdd}
+      \strng{authorfullhash}{7297f28f43b7bc89449c196482651cdd}
+      \strng{authorfullhashraw}{7297f28f43b7bc89449c196482651cdd}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{International Conference on Service Systems and Service Management}
+      \field{title}{Staff Scheduling Optimization in Information Technology Projects}
+      \field{year}{2007}
+    \endentry
+    \entry{moreira2024}{incollection}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=ef6d1ec2eada7174708af1618fa0e907}{%
+           family={Moreira},
+           familyi={M\bibinitperiod},
+           given={Francisco\bibnamedelimb Vando\bibnamedelima Carneiro},
+           giveni={F\bibinitperiod\bibinitdelim V\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=914ef663954fe5d96516ec226f3ad08f}{%
+           family={Araujo},
+           familyi={A\bibinitperiod},
+           given={Carolina\bibnamedelima Ferreira},
+           giveni={C\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{2}{}{%
+        {{hash=744459795443051005f8211ef765b023}{%
+           family={Silhavy},
+           familyi={S\bibinitperiod},
+           given={Radek},
+           giveni={R\bibinitperiod}}}%
+        {{hash=373ac9c2837f574911a1858c64081a24}{%
+           family={Silhavy},
+           familyi={S\bibinitperiod},
+           given={Petr},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cham}%
+      }
+      \list{publisher}{1}{%
+        {Springer Nature Switzerland}%
+      }
+      \strng{namehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{fullhash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{fullhashraw}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{bibnamehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authorbibnamehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authornamehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authorfullhash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authorfullhashraw}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{editorbibnamehash}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \strng{editornamehash}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \strng{editorfullhash}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \strng{editorfullhashraw}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \field{extraname}{1}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Artificial Intelligence Algorithm Design for Systems}
+      \field{isbn}{978-3-031-70518-2}
+      \field{title}{Modeling for Cost Minimization Applied to the Allocation of Vehicles in Road Transport Companies}
+      \field{year}{2024}
+      \field{pages}{300\bibrangedash 306}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1007/978-3-031-70518-2_26
+      \endverb
+    \endentry
+    \entry{moreira2025}{incollection}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=ef6d1ec2eada7174708af1618fa0e907}{%
+           family={Moreira},
+           familyi={M\bibinitperiod},
+           given={Francisco\bibnamedelimb Vando\bibnamedelima Carneiro},
+           giveni={F\bibinitperiod\bibinitdelim V\bibinitperiod\bibinitdelim C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=914ef663954fe5d96516ec226f3ad08f}{%
+           family={Araujo},
+           familyi={A\bibinitperiod},
+           given={Carolina\bibnamedelima Ferreira},
+           giveni={C\bibinitperiod\bibinitdelim F\bibinitperiod},
+           givenun=0}}%
+      }
+      \name{editor}{2}{}{%
+        {{hash=744459795443051005f8211ef765b023}{%
+           family={Silhavy},
+           familyi={S\bibinitperiod},
+           given={Radek},
+           giveni={R\bibinitperiod}}}%
+        {{hash=373ac9c2837f574911a1858c64081a24}{%
+           family={Silhavy},
+           familyi={S\bibinitperiod},
+           given={Petr},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cham}%
+      }
+      \list{publisher}{1}{%
+        {Springer Nature Switzerland}%
+      }
+      \strng{namehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{fullhash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{fullhashraw}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{bibnamehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authorbibnamehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authornamehash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authorfullhash}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{authorfullhashraw}{7dec6a1dc318327cdb61f8e524f7f1f1}
+      \strng{editorbibnamehash}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \strng{editornamehash}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \strng{editorfullhash}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \strng{editorfullhashraw}{87f4b287ef14cf5bbaf5f7368b9cef72}
+      \field{extraname}{2}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Software Engineering: Emerging Trends and Practices in System Development}
+      \field{isbn}{978-3-032-00239-6}
+      \field{title}{Optimization Model for Driver Scheduling in Road Transport Under European Regulation}
+      \field{year}{2025}
+      \field{pages}{361\bibrangedash 371}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1007/978-3-032-00239-6_25
+      \endverb
+    \endentry
+    \entry{santamaria2025driver}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=c7fc83a327d0ccf91ff2fa42f5754ed0}{%
+           family={Moreira},
+           familyi={M\bibinitperiod},
+           given={Vando},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=7a94956ad3d0ff2b06999df6364b5e9d}{%
+           family={Costa},
+           familyi={C\bibinitperiod},
+           given={João},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=046f85f07cb9e273e449def7a01174c6}{%
+           family={Amaral},
+           familyi={A\bibinitperiod},
+           given={José},
+           giveni={J\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{fullhash}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{fullhashraw}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{bibnamehash}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{authorbibnamehash}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{authornamehash}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{authorfullhash}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \strng{authorfullhashraw}{b6d95ee1fcb1926199e40a8e8c734cdf}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Transportation Research Part E}
+      \field{note}{In press}
+      \field{title}{A Hybrid Optimization Strategy for Large-Scale Driver Scheduling under EU Regulation 561/2006}
+      \field{year}{2025}
+    \endentry
+    \entry{nemhauser1988}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=151b280703f96e0cfa3f018c0c2ae0f9}{%
+           family={Nemhauser},
+           familyi={N\bibinitperiod},
+           given={George\bibnamedelima L.},
+           giveni={G\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=85dba919fdceaad20b2b4009570310cc}{%
+           family={Wolsey},
+           familyi={W\bibinitperiod},
+           given={Laurence\bibnamedelima A.},
+           giveni={L\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {Wiley}%
+      }
+      \strng{namehash}{d5fca81a15be4df9522c476cae63f457}
+      \strng{fullhash}{d5fca81a15be4df9522c476cae63f457}
+      \strng{fullhashraw}{d5fca81a15be4df9522c476cae63f457}
+      \strng{bibnamehash}{d5fca81a15be4df9522c476cae63f457}
+      \strng{authorbibnamehash}{d5fca81a15be4df9522c476cae63f457}
+      \strng{authornamehash}{d5fca81a15be4df9522c476cae63f457}
+      \strng{authorfullhash}{d5fca81a15be4df9522c476cae63f457}
+      \strng{authorfullhashraw}{d5fca81a15be4df9522c476cae63f457}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Integer and Combinatorial Optimization}
+      \field{year}{1988}
+    \endentry
+    \entry{pinheiro2019vrp}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=46970bfb2eed904ac4e42eb8ca97c391}{%
+           family={Nepomuceno},
+           familyi={N\bibinitperiod},
+           given={N.},
+           giveni={N\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=e32e16daf43824b91f54bae1d9fe103e}{%
+           family={Saboia},
+           familyi={S\bibinitperiod},
+           given={R.\bibnamedelimi B.},
+           giveni={R\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{e822607e838d137348222c620ed43f6d}
+      \strng{fullhash}{e822607e838d137348222c620ed43f6d}
+      \strng{fullhashraw}{e822607e838d137348222c620ed43f6d}
+      \strng{bibnamehash}{e822607e838d137348222c620ed43f6d}
+      \strng{authorbibnamehash}{e822607e838d137348222c620ed43f6d}
+      \strng{authornamehash}{e822607e838d137348222c620ed43f6d}
+      \strng{authorfullhash}{e822607e838d137348222c620ed43f6d}
+      \strng{authorfullhashraw}{e822607e838d137348222c620ed43f6d}
+      \field{sortinit}{N}
+      \field{sortinithash}{22369a73d5f88983a108b63f07f37084}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Algorithms}
+      \field{title}{A fast randomized algorithm for the heterogeneous vehicle routing problem with simultaneous pickup and delivery}
+      \field{year}{2019}
+    \endentry
+    \entry{papadimitriou1998combinatorial}{book}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=644086a672f758fcae6651f75d4b1c44}{%
+           family={Papadimitriou},
+           familyi={P\bibinitperiod},
+           given={Christos},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=0765a14719f507efefc8ebafc8974335}{%
+           family={Steiglitz},
+           familyi={S\bibinitperiod},
+           given={Kenneth},
+           giveni={K\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Dover}%
+      }
+      \strng{namehash}{50dd3905520bd11fed42a86d37f10983}
+      \strng{fullhash}{50dd3905520bd11fed42a86d37f10983}
+      \strng{fullhashraw}{50dd3905520bd11fed42a86d37f10983}
+      \strng{bibnamehash}{50dd3905520bd11fed42a86d37f10983}
+      \strng{authorbibnamehash}{50dd3905520bd11fed42a86d37f10983}
+      \strng{authornamehash}{50dd3905520bd11fed42a86d37f10983}
+      \strng{authorfullhash}{50dd3905520bd11fed42a86d37f10983}
+      \strng{authorfullhashraw}{50dd3905520bd11fed42a86d37f10983}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Combinatorial Optimization}
+      \field{year}{1998}
+    \endentry
+    \entry{pillac2013}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=3bb00de24f4f2bbb0d1b16d52596000e}{%
+           family={Pillac},
+           familyi={P\bibinitperiod},
+           given={Victor},
+           giveni={V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3e695c551961b496c8e1daa5453d6f23}{%
+           family={Guéret},
+           familyi={G\bibinitperiod},
+           given={Christelle},
+           giveni={C\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=57d14eca34788bfedcc12edfd8626b93}{%
+           family={Medaglia},
+           familyi={M\bibinitperiod},
+           given={Andrés\bibnamedelima L.},
+           giveni={A\bibinitperiod\bibinitdelim L\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{fullhash}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{fullhashraw}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{bibnamehash}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{authorbibnamehash}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{authornamehash}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{authorfullhash}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \strng{authorfullhashraw}{bf88bb90d2c844af0f3fa114d8b0a847}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{European Journal of Operational Research}
+      \field{number}{1}
+      \field{title}{A review of dynamic vehicle routing problems}
+      \field{volume}{225}
+      \field{year}{2013}
+      \field{pages}{1\bibrangedash 11}
+      \range{pages}{11}
+    \endentry
+    \entry{pillai2019}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=39384a780123f4b5c0d999aa29b083ee}{%
+           family={Pillai},
+           familyi={P\bibinitperiod},
+           given={Tharindu},
+           giveni={T\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=4ae3ae1e4125061e0dc1cdddcd359462}{%
+           family={Ulmanen},
+           familyi={U\bibinitperiod},
+           given={Petri},
+           giveni={P\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{757b454c766f929e8d6b58084f60d69f}
+      \strng{fullhash}{757b454c766f929e8d6b58084f60d69f}
+      \strng{fullhashraw}{757b454c766f929e8d6b58084f60d69f}
+      \strng{bibnamehash}{757b454c766f929e8d6b58084f60d69f}
+      \strng{authorbibnamehash}{757b454c766f929e8d6b58084f60d69f}
+      \strng{authornamehash}{757b454c766f929e8d6b58084f60d69f}
+      \strng{authorfullhash}{757b454c766f929e8d6b58084f60d69f}
+      \strng{authorfullhashraw}{757b454c766f929e8d6b58084f60d69f}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Transportation Research Part E}
+      \field{title}{Compliance-aware vehicle driver scheduling in road freight}
+      \field{volume}{122}
+      \field{year}{2019}
+      \field{pages}{28\bibrangedash 45}
+      \range{pages}{18}
+    \endentry
+    \entry{pinedo2016scheduling}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=d86e1b915990f771b5f6312e0b356426}{%
+           family={Pinedo},
+           familyi={P\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Springer}%
+      }
+      \strng{namehash}{d86e1b915990f771b5f6312e0b356426}
+      \strng{fullhash}{d86e1b915990f771b5f6312e0b356426}
+      \strng{fullhashraw}{d86e1b915990f771b5f6312e0b356426}
+      \strng{bibnamehash}{d86e1b915990f771b5f6312e0b356426}
+      \strng{authorbibnamehash}{d86e1b915990f771b5f6312e0b356426}
+      \strng{authornamehash}{d86e1b915990f771b5f6312e0b356426}
+      \strng{authorfullhash}{d86e1b915990f771b5f6312e0b356426}
+      \strng{authorfullhashraw}{d86e1b915990f771b5f6312e0b356426}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Scheduling: Theory, Algorithms, and Systems}
+      \field{year}{2016}
+    \endentry
+    \entry{pinheiro2016nesting}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=cad765bba637d4ec22fd4dae329b831b}{%
+           family={Amaro\bibnamedelima Júnior},
+           familyi={A\bibinitperiod\bibinitdelim J\bibinitperiod},
+           given={B.},
+           giveni={B\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ab45bdd8ca5091c491c6f3ce4b3c7825}{%
+           family={Saraiva},
+           familyi={S\bibinitperiod},
+           given={R.\bibnamedelimi D.},
+           giveni={R\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{fullhash}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{fullhashraw}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{bibnamehash}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{authorbibnamehash}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{authornamehash}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{authorfullhash}{c093df257d4a5344bddfb8d3ddde89e0}
+      \strng{authorfullhashraw}{c093df257d4a5344bddfb8d3ddde89e0}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Journal of Computer Integrated Manufacturing}
+      \field{title}{A random-key genetic algorithm for solving the nesting problem}
+      \field{year}{2016}
+    \endentry
+    \entry{pinheiro2011densitycontrol}{article}{}{}
+      \name{author}{3}{}{%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9ef560356024652f316563566f882d37}{%
+           family={Coelho},
+           familyi={C\bibinitperiod},
+           given={A.\bibnamedelimi L.\bibnamedelimi V.},
+           giveni={A\bibinitperiod\bibinitdelim L\bibinitperiod\bibinitdelim V\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=2dbd4c7345aaee116593070797ebb83e}{%
+           family={Aguiar},
+           familyi={A\bibinitperiod},
+           given={A.\bibnamedelimi B.},
+           giveni={A\bibinitperiod\bibinitdelim B\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{a7720128307bdb13538361648e7c5c06}
+      \strng{fullhash}{a7720128307bdb13538361648e7c5c06}
+      \strng{fullhashraw}{a7720128307bdb13538361648e7c5c06}
+      \strng{bibnamehash}{a7720128307bdb13538361648e7c5c06}
+      \strng{authorbibnamehash}{a7720128307bdb13538361648e7c5c06}
+      \strng{authornamehash}{a7720128307bdb13538361648e7c5c06}
+      \strng{authorfullhash}{a7720128307bdb13538361648e7c5c06}
+      \strng{authorfullhashraw}{a7720128307bdb13538361648e7c5c06}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers \& Industrial Engineering}
+      \field{title}{On the concept of density control and its application to a hybrid optimization framework}
+      \field{year}{2011}
+    \endentry
+    \entry{pinheiro2004timetabling}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=a660d114c31a9a7020f4124f068e17a3}{%
+           family={Oliveira},
+           familyi={O\bibinitperiod},
+           given={J.\bibnamedelimi A.},
+           giveni={J\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{fullhash}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{fullhashraw}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{bibnamehash}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{authorbibnamehash}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{authornamehash}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{authorfullhash}{50c2c0b7148080cca58d4caf41f4c884}
+      \strng{authorfullhashraw}{50c2c0b7148080cca58d4caf41f4c884}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{PATAT: Practice and Theory of Automated Timetabling}
+      \field{title}{Web-based optimization system applied to high school schedule building}
+      \field{year}{2004}
+    \endentry
+    \entry{prescottgagnon2010}{article}{}{}
+      \name{author}{4}{}{%
+        {{un=0,uniquepart=base,hash=5b7a3412c7fd6b32deee16f1a4aeb127}{%
+           family={Prescott-Gagnon},
+           familyi={P\bibinithyphendelim G\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=3e2ca206dff5f203d2dc37ae81dd05fb}{%
+           family={Desaulniers},
+           familyi={D\bibinitperiod},
+           given={Guy},
+           giveni={G\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=b77eb2b4c17a93a208a30209bb3bbf6f}{%
+           family={Drexl},
+           familyi={D\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=9b4dd178cc064dc29154ca332906d802}{%
+           family={Rousseau},
+           familyi={R\bibinitperiod},
+           given={Louis-Martin},
+           giveni={L\bibinithyphendelim M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{b22df78dcc574649ffb71f2a020bc0e4}
+      \strng{fullhash}{1e2f0efc64bca082f1e268b27e1b0538}
+      \strng{fullhashraw}{1e2f0efc64bca082f1e268b27e1b0538}
+      \strng{bibnamehash}{b22df78dcc574649ffb71f2a020bc0e4}
+      \strng{authorbibnamehash}{b22df78dcc574649ffb71f2a020bc0e4}
+      \strng{authornamehash}{b22df78dcc574649ffb71f2a020bc0e4}
+      \strng{authorfullhash}{1e2f0efc64bca082f1e268b27e1b0538}
+      \strng{authorfullhashraw}{1e2f0efc64bca082f1e268b27e1b0538}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Transportation Science}
+      \field{number}{1}
+      \field{title}{European driver scheduling with specialized Large Neighborhood Search}
+      \field{volume}{44}
+      \field{year}{2010}
+      \field{pages}{37\bibrangedash 49}
+      \range{pages}{13}
+    \endentry
+    \entry{savelsbergh1998}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=46bd8e184ba608553bdeeef4a7e234ec}{%
+           family={Savelsbergh},
+           familyi={S\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ec2c33e3b99a792a74a0097443c0c812}{%
+           family={Sol},
+           familyi={S\bibinitperiod},
+           given={Marc},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{fullhash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{fullhashraw}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{bibnamehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authorbibnamehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authornamehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authorfullhash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authorfullhashraw}{44446aa8cd1689f6c50e52591d753c3e}
+      \field{extraname}{1}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Decision Support Systems}
+      \field{number}{2}
+      \field{title}{{DRIVE}: {A} decision support system for fleet management}
+      \field{volume}{24}
+      \field{year}{1998}
+      \field{pages}{115\bibrangedash 129}
+      \range{pages}{15}
+    \endentry
+    \entry{savelsbergh1995}{article}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=46bd8e184ba608553bdeeef4a7e234ec}{%
+           family={Savelsbergh},
+           familyi={S\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=ec2c33e3b99a792a74a0097443c0c812}{%
+           family={Sol},
+           familyi={S\bibinitperiod},
+           given={Marc},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{fullhash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{fullhashraw}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{bibnamehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authorbibnamehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authornamehash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authorfullhash}{44446aa8cd1689f6c50e52591d753c3e}
+      \strng{authorfullhashraw}{44446aa8cd1689f6c50e52591d753c3e}
+      \field{extraname}{2}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Transportation Science}
+      \field{number}{1}
+      \field{title}{The general pickup and delivery problem}
+      \field{volume}{29}
+      \field{year}{1995}
+      \field{pages}{17\bibrangedash 29}
+      \range{pages}{13}
+    \endentry
+    \entry{taha2017}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=98bb15c097c451cb8cb64c05ec4b1569}{%
+           family={Taha},
+           familyi={T\bibinitperiod},
+           given={Hamdy\bibnamedelima A.},
+           giveni={H\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {Pearson}%
+      }
+      \strng{namehash}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{fullhash}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{fullhashraw}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{bibnamehash}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{authorbibnamehash}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{authornamehash}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{authorfullhash}{98bb15c097c451cb8cb64c05ec4b1569}
+      \strng{authorfullhashraw}{98bb15c097c451cb8cb64c05ec4b1569}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{10}
+      \field{title}{Operations Research: An Introduction}
+      \field{year}{2017}
+    \endentry
+    \entry{talbi2009metaheuristics}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=d6716852db8d41b230dbec1231e7bb12}{%
+           family={Talbi},
+           familyi={T\bibinitperiod},
+           given={El-Ghazali},
+           giveni={E\bibinithyphendelim G\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Wiley}%
+      }
+      \strng{namehash}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{fullhash}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{fullhashraw}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{bibnamehash}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{authorbibnamehash}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{authornamehash}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{authorfullhash}{d6716852db8d41b230dbec1231e7bb12}
+      \strng{authorfullhashraw}{d6716852db8d41b230dbec1231e7bb12}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Metaheuristics: From Design to Implementation}
+      \field{year}{2009}
+    \endentry
+    \entry{taylor2019}{book}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=976264e257821f4d61a636caaaab022d}{%
+           family={Taylor},
+           familyi={T\bibinitperiod},
+           given={Bernard\bibnamedelima W.},
+           giveni={B\bibinitperiod\bibinitdelim W\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {Pearson}%
+      }
+      \strng{namehash}{976264e257821f4d61a636caaaab022d}
+      \strng{fullhash}{976264e257821f4d61a636caaaab022d}
+      \strng{fullhashraw}{976264e257821f4d61a636caaaab022d}
+      \strng{bibnamehash}{976264e257821f4d61a636caaaab022d}
+      \strng{authorbibnamehash}{976264e257821f4d61a636caaaab022d}
+      \strng{authornamehash}{976264e257821f4d61a636caaaab022d}
+      \strng{authorfullhash}{976264e257821f4d61a636caaaab022d}
+      \strng{authorfullhashraw}{976264e257821f4d61a636caaaab022d}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{edition}{13}
+      \field{title}{Introduction to Management Science}
+      \field{year}{2019}
+    \endentry
+    \entry{pandasdocs}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=05f66aa4fc10e23aad2f7c1bdf9373e7}{%
+           family={Team},
+           familyi={T\bibinitperiod},
+           given={Pandas\bibnamedelima Development},
+           giveni={P\bibinitperiod\bibinitdelim D\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{fullhash}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{fullhashraw}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{bibnamehash}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{authorbibnamehash}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{authornamehash}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{authorfullhash}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \strng{authorfullhashraw}{05f66aa4fc10e23aad2f7c1bdf9373e7}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Pandas Documentation}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://pandas.pydata.org/docs/
+      \endverb
+      \verb{url}
+      \verb https://pandas.pydata.org/docs/
+      \endverb
+    \endentry
+    \entry{pinheiro2007transporte}{inproceedings}{}{}
+      \name{author}{2}{}{%
+        {{un=0,uniquepart=base,hash=1afe94c8c856a97d0e4a2105e9219e57}{%
+           family={Toscano\bibnamedelima Filho},
+           familyi={T\bibinitperiod\bibinitdelim F\bibinitperiod},
+           given={A.\bibnamedelimi B.\bibnamedelimi A.},
+           giveni={A\bibinitperiod\bibinitdelim B\bibinitperiod\bibinitdelim A\bibinitperiod},
+           givenun=0}}%
+        {{un=0,uniquepart=base,hash=358fc200a51183df973dea42508c99d3}{%
+           family={Pinheiro},
+           familyi={P\bibinitperiod},
+           given={Plácido\bibnamedelima Rogério},
+           giveni={P\bibinitperiod\bibinitdelim R\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{28bd9581f565bab1339e07cf25e31051}
+      \strng{fullhash}{28bd9581f565bab1339e07cf25e31051}
+      \strng{fullhashraw}{28bd9581f565bab1339e07cf25e31051}
+      \strng{bibnamehash}{28bd9581f565bab1339e07cf25e31051}
+      \strng{authorbibnamehash}{28bd9581f565bab1339e07cf25e31051}
+      \strng{authornamehash}{28bd9581f565bab1339e07cf25e31051}
+      \strng{authorfullhash}{28bd9581f565bab1339e07cf25e31051}
+      \strng{authorfullhashraw}{28bd9581f565bab1339e07cf25e31051}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Simpósio Brasileiro de Pesquisa Operacional (SBPO)}
+      \field{title}{Um Ambiente na Web para Otimização do Transporte de Passageiros sob Regime de Fretamento}
+      \field{year}{2007}
+    \endentry
+    \entry{eu200215}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=3ab9606297a12449d81e076f1088e9bb}{%
+           family={Union},
+           familyi={U\bibinitperiod},
+           given={European},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{fullhash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{fullhashraw}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{bibnamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorbibnamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authornamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorfullhash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorfullhashraw}{3ab9606297a12449d81e076f1088e9bb}
+      \field{extraname}{1}
+      \field{sortinit}{U}
+      \field{sortinithash}{6901a00e45705986ee5e7ca9fd39adca}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Official Journal of the European Union, L 80/35}
+      \field{title}{Directive 2002/15/EC of the {European Parliament} and of the {Council} of 11 March 2002 on the organisation of the working time of persons performing mobile road transport activities}
+      \field{year}{2002}
+    \endentry
+    \entry{eu5612006}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=3ab9606297a12449d81e076f1088e9bb}{%
+           family={Union},
+           familyi={U\bibinitperiod},
+           given={European},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{fullhash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{fullhashraw}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{bibnamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorbibnamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authornamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorfullhash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorfullhashraw}{3ab9606297a12449d81e076f1088e9bb}
+      \field{extraname}{2}
+      \field{sortinit}{U}
+      \field{sortinithash}{6901a00e45705986ee5e7ca9fd39adca}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Official Journal of the European Union, L 102/1}
+      \field{title}{Regulation (EC) No 561/2006 of the {European Parliament} and of the {Council} of 15 March 2006}
+      \field{year}{2006}
+    \endentry
+    \entry{eu1652014}{misc}{}{}
+      \name{author}{1}{}{%
+        {{un=0,uniquepart=base,hash=3ab9606297a12449d81e076f1088e9bb}{%
+           family={Union},
+           familyi={U\bibinitperiod},
+           given={European},
+           giveni={E\bibinitperiod},
+           givenun=0}}%
+      }
+      \strng{namehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{fullhash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{fullhashraw}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{bibnamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorbibnamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authornamehash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorfullhash}{3ab9606297a12449d81e076f1088e9bb}
+      \strng{authorfullhashraw}{3ab9606297a12449d81e076f1088e9bb}
+      \field{extraname}{3}
+      \field{sortinit}{U}
+      \field{sortinithash}{6901a00e45705986ee5e7ca9fd39adca}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Official Journal of the European Union, L 60/1}
+      \field{title}{Regulation (EU) No 165/2014 of the {European Parliament} and of the {Council} of 4 February 2014 on tachographs in road transport}
+      \field{year}{2014}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

@@ -71,14 +71,7 @@ Repouso Quinzenal & -- & -- & -- \\
 
 \section{Execução do Solver}
 
-A Figura~\ref{fig:solver-otimo} apresenta um exemplo de execução completa do solver CP-SAT para o cenário de 24 horas, com todas as restrições legais ativas.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{template/figuras/input-restriction.png}
-    \caption{Execução do solver CP-SAT no modo exato.}
-    \label{fig:solver-otimo}
-\end{figure}
+A execução do solver CP-SAT para o cenário de 24 horas, com todas as restrições legais ativas, permite extrair indicadores de desempenho e parâmetros de busca. Maiores detalhes sobre a interface de configuração do simulador podem ser consultados no Apêndice~\ref{cap:interface-simulador}.
 
 Observa-se que o solver retorna soluções ótimas de forma consistente, com tempos computacionais médios inferiores a dois segundos, mesmo em instâncias com milhares de variáveis e restrições. Em média, os modelos resolvidos apresentaram cerca de 9.600 variáveis e aproximadamente 7.600 restrições lineares.
 
@@ -112,7 +105,7 @@ A Figura~\ref{fig:demanda-vs-cobertura-2} apresenta a comparação entre a deman
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{template/figuras/matriz-restricao.jpg}
+    \includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_exact_new.png}
     \caption{Comparação entre demanda e cobertura gerada pelo modelo exato.}
     \label{fig:demanda-vs-cobertura-2}
 \end{figure}
@@ -126,49 +119,13 @@ Esse comportamento confirma que, no modo de minimização do número total de mo
 
 
 
-\section{Indicadores Operacionais}
-
-Para avaliar a qualidade das soluções obtidas, foram calculados diversos indicadores estatísticos, entre eles:
-
-\begin{itemize}
-    \item cobertura da demanda;
-    \item sobrecarga;
-    \item subutilização;
-    \item desvio padrão da cobertura ao longo do tempo.
-\end{itemize}
-
-A Figura~\ref{fig:indicadores-operacionais} resume esses indicadores para o cenário analisado.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\textwidth]{template/figuras/kpi_exact.png}
-    \caption{Indicadores operacionais obtidos pelo método exato.}
-    \label{fig:indicadores-operacionais}
-\end{figure}
+Para avaliar a qualidade das soluções obtidas, foram calculados diversos indicadores estatísticos, entre eles cobertura da demanda, sobrecarga, subutilização e desvio padrão da cobertura ao longo do tempo. Exemplos destes indicadores extraídos diretamente da interface do simulador encontram-se no Apêndice~\ref{cap:interface-simulador}.
 
 % Os resultados indicam cobertura média superior a 99\%, baixa incidência de sobrecarga e subutilização restrita a períodos de menor demanda. O desvio padrão reduzido da cobertura evidencia elevada regularidade temporal, aspecto fundamental para estabilidade operacional e previsibilidade das escalas.
 
 Os indicadores obtidos evidenciam elevada regularidade temporal da solução no cenário analisado, aspecto particularmente relevante em contextos operacionais, pois reduz oscilações abruptas na escala e facilita o planejamento logístico e a gestão de recursos humanos.
 
-\section{Estrutura da Matriz de Restrições}
-
-A matriz de restrições é construída com base nas regras legais e vínculos temporais, resultando em uma estrutura esparsa e quase diagonal.
-
-As Figuras~\ref{fig:matriz-inicial-2} e \ref{fig:matriz-final-2} apresentam sua versão inicial e final, respectivamente.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\textwidth]{template/figuras/constraint-matrix-initial.png}
-    \caption{Matriz de restrições (versão inicial).}
-    \label{fig:matriz-inicial-2}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.92\textwidth]{template/figuras/constraint-matrix-final.png}
-    \caption{Matriz de restrições (versão final).}
-    \label{fig:matriz-final-2}
-\end{figure}
+A matriz de restrições é construída com base nas regras legais e vínculos temporais, resultando em uma estrutura esparsa e quase diagonal. A estrutura matricial influencia diretamente o desempenho do solver, a propagação de restrições e a velocidade de convergência. Exemplos da visualização estrutural da matriz podem ser vistos no Apêndice~\ref{cap:interface-simulador}.
 
 A estrutura matricial influencia diretamente:
 
@@ -255,7 +212,7 @@ Embora o comportamento permaneça conservador, o padrão obtido pelo LNS aproxim
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_lns.png}
+\includegraphics[width=\textwidth]{template/figuras/demanda_capacidade_lns_new.png}
 \caption{Demanda, capacidade alocada e atendimento efetivo por período — método LNS.}
 \label{fig:demanda-capacidade-lns}
 \end{figure}
@@ -271,7 +228,7 @@ Esse comportamento confirma que o LNS é eficaz na correção de desequilíbrios
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{template/figuras/esforco_operacional_lns.png}
+\includegraphics[width=\textwidth]{template/figuras/esforco_operacional_lns_new.png}
 \caption{Distribuição do esforço operacional dos motoristas ativos — método LNS.}
 \label{fig:esforco-lns}
 \end{figure}
@@ -285,7 +242,7 @@ Observa-se a formação de blocos temporais mais longos e menos fragmentados, re
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{template/figuras/mapa_alocacao_binaria_lns.png}
+\includegraphics[width=\textwidth]{template/figuras/mapa_alocacao_binaria_lns_new.png}
 \caption{Mapa de alocação binária (recorte) da solução refinada pelo método LNS.}
 \label{fig:mapa-alocacao-lns}
 \end{figure}
@@ -403,29 +360,7 @@ Estes resultados corroboram a tese central deste trabalho: enquanto a otimizaç�
 % Valores numéricos detalhados são apresentados nas análises gráficas
 % e indicadores discutidos nas seções subsequentes.
 
-\section{Operações Elementares e Análise Estrutural}
-
-O sistema desenvolvido também permite aplicar opera{\c c}{\~o}es elementares à matriz de restrições, auxiliando em:
-
-\begin{itemize}
-    \item fins educacionais;
-    \item análise estrutural avançada;
-    \item depuração de modelos;
-    \item estudo de dependências lineares.
-\end{itemize}
-
-A Figura~\ref{fig:operacoes-avancadas} mostra um exemplo.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{template/figuras/matriz-restricao.jpg}
-    \caption{Operações elementares aplicadas à matriz.}
-    \label{fig:operacoes-avancadas}
-\end{figure}
-
-% A análise dessas operações evidencia a consistência estrutural da matriz e confirma a estabilidade do modelo sob transformações.
-
-A análise dessas operações evidencia a consistência estrutural da matriz de restrições e confirma a estabilidade do modelo frente a transformações lineares, reforçando sua robustez do ponto de vista algébrico e computacional.
+O sistema desenvolvido também permite aplicar operações elementares à matriz de restrições, preservando sua consistência estrutural e confirmando a estabilidade do modelo frente a transformações lineares, o que auxilia em fins educacionais e diagnóstico estrutural.
 
 
 \section{Cenários de Rápida Convergência}
@@ -438,7 +373,7 @@ A Figura~\ref{fig:solver-rapid} ilustra um desses casos.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{template/figuras/convergencia-rapida.png}
+    \includegraphics[width=\textwidth]{template/figuras/convergencia-rapida_new.png}
     \caption{Exemplo de convergência rápida do solver (18 ms).}
     \label{fig:solver-rapid}
 \end{figure}

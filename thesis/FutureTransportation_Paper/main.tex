@@ -1,0 +1,181 @@
+\documentclass[futuretransp,article,submit,moreauthors]{mdpi} 
+\setlength{\headheight}{20pt}
+
+%------------------------------------------------------------------
+% MDPI internal commands
+\pubvolume{1}
+\issuenum{1}
+\articlenumber{1}
+\pubyear{2026}
+\copyrightyear{2026}
+%\externaleditor{Academic Editor: Firstname Lastname}
+\datereceived{} 
+\dateaccepted{} 
+\datepublished{} 
+%\dateupdate{}  % Add this line only when an erratum is published
+\jumplink{https://doi.org/10.3390/futuretransp}
+
+%------------------------------------------------------------------
+% The following line should be uncommented if the LaTeX file is uploaded to arXiv.org
+%\pdfoutput=1
+
+%=================================================================
+% Add packages and commands here. The following packages are loaded in our class file: mdframed, fontawesome5, attachfile2, letltxmacro, thmtools, array, tabularx, booktabs, units, amsmath, amsthm, amssymb, etoolbox, ifthen, todonotes, titlecaps, xcolor, hyperref, caption, float, chopper, fontenc, geometry, soul, multirow, microtype, tikz, totpages, expl3, l3keys2e, xparse, unicode-math.
+
+%=================================================================
+%% Full title of the paper (Capitalized)
+\Title{A Hybrid Matheuristic Approach for Long-Horizon Driver Scheduling under European Union Social Regulations}
+
+% MDPI internal command: Title for lowercase letters
+%\TitleLetterCase{A hybrid matheuristic approach for long-horizon driver scheduling under European Union social regulations}
+
+% Author Orchid ID: enter ID or remove command
+%\orcidauthorA{0000-0000-0000-000X} % Add \orcidA{} behind the author's name
+
+% Authors, for the paper (add full first names)
+\Author{Francisco Vando Carneiro Moreira $^{1}$, Plácido Rogério Pinheiro $^{1}$ and Carolina Ferreira Araujo $^{2}$}
+
+% MDPI internal command: Authors, for metadata
+\AuthorNames{Francisco Vando Carneiro Moreira, Plácido Rogério Pinheiro and Carolina Ferreira Araujo}
+
+% MDPI internal command: Authors, for display in the main menu
+\AuthorAlternativeNames{Francisco Vando Carneiro Moreira; Plácido Rogério Pinheiro; Carolina Ferreira Araujo}
+
+% Affiliations / Addresses (Add [1] after \address if there is only one affiliation.)
+\address[1]{%
+$^{1}$ University of Fortaleza (UNIFOR), Fortaleza, CE, Brazil;\\
+$^{2}$ Aberta University, Lisbon, Portugal.}
+
+% Contact information of the corresponding author
+\corres{Correspondence: vando.moreira@edu.unifor.br; Placido@unifor.br}
+
+% Abstract (Do not insert blank lines, i.e. \\) 
+\abstract{Driver scheduling in freight road transport under European regulations constitutes a complex combinatorial optimization problem, especially when simultaneously considering legal, operational, and temporal demand constraints. This work presents a decision-support framework for European road transport driver scheduling, based on a Mixed-Integer Linear Programming (MILP) model that incorporates the exhaustive legal requirements of Regulation (EC) No 561/2006. Beyond an exact resolution mode using the OR-Tools CP-SAT solver, the framework incorporates a matheuristic strategy based on Large Neighborhood Search (LNS), designed to overcome the ``scalability barrier'' observed in long-horizon scenarios (e.g., 15 days). Computational experiments demonstrate that while exact solvers ensure optimality for daily planning, the hybrid matheuristic approach provides robust, high-quality, and legally compliant solutions for tactical medium-term planning in operationally feasible times. The results indicate that this integrated approach offers a powerful tool for strategic, tactical, and operational decision-making in real-world transport operations.}
+
+% Keywords
+\keyword{Integer Linear Programming; Driver Scheduling; Regulation (EC) No 561/2006; Optimization; OR-Tools; Matheuristics; Large Neighborhood Search.}
+
+% The fields PACS, MSC, and JEL may be left empty or commented out if not applicable
+%\PACS{J0101}
+%\MSC{}
+%\JEL{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+
+Road freight transport is a fundamental pillar of modern logistics, ensuring the movement of goods and maintaining supply chain stability across the globe, particularly within the European Union (EU). The efficiency of this mode of transport depends heavily on the effective management of its primary resource: the truck drivers. Managing their working hours is a critical factor for safety, efficiency, and legal compliance.
+
+In recent years, the EU has implemented some of the world's most stringent social regulations regarding driving times, breaks, and rest periods for professional drivers. Regulation (EC) No 561/2006, complemented by Directive 2002/15/EC and Regulation (EU) No 165/2014, establishes strict limits intended to protect driver health, prevent fatigue-related accidents, and promote fair competition. These rules directly impact how driver schedules are constructed, requiring constant attention to daily, weekly, and fortnightly requirements.
+
+However, manual scheduling is highly prone to errors, especially in large-scale operations characterized by high demand variability, multiple time windows, and cumulative temporal dependencies. Small decisions made in one period can invalidate the entire future schedule, leading to legal infractions and operational risks. Mathematical optimization approaches based on Mixed-Integer Linear Programming (MILP) have emerged as suitable tools to formalize and solve these problems, offering the precision needed to handle dozens of simultaneous constraints.
+
+While exact solvers like OR-Tools CP-SAT provide optimal solutions for short horizons, they often face a "scalability barrier" in long-horizon instances due to the exponential growth of the search space. This research proposes an integrated framework that combines exact optimization with a hybrid matheuristic based on Large Neighborhood Search (LNS). The goal is to provide a decision-support tool capable of generating 100\% legally compliant and operationally efficient schedules for both short (24h) and medium-term (15d) horizons.
+
+The remainder of this paper is organized as follows: Section \ref{sec:lit_review} provides a literature review; Section \ref{sec:methodology} details the MILP model and the hybrid matheuristic; Section \ref{sec:results} presents the experimental results and scalability analysis; and Section \ref{sec:conclusion} concludes with final remarks and future work.
+
+\section{Literature Review}
+\label{sec:lit_review}
+
+The driver scheduling problem (DSP) and its integration with vehicle routing problems (VRP) have evolved significantly since the consolidation of EU Regulation 561/2006. Early models often simplified the regulation, focusing on single daily limits without considering the cumulative weekly and fortnightly windows.
+
+Classic studies by Savelsbergh and Sol \cite{savelsbergh1995} provided the mathematical foundations for pickup-and-delivery and vehicle routing models, which now serve as the basis for modern driver management systems like DRIVE \cite{savelsbergh1998}. In terms of complexity, DSP is structurally identified as complex due to the temporal coupling between consecutive periods \cite{pillac2013}. Decisions regarding breaks and rests in one shift can significantly restrict available driving time in the next, a characteristic that distinguishes DSP from traditional workforce scheduling.
+
+Recent literature highlights the effectiveness of hybrid approaches. Goel \cite{goel2010} explored models focused specifically on Regulation 561/2006, while Prescott-Gagnon et al. \cite{prescottgagnon2010} proposed matheuristics for the European DSP using LNS. More recently, Moreira et al. \cite{moreira2024, moreira2025} developed MILP formulations that achieve full compliance, yet identify scalability challenges for horizons exceeding one week.
+
+A significant gap remains in the literature regarding the systematic analysis of scalability barriers for long-term (15-day) horizons using all legal constraints. Most works either use heuristics without optimality guarantees or limit the problem size. This work contributes by offering a comprehensive MILP formulation integrated with an LNS strategy that leverages CP-SAT's propagation mechanisms to maintain compliance while seeking global objective improvements.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methodology}
+\label{sec:methodology}
+
+The proposed approach solves the driver scheduling problem by combining a lexicographical MILP model with an LNS matheuristic. The horizon is discretized into $T$ periods of 15 minutes each.
+
+\subsection{Mathematical Formulation}
+The model considers a set of drivers $D$ and a set of periods $T$. The primary decision variable is $X_{d,t} \in \{0,1\}$, indicating if driver $d$ is driving during period $t$. Auxiliary variables $Y_{d,t}$ and $Z_t$ represent driver presence and total active drivers, respectively.
+
+\subsubsection{Objective Function}
+To reflect real-world priorities, we adopt a two-phase lexicographical optimization. In Phase 1, the objective is to ensure 100\% demand coverage and minimize total drivers:
+\begin{equation}
+\min \; \alpha \sum_{d \in D} U_d + \beta \sum_{t \in T} Z_t + \gamma \sum_{d,t} Y_{d,t}
+\end{equation}
+where $U_d$ represents demand deficits and $\alpha \gg \beta \gg \gamma$ ensure hierarchical priority. Phase 2 performs secondary refinement to improve resource balancing and reduce fragmentation without compromising the primary goals.
+
+\subsubsection{Legal Constraints (EU 561/2006)}
+All mandatory social regulations are modeled as linear constraints:
+\begin{itemize}
+    \item \textbf{Daily Driving Limit}: $\sum_{k=t}^{t+95} X_{d,k} \le 9 \text{ hours}$, with allowances for 10 hours twice a week.
+    \item \textbf{Breaks}: Mandatory 45-minute pause after 4.5 hours of continuous driving.
+    \item \textbf{Rest Periods}: Daily rest of 11 hours (or 9 hours reduced) and weekly rest of 45 hours.
+    \item \textbf{Cumulative Limits}: Weekly (56h) and fortnightly (90h) driving caps.
+\end{itemize}
+These constraints are implemented using sliding windows and big-M linearizations to maintain MILP compatibility.
+
+\subsection{Hybrid Matheuristic: Large Neighborhood Search}
+When the horizon exceeds one week, the exact solver faces performance degradation. To address this, we implemented an LNS strategy. The algorithm iteratively performs:
+\begin{enumerate}
+    \item \textbf{Destruction}: Randomly or strategically (based on load density) unfixing $x\%$ of the variables in a temporal window.
+    \item \textbf{Reconstruction}: Re-solving the resulting subproblem using the exact CP-SAT solver.
+\end{enumerate}
+By restricting the search to smaller neighborhoods, LNS maintains legal compliance (ensured by the solver's propagation) while finding significant improvements in efficiency.
+
+\subsection{Computational Implementation}
+The framework was developed in Python, using the \textbf{OR-Tools CP-SAT} solver. Results are visualized through an interactive dashboard, allowing for sensitivity analysis of legal vs. operational constraints.
+
+\section{Results}
+\label{sec:results}
+
+Computational experiments were performed to evaluate the performance of the three proposed methods: Exact (CP-SAT), Heuristic (Greedy), and the Hybrid Matheuristic (LNS). The tests covered three horizons: 24 hours, 7 days, and 15 days, using real-world demand data with 15-minute granularity.
+
+\subsection{Benchmark Performance}
+Table \ref{tab:benchmarks} summarizes the results. For short horizons (24h), all methods performed well, with the exact solver finding optimal solutions in approximately 100 seconds. However, as the horizon increased to 15 days, the exact solver failed to prove optimality within the 1-hour time limit (Timeout), highlighting a significant scalability barrier.
+
+\begin{table}[H]
+\caption{Computational results for 24h, 7d, and 15d horizons.}
+\label{tab:benchmarks}
+\centering
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Horizon} & \textbf{Method} & \textbf{Status} & \textbf{Time (s)} & \textbf{Drivers} & \textbf{Coverage} & \textbf{Efficiency} \\
+\midrule
+\textbf{24 Hours} & Exact & Optimal & 103.5 & 43 & 100.0\% & 63.2\% \\
+ & LNS & Optimal & 329.3 & 43 & 100.0\% & 63.2\% \\
+ & Heuristic & Viable & 0.03 & 43 & 100.0\% & 63.2\% \\
+\midrule
+\textbf{7 Days} & Exact & Timeout & 170.4 & 120 & 72.8\% & 88.3\% \\
+ & LNS & Viable & 2565.7 & 120 & 72.8\% & 88.3\% \\
+ & Heuristic & Viable & 0.6 & 120 & 72.8\% & 88.3\% \\
+\midrule
+\textbf{15 Days} & Exact & Timeout & 3600 & -- & -- & -- \\
+ & LNS & Fallback & 635.8 & 120 & 46.5\% & 95.0\% \\
+ & Heuristic & Viable & 0.3 & 120 & 46.5\% & 95.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Scalability Barrier and Matheuristic Robustness}
+The results demonstrate that while the exact model is suitable for daily operational planning, its computational complexity grows exponentially with the temporal window and the number of active constraints (e.g., fortnightly driving limits). The LNS approach, however, proved robust across all scenarios. In the 15-day case, the LNS was able to maintain compliance and deliver a high-quality solution where the exact solver failed to provide a complete result.
+
+\section{Discussion}
+\label{sec:discussion}
+
+The integration of legal compliance into automated scheduling systems is often criticized for its computational cost. However, our findings show that by employing a matheuristic pipeline (Heuristic $\rightarrow$ LNS $\rightarrow$ MILP), it is possible to achieve 100\% compliance even in medium-term horizons. The LNS strategy acts as a bridge, maintaining the rigor of the MILP model's feasible region while significantly reducing the global search space.
+
+This approach is particularly relevant for the "Future of Transportation," where telematics and real-time data will require systems to re-optimize schedules dynamically without violating complex social norms. The proposed architecture is portable and can be adapted to other jurisdictions or more complex routing scenarios.
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+This study developed and validated a hybrid matheuristic framework for driver scheduling under EU Regulation 561/2006. The results confirm that combining MILP with LNS allows for scalable, legally compliant, and operationally efficient scheduling. Future work will focus on integrating real-time telematics data for dynamic re-optimization and exploring multi-agent coordination for large fleet management.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{adjustwidth}{-\extralength}{0cm}
+\reftitle{References}
+\bibliography{references}
+\end{adjustwidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

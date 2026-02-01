@@ -312,5 +312,121 @@ de pausa, repouso e condução quinzenal, incorporadas por meio de estruturas
 lineares ou restrições complementares.
 
 
+
+
+\chapter{Interface e Instrumentação do Simulador}
+\label{cap:interface-simulador}
+
+Este apêndice documenta a interface interativa e a instrumentação analítica do
+simulador desenvolvido neste trabalho. A ferramenta, implementada em
+\textit{Streamlit}, foi concebida para atuar como uma plataforma experimental
+completa, permitindo não apenas a resolução de escalas, mas também o diagnóstico
+profundo do comportamento dos algoritmos através de métricas automatizadas.
+
+\section{Interface de Operação e Configuração}
+
+As figuras a seguir ilustram os módulos principais de interação com o usuário,
+responsáveis pela parametrização da demanda e configuração das estratégias de
+otimização.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{template/figuras/simulator_new.png}
+    \caption{Interface principal: entrada de dados de demanda e seleção de algoritmos.}
+    \label{fig:interface-simulator}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{template/figuras/input-restriction_new.png}
+    \caption{Configuração do modelo: ativação de restrições do Regulamento (CE) 561/2006.}
+    \label{fig:config-simulator}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{template/figuras/results_new.png}
+    \caption{Resultados e Diagnóstico: indicadores de performance e complexidade do modelo resolvido.}
+    \label{fig:results-simulator}
+\end{figure}
+
+\section{Resultados Comparativos e Desempenho (Cenário 24h)}
+
+Para validar a eficácia dos diferentes algoritmos implementados, o simulador realiza uma análise comparativa automática entre os modos Heurístico, Matheurístico (LNS) e Exato (MILP).
+
+\input{template/figuras/results_table_auto.tex}
+
+A Figura~\ref{fig:radar-comparativo} apresenta uma comparação multidimensional dos KPIs alcançados por cada modo, destacando as trocas (\textit{trade-offs}) entre o tempo de execução e a qualidade da solução (cobertura e eficiência).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{template/figuras/kpi_comparativo_radar_auto.png}
+    \caption{Radar Comparativo: avaliação multidimensional de desempenho entre os modos Heurístico, LNS e Exato (Cenário 24h).}
+    \label{fig:radar-comparativo}
+\end{figure}
+
+\section{Configuração de Restrições e Parâmetros}
+
+A Tabela~\ref{tab:config_restricoes_auto} detalha as restrições fisiológicas e legais selecionadas para os experimentos reportados nesta seção, garantindo a reprodutibilidade dos resultados.
+
+\input{template/figuras/constraints_table_auto.tex}
+
+\section{Análise de Convergência (Módulo LNS)}
+
+O simulador fornece visualizações detalhadas do processo de busca matheurística,
+permitindo avaliar a evolução da função objetivo e o histórico de melhorias
+encontradas pelo método \textit{Large Neighborhood Search}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{template/figuras/convergencia_auto.png}
+    \caption{Gráfico de Convergência: evolução do valor da função objetivo ao longo das iterações do LNS (gerado via instrumentação automática).}
+    \label{fig:conv-lns}
+\end{figure}
+
+\section{Análise Estrutural da Matriz de Restrições}
+
+Uma das contribuições originais deste trabalho é o módulo de análise algébrica,
+que permite visualizar a densidade e a estrutura da matriz de restrições gerada
+pelo modelo, facilitando a identificação de acoplamentos temporais.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{template/figuras/matriz_restricao_auto.png}
+    \caption{Matriz de Restrições: visualização da esparsidade e do acoplamento das regras de condução e repouso.}
+    \label{fig:matrix-diag}
+\end{figure}
+
+\section{Heatmaps Analíticos e KPIs}
+
+Para suporte à decisão operacional, o simulador gera mapas de calor que facilitam
+a identificação de padrões de cobertura e margem de segurança ao longo de todo o
+horizonte de planejamento.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{template/figuras/kpi_coverage_auto.png}
+        \caption{Heatmap de Cobertura.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{template/figuras/kpi_safety_auto.png}
+        \caption{Margem de Segurança.}
+    \end{subfigure}
+    \caption{Diagnóstico Slot-a-Slot: visualização cromática do atendimento da demanda e excesso/déficit de capacidade.}
+    \label{fig:heatmaps-analiticos}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{template/figuras/kpi_radar_auto.png}
+    \caption{Radar de Desempenho: Comparação multidimensional de KPIs (Estabilidade, Risco, Custo e Cobertura).}
+    \label{fig:radar-panel}
+\end{figure}
+
 \end{apendicesenv}
+
 

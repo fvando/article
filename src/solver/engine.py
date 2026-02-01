@@ -155,12 +155,15 @@ def interpret_solver_result(result):
     drivers = result.get("total_active_drivers") or 0
     total_hours = assigned * 0.25
     avg_hours = total_hours / drivers if drivers > 0 else 0.0
+    # Avg Load = Total Slots / (Total Slots * 0.25) = 4.0 if each slot is 15min
+    avg_load = assigned / (assigned * 0.25) if assigned > 0 else 0.0
 
     interpretation["operational_metrics"] = {
         "drivers_used": drivers,
         "assigned_slots": assigned,
-        "total_hours": round(total_hours, 2),
+        "total_active_hours": round(total_hours, 2),
         "avg_hours_per_driver": round(avg_hours, 2),
+        "avg_load_tasks_slot": round(avg_load / 4.0, 2), # Correct to tasks/slot
     }
 
     # Qualidade
@@ -261,6 +264,7 @@ def solve_shift_schedule(
     constraints = []
     num_periods = len(need)
     Y = {}
+    statistics_result = []
     stdout_buffer = io.StringIO()
     stderr_buffer = io.StringIO()
 
@@ -315,19 +319,20 @@ def solve_shift_schedule(
                     for d in range(num_periods):
                         for t in range(limit_workers):
                             val = initial_allocation[d, t]
-                            if val > 0:
-                                # Only hint assigned tasks. 
-                                # Hinting 0s for Y can conflict with SHIFT_MIN constraints in some presolvers.
-                                hint_vars.append(X[d, t])
-                                hint_vals.append(float(val))
+                            hint_vars.append(X[d, t])
+                            hint_vals.append(float(val))
+                            hint_vars.append(Y[d, t])
+                            hint_vals.append(1.0 if val > 0 else 0.0)
                     
+                    for t in range(limit_workers):
+                        is_active = any(initial_allocation[d, t] > 0 for d in range(num_periods))
+                        hint_vars.append(Z[t])
+                        hint_vals.append(1.0 if is_active else 0.0)
+                        
                     if hasattr(solver, 'SetHint') and hint_vars:
                         try:
-                            # Robust conversion to lists for OR-Tools SWIG wrapper
-                            v_list = list(hint_vars)
-                            val_list = [float(v) for v in hint_vals]
-                            solver.SetHint(v_list, val_list)
-                            print(f"DEBUG: Successfully set {len(v_list)} variable hints.")
+                            solver.SetHint(list(hint_vars), [float(v) for v in hint_vals])
+                            print(f"DEBUG: Successfully set {len(hint_vars)} variable hints (X, Y, Z).")
                         except Exception as e:
                             print(f"⚠️  WARNING: Hint logic ignored: {e}")
 
@@ -381,17 +386,25 @@ def solve_shift_schedule(
             objective = solver.Objective()
             objective.SetMinimization()
             
-            for d in range(num_periods):
-                # Primary goal: Minimize total U[d]
-                # We add a tiny gradient to prefer covering early slots if tied
-                objective.SetCoefficient(U[d], float(1.0 + 0.0001 * (d / num_periods)))
-            
-            print(f"DEBUG ENGINE: PHASE 1 Setup (Minimize Unmet Demand)")
+            print(f"DEBUG ENGINE: PHASE 1 Setup (Minimize Unmet Demand + Small Resource Penalty)")
 
             # Coverage Constraint
             print(f"DEBUG ENGINE: Sum of demand (need): {float(sum(need))}")
-            for d in range(num_periods): 
+            for d in range(num_periods):
                 solver.Add(solver.Sum([X[d, t] for t in range(limit_workers)]) + U[d] == float(need[d]))
+
+            # Phase 1: Minimize Unmet Demand + Small Resource Penalty
+            # Primary goal: Minimize total U[d] (Unmet Demand)
+            # We add a tiny gradient to prefer covering early slots if tied
+            objective = solver.Objective()
+            objective.SetMinimization()
+            for d in range(num_periods):
+                objective.SetCoefficient(U[d], float(1.0 + 0.0001 * (d / num_periods)))
+            
+            # Add a moderate penalty for Z[t] (Active Drivers) in Phase 1 to encourage early driver reduction
+            # Increased from 0.01 to 0.1 to be more noticeable to SCIP branching
+            for t in range(limit_workers):
+                objective.SetCoefficient(Z[t], 0.1)
             
             # Pausa de 45 minutos (4h30 de condução + 45min de pausa)
             if selected_restrictions.get("pausa_45_minutos", False):
@@ -400,7 +413,7 @@ def solve_shift_schedule(
                 window = max_continuous_work + pause_duration  # 21
                 for t in range(limit_workers):
                     for start in range(num_periods - window + 1):
-                        solver.Add(solver.Sum([X[start + p, t] for p in range(window)]) <= float(max_continuous_work))
+                        solver.Add(solver.Sum([Y[start + p, t] for p in range(window)]) <= float(max_continuous_work))
             
             # Limite diário de condução (9 horas por dia)
             if selected_restrictions.get("limite_diario", False):
@@ -412,7 +425,7 @@ def solve_shift_schedule(
                     day_start = day * periods_per_day
                     day_end = min((day + 1) * periods_per_day, num_periods)
                     for t in range(limit_workers):
-                        solver.Add(solver.Sum([X[d, t] for d in range(day_start, day_end)]) <= float(max_daily_driving))
+                        solver.Add(solver.Sum([Y[d, t] for d in range(day_start, day_end)]) <= float(max_daily_driving))
             
             # Repouso diário mínimo (11h descanso)
             if selected_restrictions.get("repouso_diario_minimo", False):
@@ -429,7 +442,7 @@ def solve_shift_schedule(
                         
                         day_start = day * periods_per_day
                         day_end = day_start + periods_per_day
-                        daily_work = solver.Sum([X[d, t] for d in range(day_start, day_end)])
+                        daily_work = solver.Sum([Y[d, t] for d in range(day_start, day_end)])
                         
                         solver.Add(daily_work <= float(max_work_reduced) * reduced_rest + float(max_work_normal) * (1 - reduced_rest))
                     
@@ -446,7 +459,7 @@ def solve_shift_schedule(
                     week_start = week * periods_per_week
                     week_end = (week + 1) * periods_per_week
                     for t in range(limit_workers):
-                        solver.Add(solver.Sum(X[d, t] for d in range(week_start, week_end)) <= max_weekly_driving)
+                        solver.Add(solver.Sum(Y[d, t] for d in range(week_start, week_end)) <= max_weekly_driving)
             
             # Repouso diário reduzido (24h descanso semanal)
             if selected_restrictions.get("repouso_diario_reduzido", False):
@@ -591,7 +604,7 @@ def solve_shift_schedule(
                 matrix_allocation = np.array([[int(round(X[d, t].solution_value())) for t in range(limit_workers)] for d in range(num_periods)], dtype=int)
                 
                 # workers_schedule must represent drivers present (count of drivers per period)
-                # If matrix_allocation stores counts, ws[d] = sum(1 if matrix_allocation[d, t] > 0 else 0)
+                # If matrix_allocation stores counts, ws[d] = sum(1 for val in matrix_allocation[d, :] if val > 0)
                 workers_schedule = [int(sum(1 for val in matrix_allocation[d, :] if val > 0)) for d in range(num_periods)]
                 
                 # tasks_schedule represents total tasks per period
@@ -602,9 +615,6 @@ def solve_shift_schedule(
                 
                 print(f"DEBUG FINAL: total_slots={total_slots}, tasks_sum={sum(tasks_schedule)}, unmet_sum={sum(U[d].solution_value() for d in range(num_periods))}")
             else:
-                 # FALLBACK: If solver fails (Timeout/Infeasible) return the initial allocation (Heuristic)
-                 # This prevents the "No drivers allocated" issue which breaks the UI
-                print(f"⚠️ SOLVER FAILED or TIMED OUT (Status={status}). Fallback to initial allocation (Heuristic).")
                 if initial_allocation is not None:
                      matrix_allocation = initial_allocation
                      # Recalculate basic stats from fallback
@@ -616,6 +626,7 @@ def solve_shift_schedule(
                      statistics_result.append(f"Model State: FALLBACK (Heuristic)")
                 else:
                     print("⚠️ NO FALLBACK AVAILABLE. Returning empty solution.")
+                    statistics_result.append(f"Model State: {get_solver_status_description(status)}")
 
                 
                 for t in range(limit_workers): driving_hours_per_driver[t] = float(sum(X[d, t].solution_value() for d in range(num_periods)) * 0.25)
@@ -693,40 +704,51 @@ def solve_shift_schedule(
             
             statistics_result.append(f"Density check: final={final_density:.4f}, threshold={densidade_aceitavel if densidade_aceitavel else 0.01:.4f}")
             
-            if status == pywraplp.Solver.OPTIMAL:
-                statistics_result.append(f"Model State: OPTIMAL")
-            elif status == pywraplp.Solver.FEASIBLE:
-                statistics_result.append(f"Model State: FEASIBLE")
-            elif status == pywraplp.Solver.INFEASIBLE:
-                statistics_result.append(f"Model State: INFEASIBLE")
-            elif status == pywraplp.Solver.UNBOUNDED:
-                statistics_result.append(f"Model State: UNBOUNDED")
-            elif status == pywraplp.Solver.ABNORMAL:
-                statistics_result.append(f"Model State: ABNORMAL")
-            elif status == pywraplp.Solver.MODEL_INVALID:
-                statistics_result.append(f"Model State: MODEL_INVALID")
-            elif status == pywraplp.Solver.NOT_SOLVED:
-                statistics_result.append(f"Model State: NOT_SOLVED")
-            else:
-                statistics_result.append("Model State: NOT_SOLVED")
             
             total_demand = sum(need)
-            total_unmet = sum(U[d].solution_value() for d in range(num_periods)) if status in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE) else total_demand
-            coverage = 100.0 * (total_demand - total_unmet) / max(1.0, total_demand)
-            total_capacity = sum(X[d,t].solution_value() for d in range(num_periods) for t in range(limit_workers)) if status in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE) else 0
-            avg_load_per_driver = total_capacity / max(1, total_active)
             
-            statistics_result.append(f"Total Demand: {total_demand}")
+            # UNIFIED METRICS CALCULATION (Works for both exact and fallback)
+            # Use tasks_schedule (sums of matrix_allocation) for calculating real coverage
+            served_per_period = [min(need[d], tasks_schedule[d]) for d in range(num_periods)]
+            total_served = sum(served_per_period)
+            total_unmet = total_demand - total_served
+            coverage = 100.0 * total_served / max(1.0, total_demand)
+            total_capacity = sum(tasks_schedule)
+            # Correct metrics calculation
+            # Total Tasks = sum of all X[d,t] (total_capacity)
+            # Total Working Slots = count of pairs (d,t) where X[d,t] > 0
+            total_active_slots = np.sum(matrix_allocation > 0)
+            total_working_hours = total_active_slots * 0.25
+            
+            # Avg Hours per Driver = Total Working Time / Active Drivers
+            avg_hours_per_driver = total_working_hours / max(1, total_active) if total_active > 0 else 0
+            
+            # Avg Load (tasks/h) = Total Tasks / Total Working Hours
+            avg_intensity = total_capacity / max(0.25, total_working_hours) if total_working_hours > 0 else 0
+            
+            # Load metrics
+            avg_load_per_slot = total_capacity / max(1, total_active_slots) if total_active_slots > 0 else 0
+            
+            # Only add Model State if it hasn't been added by Fallback logic
+            if not any("Model State" in s for s in statistics_result):
+                statistics_result.append(f"Model State: {get_solver_status_description(status)}")
+            statistics_result.append(f"Total Demand: {int(total_demand)}")
+            statistics_result.append(f"Coverage (%): {coverage:.1f}%")
             statistics_result.append(f"Total Unmet: {total_unmet:.1f}")
-            statistics_result.append(f"Coverage (%): {coverage:.2f}")
             statistics_result.append(f"Total Active Drivers: {total_active}")
+            statistics_result.append(f"Avg Hours per Driver: {avg_hours_per_driver:.2f}")
+            statistics_result.append(f"Avg Load (tasks/slot): {avg_load_per_slot:.2f}")
+            statistics_result.append(f"Avg Intensity (tasks/h): {avg_intensity:.2f}")
+            statistics_result.append(f"Optimization Strategy: Hybrid Lexicographical")
+            statistics_result.append(f"Parameter Check: CAP={cap_tasks_per_driver_per_slot}, Drivers={limit_workers}")
+            
+            statistics_result.append(f"Antigravity Debug: V2")
             statistics_result.append(f"Total Assigned Slots: {total_slots}")
             statistics_result.append(f"Model Type: {tipo_modelo(solver)}")
             statistics_result.append(f"Total Resolution Time: {solver.wall_time()} ms")
             statistics_result.append(f"Total Number of Iterations: {solver.iterations()}")
             statistics_result.append(f"Number of Restrictions: {solver.NumConstraints()}")
             statistics_result.append(f"Number of Variables: {solver.NumVariables()}")
-            statistics_result.append(f"AVG Load per Driver: {avg_load_per_driver:.2f}")
             
             objective_value = solver.Objective().Value() if status in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE) else 0
             best_bound = solver.Objective().BestBound() if status in (pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE) else 0
@@ -747,13 +769,13 @@ def solve_shift_schedule(
 def run_solver_with_mode(
     mode, need, variable_type, constraints_coefficients, selected_restrictions,
     solver_param_type, densidade_aceitavel, limit_workers, limit_iteration,
-    limit_level_relaxation, max_demands_per_driver, tolerance_demands, penalty,
+    limit_level_relaxation, cap_tasks_per_driver_per_slot, tolerance_demands, penalty,
     swap_rows=None, multiply_row=None, add_multiple_rows=None,
     radio_selection_object=None, enable_symmetry_breaking=False, time_limit_seconds=300,
     max_lns_iterations=5, enable_assignment_maximization=True
 ):
-    initial_allocation = greedy_initial_allocation(need, limit_workers, max_demands_per_driver, assignment_scorer)
-    if mode == "Exact": return solve_shift_schedule(solver_param_type, need, variable_type, constraints_coefficients, selected_restrictions, swap_rows, multiply_row, add_multiple_rows, densidade_aceitavel, limit_workers, limit_iteration, limit_level_relaxation, max_demands_per_driver, tolerance_demands, penalty, initial_allocation, None, radio_selection_object, mode="Exact", enable_symmetry_breaking=enable_symmetry_breaking, time_limit_seconds=time_limit_seconds, enable_assignment_maximization=enable_assignment_maximization)
+    initial_allocation = greedy_initial_allocation(need, limit_workers, cap_tasks_per_driver_per_slot, assignment_scorer)
+    if mode == "Exact": return solve_shift_schedule(solver_param_type, need, variable_type, constraints_coefficients, selected_restrictions, swap_rows, multiply_row, add_multiple_rows, densidade_aceitavel, limit_workers, limit_iteration, limit_level_relaxation, cap_tasks_per_driver_per_slot, tolerance_demands, penalty, initial_allocation, None, radio_selection_object, mode="Exact", enable_symmetry_breaking=enable_symmetry_breaking, time_limit_seconds=time_limit_seconds, enable_assignment_maximization=enable_assignment_maximization)
     if mode == "Heuristic":
         try:
             print(f"\n=== HEURISTIC MODE DEBUG ===")
@@ -797,7 +819,11 @@ def run_solver_with_mode(
         # Calculate time budget per iteration to keep LNS faster than Exact
         sub_limit = max(5, int(time_limit_seconds / (max_lns_iterations + 1)))
         
-        best_sol, info = run_lns(initial_allocation, need, variable_type, constraints_coefficients, selected_restrictions, solver_param_type, limit_workers, limit_iteration, limit_level_relaxation, max_demands_per_driver, tolerance_demands, penalty, max_lns_iterations, solve_shift_schedule, neighborhood_scorer, time_limit_per_iteration=sub_limit, radio_selection_object=radio_selection_object)
+        import time
+        start_lns = time.time()
+        best_sol, info = run_lns(initial_allocation, need, variable_type, constraints_coefficients, selected_restrictions, solver_param_type, limit_workers, limit_iteration, limit_level_relaxation, cap_tasks_per_driver_per_slot, tolerance_demands, penalty, max_lns_iterations, solve_shift_schedule, neighborhood_scorer, time_limit_per_iteration=sub_limit, radio_selection_object=radio_selection_object)
+        elapsed_lns = time.time() - start_lns
+        
         best_sol = best_sol if best_sol is not None else initial_allocation
         ws, alloc = normalize_solver_outputs(need, None, best_sol)
         # Safety check: if alloc is None, use best_sol
@@ -809,10 +835,11 @@ def run_solver_with_mode(
         # statistics_result must be a list of strings in format "Key: Value"
         statistics_result = [
             f"Model Type: Matheuristic (LNS + MILP)",
-            f"Model State: LNS",
+            f"Model State: Matheurística",
             f"Total Active Drivers: {total_active}",
             f"Total Assigned Slots: {total_slots}",
-            f"LNS Iterations: {info.get('iterations', 'N/A') if info else 'N/A'}"
+            f"LNS Iterations: {info.get('iterations', 'N/A') if info else 'N/A'}",
+            f"Solve time (s): {elapsed_lns:.2f}"
         ]
         
         return (None, "LNS", total_active, total_slots, ws, tasks_schedule, {}, constraints_coefficients, None, None, statistics_result, [], info.get('history', []), alloc, {"stdout": "", "stderr": ""})

@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main_pt.aux
+The style file: Definitions/mdpi.bst
+Database file #1: references.bib
+Warning--empty journal in moreira2024
+You've used 7 entries,
+            2887 wiz_defined-function locations,
+            601 strings with 5063 characters,
+and the built_in function-call counts, 3006 in all, are:
+= -- 291
+> -- 138
+< -- 5
++ -- 61
+- -- 36
+* -- 244
+:= -- 442
+add.period$ -- 23
+call.type$ -- 7
+change.case$ -- 7
+chr.to.int$ -- 7
+cite$ -- 8
+duplicate$ -- 150
+empty$ -- 252
+format.name$ -- 53
+if$ -- 651
+int.to.chr$ -- 1
+int.to.str$ -- 7
+missing$ -- 7
+newline$ -- 39
+num.names$ -- 21
+pop$ -- 64
+preamble$ -- 0
+purify$ -- 7
+quote$ -- 0
+skip$ -- 95
+stack$ -- 0
+substring$ -- 176
+swap$ -- 42
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 49
+warning$ -- 1
+while$ -- 30
+width$ -- 0
+write$ -- 90
+(There was 1 warning)

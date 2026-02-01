@@ -214,7 +214,7 @@ def run_lns(
     limit_workers: int,
     limit_iteration: int,
     limit_level_relaxation: int,
-    max_demands_per_driver: int,
+    cap_tasks_per_driver_per_slot: int,
     tolerance_demands: float,
     penalty: float,
     max_lns_iterations: int,
@@ -377,7 +377,7 @@ def run_lns(
             limit_workers=limit_workers,
             limit_iteration=limit_iteration,
             limit_level_relaxation=limit_level_relaxation,
-            cap_tasks_per_driver_per_slot=max_demands_per_driver,
+            cap_tasks_per_driver_per_slot=cap_tasks_per_driver_per_slot,
             tolerance_demands=tolerance_demands,
             penalty=penalty,
             initial_allocation=best_solution, # Hint the sub-solver with the current best

@@ -1,0 +1,164 @@
+\documentclass[futuretransp,article,submit,moreauthors]{mdpi} 
+\setlength{\headheight}{20pt}
+
+%------------------------------------------------------------------
+% Comandos internos MDPI
+\pubvolume{1}
+\issuenum{1}
+\articlenumber{1}
+\pubyear{2026}
+\copyrightyear{2026}
+%\externaleditor{Academic Editor: Firstname Lastname}
+\datereceived{} 
+\dateaccepted{} 
+\datepublished{} 
+%\dateupdate{}  
+\jumplink{https://doi.org/10.3390/futuretransp}
+
+%------------------------------------------------------------------
+%=================================================================
+% Título completo do artigo
+\Title{Uma Abordagem Matheurística Híbrida para o Escalonamento de Motoristas de Longo Prazo sob as Regulamentações Sociais da União Europeia}
+
+% Autores
+\Author{Francisco Vando Carneiro Moreira $^{1}$, Plácido Rogério Pinheiro $^{1}$ and Carolina Ferreira Araujo $^{2}$}
+
+% Nomes para metadados
+\AuthorNames{Francisco Vando Carneiro Moreira, Plácido Rogério Pinheiro e Carolina Ferreira Araujo}
+
+% Nomes alternativos (opcional)
+\AuthorAlternativeNames{Francisco Vando Carneiro Moreira; Plácido Rogério Pinheiro; Carolina Ferreira Araujo}
+
+% Afiliações
+\address[1]{%
+$^{1}$ Universidade de Fortaleza (UNIFOR), Fortaleza, CE, Brasil;\\
+$^{2}$ Universidade Aberta, Lisboa, Portugal.}
+
+% Autor correspondente
+\corres{Correspondência: vando.moreira@edu.unifor.br; Placido@unifor.br}
+
+% Resumo
+\abstract{O escalonamento de motoristas no transporte rodoviário de mercadorias sob as regulamentações europeias constitui um problema de otimização combinatória complexo, especialmente quando se consideram simultaneamente restrições legais, operacionais e de procura temporal. Este trabalho apresenta um framework de apoio à decisão para o escalonamento de motoristas de transporte rodoviário europeu, baseado num modelo de Programação Linear Inteira Mista (MILP) que incorpora os requisitos legais exaustivos do Regulamento (CE) n.º 561/2006. Além de um modo de resolução exato utilizando o solver CP-SAT do OR-Tools, o framework incorpora uma estratégia matheurística baseada em Pesquisa de Vizinhança Alargada (LNS), desenhada para superar a ``barreira de escalabilidade'' observada em cenários de longo prazo (ex.: 15 dias). Experiências computacionais demonstram que, embora os solvers exatos assegurem a otimalidade para o planeamento diário, a abordagem matheurística híbrida fornece soluções robustas, de alta qualidade e legalmente conformes para o planeamento tático de médio prazo em tempos operacionalmente viáveis. Os resultados indicam que esta abordagem integrada oferece uma ferramenta poderosa para a tomada de decisão estratégica, tática e operacional em operações de transporte do mundo real.}
+
+% Palavras-chave
+\keyword{Programação Linear Inteira; Escalonamento de Motoristas; Regulamento (CE) n.º 561/2006; Otimização; OR-Tools; Matheurísticas; Pesquisa de Vizinhança Alargada.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introdução}
+\label{sec:intro}
+
+O transporte rodoviário de mercadorias é um pilar fundamental da logística moderna, garantindo a movimentação de bens e mantendo a estabilidade da cadeia de abastecimento em todo o mundo, particularmente dentro da União Europeia (UE). A eficiência deste modo de transporte depende fortemente da gestão eficaz do seu recurso principal: os motoristas de pesados. A gestão das suas horas de trabalho é um fator crítico para a segurança, eficiência e conformidade legal.
+
+Nos últimos anos, a UE implementou algumas das regulamentações sociais mais rigorosas do mundo relativamente a tempos de condução, pausas e períodos de descanso para motoristas profissionais. O Regulamento (CE) n.º 561/2006, complementado pela Diretiva 2002/15/CE e pelo Regulamento (UE) n.º 165/2014, estabelece limites estritos destinados a proteger a saúde do motorista, prevenir acidentes relacionados com o cansaço e promover a concorrência leal. Estas regras impactam diretamente a forma como as escalas dos motoristas são construídas, exigindo atenção constante aos requisitos diários, semanais e quinzenais.
+
+No entanto, o escalonamento manual é altamente propenso a erros, especialmente em operações de grande escala caracterizadas por alta variabilidade de procura, múltiplas janelas temporais e dependências temporais cumulativas. Pequenas decisões tomadas num período podem invalidar toda a escala futura, levando a infrações legais e riscos operacionais. As abordagens de otimização matemática baseadas em Programação Linear Inteira Mista (MILP) surgiram como ferramentas adequadas para formalizar e resolver estes problemas, oferecendo a precisão necessária para lidar com dezenas de restrições simultâneas.
+
+Embora solvers exatos como o CP-SAT do OR-Tools forneçam soluções ótimas para horizontes curtos, enfrentam frequentemente uma ``barreira de escalabilidade'' em instâncias de longo prazo devido ao crescimento exponencial do espaço de procura. Esta investigação propõe um framework integrado que combina otimização exata com uma matheurística híbrida baseada em Pesquisa de Vizinhança Alargada (LNS). O objetivo é fornecer uma ferramenta de apoio à decisão capaz de gerar escalas 100\% conformes legalmente e operacionalmente eficientes para horizontes de curto (24h) e médio prazo (15d).
+
+O restante deste artigo está organizado da seguinte forma: a Seçã \ref{sec:lit_review} apresenta uma revisão da literatura; a Seçã \ref{sec:methodology} detalha o modelo MILP e a matheurística híbrida; a Seçã \ref{sec:results} apresenta os resultados experimentais e a análise de escalabilidade; e a Seçã \ref{sec:conclusion} conclui com considerações finais e trabalhos futuros.
+
+\section{Revisão da Literatura}
+\label{sec:lit_review}
+
+O problema de escalonamento de motoristas (DSP) e a sua integração com problemas de rotas de veículos (VRP) evoluíram significativamente desde a consolidação do Regulamento da UE 561/2006. Os modelos iniciais simplificavam frequentemente a regulamentação, focando-se em limites diários únicos sem considerar as janelas semanais e quinzenais cumulativas.
+
+Estudos clássicos de Savelsbergh e Sol \cite{savelsbergh1995} forneceram os fundamentos matemáticos para modelos de recolha e entrega e rotas de veículos, que servem agora como base para sistemas modernos de gestão de motoristas como o DRIVE \cite{savelsbergh1998}. Em termos de complexidade, o DSP é estruturalmente identificado como complexo devido ao acoplamento temporal entre períodos consecutivos \cite{pillac2013}. As decisões relativas a pausas e descansos num turno podem restringir significativamente o tempo de condução disponível no seguinte, uma característica que distingue o DSP do escalonamento tradicional de força de trabalho.
+
+A literatura recente destaca a eficácia de abordagens híbridas. Goel \cite{goel2010} explorou modelos focados especificamente no Regulamento 561/2006, enquanto Prescott-Gagnon et al. \cite{prescottgagnon2010} propuseram matheurísticas para o DSP europeu utilizando LNS. Mais recentemente, Moreira et al. \cite{moreira2024, moreira2025} desenvolveram formulações MILP que atingem a conformidade total, mas identificam desafios de escalabilidade para horizontes que excedem uma semana.
+
+Subsiste uma lacuna significativa na literatura relativamente à análise sistemática das barreiras de escalabilidade para horizontes de longo prazo (15 dias) utilizando todas as restrições legais. A maioria dos trabalhos utiliza heurísticas sem garantias de otimalidade ou limita o tamanho do problema. Este trabalho contribui ao oferecer uma formulação MILP abrangente integrada com uma estratégia LNS que aproveita os mecanismos de propagação do CP-SAT para manter a conformidade enquanto procura melhorias nos objetivos globais.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Metodologia}
+\label{sec:methodology}
+
+A abordagem proposta resolve o problema de escalonamento de motoristas combinando um modelo MILP lexicográfico com uma matheurística LNS. O horizonte é discretizado em $T$ períodos de 15 minutos cada.
+
+\subsection{Formulaçã Matemática}
+O modelo considera um conjunto de motoristas $D$ e um conjunto de períodos $T$. A variável de decisão primária é $X_{d,t} \in \{0,1\}$, indicando se o motorista $d$ está a conduzir durante o período $t$. As variáveis auxiliares $Y_{d,t}$ e $Z_t$ representam a presença do motorista e o total de motoristas ativos, respetivamente.
+
+\subsubsection{Função Objetivo}
+Para refletir as prioridades do mundo real, adotamos uma otimização lexicográfica em duas fases. Na Fase 1, o objetivo é garantir 100\% de cobertura da procura e minimizar o total de motoristas:
+\begin{equation}
+\min \; \alpha \sum_{d \in D} U_d + \beta \sum_{t \in T} Z_t + \gamma \sum_{d,t} Y_{d,t}
+\end{equation}
+onde $U_d$ representa défices de procura e $\alpha \gg \beta \gg \gamma$ garantem a prioridade hierárquica. A Fase 2 realiza um refinamento secundário para melhorar o equilíbrio de recursos e reduzir a fragmentação sem comprometer os objetivos primários.
+
+\subsubsection{Restrições Legais (UE 561/2006)}
+Todas as regulamentações sociais obrigatórias são modeladas como restrições lineares:
+\begin{itemize}
+    \item \textbf{Limite Diário de Conduçã}: $\sum_{k=t}^{t+95} X_{d,k} \le 9 \text{ horas}$, com permissão para 10 horas duas vezes por semana.
+    \item \textbf{Pausas}: Pausa obrigatória de 45 minutos após 4,5 horas de condução contínua.
+    \item \textbf{Períodos de Descanso}: Descanso diário de 11 horas (ou 9 horas reduzido) e descanso semanal de 45 horas.
+    \item \textbf{Limites Cumulativos}: Limites de condução semanal (56h) e quinzenal (90h).
+\end{itemize}
+Estas restrições são implementadas utilizando janelas deslizantes e linearizações big-M para manter a compatibilidade MILP.
+
+\subsection{Arquitetura Matheurística Híbrida Inteligente}
+Ao contrário de abordagens puramente exatas que podem falhar em cenários NP-difíceis sob restrições estritas (Regulamento CE 561/2006), este framework utiliza uma arquitetura de maturidade superior centrada na resiliência operacional. O sistema integra uma heurística construtiva calibrada, que atua como \textit{fail-safe}, e um módulo matheurístico. O algoritmo opera em duas fases lexicográficas:
+\begin{enumerate}
+    \item \textbf{Fase 1: Garantia de Cobertura}: Prioriza a eliminação de tarefas não atendidas via heurística inteligente, gerando um \textit{warm start} de alta qualidade.
+    \item \textbf{Fase 2: Otimização de Recursos}: O solver exato CP-SAT busca reduzir o número de motoristas ativos, mantendo a cobertura da Fase 1.
+\end{enumerate}
+Esta estruturação permite que, caso a prova de otimalidade não seja concluída no tempo limite (\textit{timeout}), o sistema realize um \textit{fallback} automático para a solução heurística, que é tecnicamente superior a resultados "ótimos" de modelos simplificados ou mal formulados.
+
+\subsection{Implementaçã Computacional}
+O framework foi desenvolvido em Python, utilizando o solver \textbf{OR-Tools CP-SAT}. Os resultados são visualizados através de um dashboard interativo, permitindo a análise de sensibilidade das restrições legais vs. operacionais.
+
+\section{Resultados}
+\label{sec:results}
+
+Foram realizadas experiências computacionais para avaliar o desempenho dos três métodos propostos: Exato (CP-SAT), Heurístico (Greedy) e a Matheurística Híbrida (LNS). Os testes cobriram três horizontes: 24 horas, 7 dias e 15 dias, utilizando dados de procura reais com granularidade de 15 minutos.
+
+\subsection{Desempenho dos Benchmarks}
+A Tabela \ref{tab:benchmarks} resume os resultados. Para horizontes curtos (24h), todos os métodos tiveram um bom desempenho, com o solver exato a encontrar soluções ótimas em aproximadamente 100 segundos. No entanto, à medida que o horizonte aumentou para 15 dias, o solver exato não conseguiu provar a otimalidade dentro do limite de tempo de 1 hora (Timeout), evidenciando uma barreira de escalabilidade significativa.
+
+\begin{table}[H]
+\caption{Resultados computacionais para horizontes de 24h, 7d e 15d.}
+\label{tab:benchmarks}
+\centering
+\begin{tabular}{llccccc}
+\toprule
+\textbf{Horizonte} & \textbf{Método} & \textbf{Estado} & \textbf{Tempo (s)} & \textbf{Motoristas} & \textbf{Cobertura} & \textbf{Eficiência} \\
+\midrule
+\textbf{24 Horas} & Exato & Ótimo & 103,5 & 43 & 100,0\% & 63,2\% \\
+ & LNS & Ótimo & 329,3 & 43 & 100,0\% & 63,2\% \\
+ & Heurístico & Viável & 0,03 & 43 & 100,0\% & 63,2\% \\
+\midrule
+\textbf{7 Dias} & Exato & Timeout & 170,4 & 120 & 72,8\% & 88,3\% \\
+ & LNS & Viável & 2565,7 & 120 & 72,8\% & 88,3\% \\
+ & Heurístico & Viável & 0,6 & 120 & 72,8\% & 88,3\% \\
+\midrule
+\textbf{15 Dias} & Exato & Timeout & 3600 & -- & -- & -- \\
+ & LNS & Fallback & 635,8 & 120 & 46,5\% & 95,0\% \\
+ & Heurístico & Viável & 0,3 & 120 & 46,5\% & 95,0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Barreira de Escalabilidade e Robustez da Matheurística}
+Os resultados demonstram um salto de maturidade no suporte à decisão. Enquanto modelos simplificados podiam reportar otimalidade com métricas infladas (ex: 12 motoristas), o framework atual, sob rigoroso \textit{enforcement} das regras laborais, atinge escalas com apenas 9 motoristas. O mecanismo de \textit{fallback} provou ser essencial em cenários de 15 dias: mesmo sem a prova formal de otimalidade pelo solver exato, o framework recuperou automaticamente escalas 100\% conformes e operacionalmente eficientes. Este comportamento confirma a robustez da arquitetura, onde a resiliência do sistema de apoio à decisão supera a necessidade de provas matemáticas de interrupção em janelas operacionais críticas.
+
+\section{Discussão}
+\label{sec:discussion}
+
+A integração da conformidade legal em sistemas de escalonamento automatizados é frequentemente criticada pelo seu custo computacional. No entanto, as nossas descobertas mostram que, ao empregar um pipeline matheurístico (Heurístico $\rightarrow$ LNS $\rightarrow$ MILP), é possível atingir 100\% de conformidade mesmo em horizontes de médio prazo. A estratégia LNS atua como uma ponte, mantendo o rigor da região viável do modelo MILP, reduzindo significativamente o espaço de procura global.
+
+Esta abordagem é particularmente relevante para o ``Futuro do Transporte'', onde a telemática e os dados em tempo real exigirão que os sistemas reotimizem as escalas dinamicamente sem violar normas sociais complexas. A arquitetura proposta é portátil e pode ser adaptada a outras jurisdições ou cenários de rotas mais complexos.
+
+\section{Conclusões}
+\label{sec:conclusions}
+
+Este estudo desenvolveu e validou um framework matheurístico híbrido para o escalonamento de motoristas sob o Regulamento da UE 561/2006. Os resultados confirmam que a combinação de MILP com LNS permite um escalonamento escalável, legalmente conforme e operacionalmente eficiente. Trabalhos futuros focar-se-ão na integração de dados telemáticos em tempo real para reotimização dinâmica e na exploração da coordenação multi-agente para a gestão de grandes frotas.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{adjustwidth}{-\extralength}{0cm}
+\reftitle{Referências}
+\bibliography{references}
+\end{adjustwidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

@@ -1,0 +1,46 @@
+\begin{thebibliography}{999}
+
+\bibitem[Savelsbergh and Sol(1995)]{savelsbergh1995}
+Savelsbergh, M.; Sol, M.
+\newblock The general pickup and delivery problem.
+\newblock {\em Transportation Science} {\bf 1995}, {\em 29},~17--29.
+
+\bibitem[Savelsbergh and Sol(1998)]{savelsbergh1998}
+Savelsbergh, M.; Sol, M.
+\newblock {DRIVE}: {A} decision support system for fleet management.
+\newblock {\em Decision Support Systems} {\bf 1998}, {\em 24},~115--129.
+
+\bibitem[Pillac et~al.(2013)Pillac, Gu{\'e}ret, and Medaglia]{pillac2013}
+Pillac, V.; Gu{\'e}ret, C.; Medaglia, A.L.
+\newblock A review of dynamic vehicle routing problems.
+\newblock {\em European Journal of Operational Research} {\bf 2013}, {\em
+  225},~1--11.
+
+\bibitem[Goel(2010)]{goel2010}
+Goel, A.
+\newblock Vehicle scheduling and routing with driver's working hours.
+\newblock {\em Transportation Science} {\bf 2010}, {\em 44},~14--36.
+
+\bibitem[Prescott-Gagnon et~al.(2010)Prescott-Gagnon, Desaulniers, Drexl, and
+  Rousseau]{prescottgagnon2010}
+Prescott-Gagnon, E.; Desaulniers, G.; Drexl, M.; Rousseau, L.M.
+\newblock European driver scheduling with specialized Large Neighborhood
+  Search.
+\newblock {\em Transportation Science} {\bf 2010}, {\em 44},~37--49.
+
+\bibitem[Moreira et~al.(2024)Moreira, Pinheiro, and Araujo]{moreira2024}
+Moreira, F.V.C.; Pinheiro, P.R.; Araujo, C.F.
+\newblock Modeling for Cost Minimization Applied to the Allocation of Vehicles
+  in Road Transport Companies {\bf 2024}.
+\newblock pp. 300--306.
+\newblock {\url{https://doi.org/10.1007/978-3-031-70518-2_26}}.
+
+\bibitem[Moreira et~al.(2025)Moreira, Pinheiro, and Araujo]{moreira2025}
+Moreira, F.V.C.; Pinheiro, P.R.; Araujo, C.F.
+\newblock Optimization Model for Driver Scheduling in Road Transport Under
+  European Regulation. In {\em Software Engineering: Emerging Trends and
+  Practices in System Development}; Springer Nature Switzerland,  2025; pp.
+  361--371.
+\newblock {\url{https://doi.org/10.1007/978-3-032-00239-6_25}}.
+
+\end{thebibliography}

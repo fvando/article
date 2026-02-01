@@ -67,7 +67,7 @@ def call_assignment_scorer(
 def greedy_initial_allocation(
     need: List[int],
     limit_workers: int,
-    max_demands_per_driver: int,
+    cap_tasks_per_driver_per_slot: int,
     assignment_scorer_fn: Optional[Callable[..., Any]] = None
 ) -> np.ndarray:
     """
@@ -81,10 +81,7 @@ def greedy_initial_allocation(
     
     # Bloco mínimo de 4h30 (18 slots) para alinhar com SHIFT_MIN e regulamento
     BLOCK_SIZE = 18
-    run_len = min(BLOCK_SIZE, num_periods)
-    
-    # Se a capacidade do motorista for menor que o bloco, ajusta
-    actual_len = min(run_len, max_demands_per_driver)
+    actual_len = min(BLOCK_SIZE, num_periods)
     if actual_len <= 0:
         return allocation
 
@@ -112,24 +109,28 @@ def greedy_initial_allocation(
         
         # Se encontrou um bloco útil (ganho > 0), aloca
         if best_start >= 0 and best_gain > 0:
-            allocation[best_start : best_start + actual_len, driver] = 1
-            current_coverage[best_start : best_start + actual_len] += 1
+            # Aloca apenas o que é necessário (até a capacidade) para evitar sobre-alocação irreal
+            for k in range(best_start, best_start + actual_len):
+                needed = max(0, need[k] - current_coverage[k])
+                take = min(cap_tasks_per_driver_per_slot, needed)
+                allocation[k, driver] = take
+                current_coverage[k] += take
             
             # --- TENTATIVA DE EXTENSÃO (Opcional) ---
-            # Se sobrar capacidade, estendemos para a direita até max_demands ou fim da demanda
-            remaining_cap = max_demands_per_driver - actual_len
+            # Se sobrar capacidade (em termos de slots livres no turno), estendemos
+            # Nota: O regulamento permite turnos maiores, aqui buscamos cobrir demanda residual
             cursor = best_start + actual_len
+            total_assigned_in_shift = actual_len 
             
-            while remaining_cap > 0 and cursor < num_periods:
-                # Só estende se houver demanda não atendida
-                if need[cursor] > current_coverage[cursor]:
-                    allocation[cursor, driver] = 1
-                    current_coverage[cursor] += 1
-                    remaining_cap -= 1
+            while total_assigned_in_shift < 36 and cursor < num_periods: # limite arbitrário de 9h para extensão
+                needed = max(0, need[cursor] - current_coverage[cursor])
+                if needed > 0:
+                    take = min(cap_tasks_per_driver_per_slot, needed)
+                    allocation[cursor, driver] = take
+                    current_coverage[cursor] += take
+                    total_assigned_in_shift += 1
                     cursor += 1
                 else:
-                    # Se não tem demanda, para (evita desperdício) ou continua? 
-                    # Para warm start, melhor parar e manter bloco compacto.
                     break
 
     return allocation
