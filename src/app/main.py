@@ -16,9 +16,9 @@ from src.app.auth import check_password
 # Must be the first Streamlit command
 st.set_page_config(layout="wide", page_title=APP_TITLE)
 
-from src.vis.ui import apply_corporate_style
+# from src.vis.ui import apply_corporate_style
 
-apply_corporate_style()
+# apply_corporate_style()
 
 def main():
     if check_password():

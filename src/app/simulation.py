@@ -52,7 +52,7 @@ from typing import Any, List, Optional, Tuple
 BASE_SIMULATOR_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-from src.vis.ui import apply_corporate_style
+# from src.vis.ui import apply_corporate_style
 from src.core.i18n import t
 
 # apply_corporate_style() # Invoked by main.py to avoid duplicate widgets
@@ -86,6 +86,7 @@ from src.ml.ml_guidance import assignment_scorer, neighborhood_scorer
 from src.ml.trainer import train_all_models
 import traceback
 import time
+
 # from kpis import compute_kpis
 # from charts import (
 #     plot_heatmap_safety,
@@ -104,6 +105,7 @@ from src.solver.lns import run_lns
 from src.solver.dataset_builder import build_f1_rows, build_f2_rows, save_datasets
 
 import html
+
 # Habilitar a largura total da página
 # st.set_page_config(layout="wide") # Removido (controlado por main.py)
 
@@ -2367,15 +2369,16 @@ with st.expander(t("lbl_obj"), expanded=True):
                 options=list(lex_objectives.keys()),
                 key="funcao_Objetivo"
             )
-        with st.expander(t("lbl_breakdown"), expanded=False):
-            st.markdown(f"### {t('lbl_breakdown')}")
-            rows = objective_details[radio_selection_object]
-            render_math_table(rows)
-            st.markdown(f"### {t('lbl_lex_struct')}")
-            for obj in lex_objectives[radio_selection_object]:
-                st.markdown(f"**Priority {obj['priority']} — {obj['name']}**")
-                st.latex(obj["formula"])
-                st.caption(obj["description"])
+
+with st.expander(t("lbl_breakdown"), expanded=False):
+        st.markdown(f"### {t('lbl_breakdown')}")
+        rows = objective_details[radio_selection_object]
+        render_math_table(rows)
+        st.markdown(f"### {t('lbl_lex_struct')}")
+        for obj in lex_objectives[radio_selection_object]:
+            st.markdown(f"**Priority {obj['priority']} — {obj['name']}**")
+            st.latex(obj["formula"])
+            st.caption(obj["description"])
 
 with st.expander(t("lbl_restr"), expanded=True):
     selected_restrictions = {}

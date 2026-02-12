@@ -77,24 +77,42 @@ Os principais elementos incluem:
     \item períodos de disponibilidade não contabilizados como trabalho.
 \end{itemize}
 
-Embora o foco principal deste estudo recaia sobre os tempos de condução regulados pelo Regulamento (CE) n.\textordmasculine~561/2006, os conceitos introduzidos pela Diretiva 2002/15/CE são relevantes para a interpretação dos dados reais utilizados. Em particular, registros operacionais de jornada frequentemente incluem atividades não classificadas como condução, mas que impactam diretamente a disponibilidade do motorista. Assim, mesmo quando não modelados explicitamente como variáveis de decisão, esses tempos influenciam a parametrização do problema e a análise dos resultados obtidos.
+% Embora o foco principal deste estudo recaia sobre os tempos de condução regulados pelo Regulamento (CE) n.\textordmasculine~561/2006, os conceitos introduzidos pela Diretiva 2002/15/CE são relevantes para a interpretação dos dados reais utilizados. Em particular, registros operacionais de jornada frequentemente incluem atividades não classificadas como condução, mas que impactam diretamente a disponibilidade do motorista. Assim, mesmo quando não modelados explicitamente como variáveis de decisão, esses tempos influenciam a parametrização do problema e a análise dos resultados obtidos.
 
-Although this dissertation focuses on the driving part, the times described by the Directive represent potential future extension of the model (see Chapter 8).
-Wait, the file is in Portuguese.
-"Embora esta dissertação concentre-se na parte de condução, os tempos descritos pela Diretiva representam potencial extensão futura do modelo (ver Capítulo~8)."
+% Although this dissertation focuses on the driving part, the times described by the Directive represent potential future extension of the model (see Chapter 8).
+% Wait, the file is in Portuguese.
+% "Embora esta dissertação concentre-se na parte de condução, os tempos descritos pela Diretiva representam potencial extensão futura do modelo (ver Capítulo~8)."
 
-\section{Regulamento (UE) n.{\textordmasculine} 165/2014}
+% \section{Regulamento (UE) n.{\textordmasculine} 165/2014}
 
-Este regulamento estabelece as regras relativas ao tacógrafo digital, dispositivo responsável pelo registro eletrônico da condução, pausas, velocidade e distâncias. Sua principal finalidade é assegurar a fiscalização adequada do cumprimento do Regulamento (CE) n.{\textordmasculine} 561/2006. Entre seus pontos mais relevantes:
+% Este regulamento estabelece as regras relativas ao tacógrafo digital, dispositivo responsável pelo registro eletrônico da condução, pausas, velocidade e distâncias. Sua principal finalidade é assegurar a fiscalização adequada do cumprimento do Regulamento (CE) n.{\textordmasculine} 561/2006. Entre seus pontos mais relevantes:
+
+% \begin{itemize}
+%     \item obrigatoriedade de tacógrafos inteligentes em veículos de transporte internacional;
+%     \item registro automático de localização por GNSS;
+%     \item salvaguarda e criptografia dos dados de condução;
+%     \item integração com sistemas de controle e fiscalização.
+% \end{itemize}
+
+% No contexto desta dissertação, o Regulamento (UE) n.\textordmasculine~165/2014 estabelece o elo entre o modelo teórico e a realidade operacional. Embora os experimentos utilizem dados simulados, a estrutura do modelo foi concebida de forma compatível com os registros gerados por tacógrafos digitais, permitindo, em princípio, a substituição direta de dados sintéticos por dados reais. Essa compatibilidade reforça o caráter aplicável do simulador e viabiliza sua futura integração com sistemas telemáticos e plataformas de gestão de frotas.
+
+Embora o foco principal deste estudo recaia sobre os tempos de condução regulados pelo Regulamento (CE) n.\textordmasculine~561/2006, os conceitos introduzidos pela Diretiva 2002/15/CE são relevantes para a interpretação dos dados operacionais utilizados. Registros reais de jornada incluem atividades que não configuram condução, mas afetam diretamente a disponibilidade do motorista. Ainda que tais tempos não sejam modelados explicitamente como variáveis de decisão, influenciam a parametrização do problema e a análise dos resultados.
+
+Esta dissertação concentra-se nos limites de condução; contudo, os tempos definidos na Diretiva 2002/15/CE configuram uma possível extensão futura do modelo (ver Capítulo~8).
+
+\section{Regulamento (UE) n.\textordmasculine~165/2014}
+
+O Regulamento (UE) n.\textordmasculine~165/2014 estabelece as regras relativas ao tacógrafo digital, responsável pelo registro eletrônico dos períodos de condução, pausas, velocidade e distância. Sua finalidade é assegurar a fiscalização do cumprimento do Regulamento (CE) n.\textordmasculine~561/2006. Entre os principais pontos destacam-se:
 
 \begin{itemize}
-    \item obrigatoriedade de tacógrafos inteligentes em veículos de transporte internacional;
-    \item registro automático de localização por GNSS;
-    \item salvaguarda e criptografia dos dados de condução;
-    \item integração com sistemas de controle e fiscalização.
+    \item obrigatoriedade de tacógrafos inteligentes no transporte internacional;
+    \item registro automático de localização via GNSS;
+    \item mecanismos de proteção e criptografia dos dados;
+    \item integração com sistemas de fiscalização.
 \end{itemize}
 
-No contexto desta dissertação, o Regulamento (UE) n.\textordmasculine~165/2014 estabelece o elo entre o modelo teórico e a realidade operacional. Embora os experimentos utilizem dados simulados, a estrutura do modelo foi concebida de forma compatível com os registros gerados por tacógrafos digitais, permitindo, em princípio, a substituição direta de dados sintéticos por dados reais. Essa compatibilidade reforça o caráter aplicável do simulador e viabiliza sua futura integração com sistemas telemáticos e plataformas de gestão de frotas.
+No contexto desta pesquisa, o Regulamento (UE) n.\textordmasculine~165/2014 não introduz restrições operacionais adicionais, mas define o mecanismo tecnológico que garante a rastreabilidade e a confiabilidade dos dados de condução. Embora os experimentos utilizem dados simulados, o modelo foi estruturado de forma compatível com os registros de tacógrafos digitais, permitindo a futura substituição de dados sintéticos por dados reais. Tal alinhamento reforça o caráter aplicável do simulador e sua potencial integração com sistemas telemáticos e plataformas de gestão de frotas.
+
 
 Embora não estabeleça limites operacionais adicionais, o Regulamento (UE) n.\textordmasculine~165/2014 define o mecanismo tecnológico que assegura a rastreabilidade, confiabilidade e auditabilidade dos dados utilizados nesta pesquisa. Os registros provenientes de tacógrafos digitais constituem a principal fonte empírica para a validação do cumprimento do Regulamento (CE) n.\textordmasculine~561/2006, reforçando a necessidade de que o modelo matemático esteja alinhado à estrutura e à granularidade dos dados reais disponíveis.
 
