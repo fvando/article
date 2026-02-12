@@ -1,25 +1,23 @@
 \begin{thebibliography}{999}
 
-\bibitem[Savelsbergh and Sol(1995)]{savelsbergh1995}
-Savelsbergh, M.; Sol, M.
-\newblock The general pickup and delivery problem.
-\newblock {\em Transportation Science} {\bf 1995}, {\em 29},~17--29.
-
-\bibitem[Savelsbergh and Sol(1998)]{savelsbergh1998}
-Savelsbergh, M.; Sol, M.
-\newblock {DRIVE}: {A} decision support system for fleet management.
-\newblock {\em Decision Support Systems} {\bf 1998}, {\em 24},~115--129.
-
-\bibitem[Pillac et~al.(2013)Pillac, Gu{\'e}ret, and Medaglia]{pillac2013}
-Pillac, V.; Gu{\'e}ret, C.; Medaglia, A.L.
-\newblock A review of dynamic vehicle routing problems.
-\newblock {\em European Journal of Operational Research} {\bf 2013}, {\em
-  225},~1--11.
+\bibitem[Bodin et~al.(1983)Bodin, Golden, Assad, and Ball]{bodin1983}
+Bodin, L.; Golden, B.; Assad, A.; Ball, M.
+\newblock Routing and scheduling of vehicles and crews: {The} state of the art.
+\newblock {\em Computers \& Operations Research} {\bf 1983}, {\em 10},~63--211.
+\newblock {\url{https://doi.org/10.1016/0305-0548(83)90030-8}}.
 
 \bibitem[Goel(2010)]{goel2010}
 Goel, A.
 \newblock Vehicle scheduling and routing with driver's working hours.
 \newblock {\em Transportation Science} {\bf 2010}, {\em 44},~14--36.
+
+\bibitem[Xue et~al.(2025)Xue, Jin, and Cui]{xue2025routing}
+Xue, N.; Jin, H.; Cui, T.
+\newblock Routing and driver break scheduling with working and driving
+  regulations: {A} flexible approach for various general pickup and delivery
+  problem variants.
+\newblock {\em Computers \& Operations Research} {\bf 2025}, {\em 175},~106927.
+\newblock {\url{https://doi.org/10.1016/j.cor.2025.106927}}.
 
 \bibitem[Prescott-Gagnon et~al.(2010)Prescott-Gagnon, Desaulniers, Drexl, and
   Rousseau]{prescottgagnon2010}
@@ -27,6 +25,19 @@ Prescott-Gagnon, E.; Desaulniers, G.; Drexl, M.; Rousseau, L.M.
 \newblock European driver scheduling with specialized Large Neighborhood
   Search.
 \newblock {\em Transportation Science} {\bf 2010}, {\em 44},~37--49.
+
+\bibitem[Portugal et~al.(2009)Portugal, Louren{\c{c}}o, and
+  Paix{\~a}o]{portugal2009}
+Portugal, R.; Louren{\c{c}}o, H.R.; Paix{\~a}o, J.M.P.
+\newblock Driver scheduling problem modelling.
+\newblock {\em Public Transport} {\bf 2009}, {\em 1},~103--120.
+\newblock {\url{https://doi.org/10.1007/s12469-008-0007-2}}.
+
+\bibitem[Archetti and Savelsbergh(2014)]{archetti2014}
+Archetti, C.; Savelsbergh, M.W.P.
+\newblock The trip scheduling problem.
+\newblock {\em Transportation Science} {\bf 2014}, {\em 48},~493--510.
+\newblock {\url{https://doi.org/10.1287/trsc.2013.0503}}.
 
 \bibitem[Moreira et~al.(2024)Moreira, Pinheiro, and Araujo]{moreira2024}
 Moreira, F.V.C.; Pinheiro, P.R.; Araujo, C.F.
@@ -42,5 +53,82 @@ Moreira, F.V.C.; Pinheiro, P.R.; Araujo, C.F.
   Practices in System Development}; Springer Nature Switzerland,  2025; pp.
   361--371.
 \newblock {\url{https://doi.org/10.1007/978-3-032-00239-6_25}}.
+
+\bibitem[Pisinger and Ropke(2007)]{pisinger2007}
+Pisinger, D.; Ropke, S.
+\newblock A general heuristic for vehicle routing problems.
+\newblock {\em Computers \& Operations Research} {\bf 2007}, {\em
+  34},~2403--2435.
+\newblock {\url{https://doi.org/10.1016/j.cor.2005.09.012}}.
+
+\bibitem[Shaw(1998)]{shaw1998}
+Shaw, P.
+\newblock Using constraint programming and local search methods to solve
+  vehicle routing problems.
+\newblock {\em Lecture Notes in Computer Science} {\bf 1998}, {\em
+  1520},~417--431.
+\newblock {\url{https://doi.org/10.1007/3-540-49481-2_30}}.
+
+\bibitem[Ernst et~al.(2004)Ernst, Jiang, Krishnamoorthy, and Sier]{ernst2004}
+Ernst, A.T.; Jiang, H.; Krishnamoorthy, M.; Sier, D.
+\newblock Staff scheduling and rostering: {A} review of applications, methods
+  and models.
+\newblock {\em European Journal of Operational Research} {\bf 2004}, {\em
+  153},~3--27.
+\newblock {\url{https://doi.org/10.1016/S0377-2217(03)00095-X}}.
+
+\bibitem[Wren and Rousseau(1995)]{wren1995}
+Wren, A.; Rousseau, J.M.
+\newblock Bus driver scheduling -- {An} overview. In {\em Computer-Aided
+  Transit Scheduling}; Daduna, J.R.; Branco, I.; Paixão, J.M.P., Eds.;
+  Springer: Berlin, Heidelberg,  1995; pp. 173--187.
+\newblock {\url{https://doi.org/10.1007/978-3-642-57762-8_13}}.
+
+\bibitem[Martello and Toth(1986)]{martello1986}
+Martello, S.; Toth, P.
+\newblock A heuristic approach to the bus driver scheduling problem.
+\newblock {\em European Journal of Operational Research} {\bf 1986}, {\em
+  24},~106--117.
+\newblock {\url{https://doi.org/10.1016/0377-2217(86)90015-3}}.
+
+\bibitem[Savelsbergh and Sol(1995)]{savelsbergh1995}
+Savelsbergh, M.; Sol, M.
+\newblock The general pickup and delivery problem.
+\newblock {\em Transportation Science} {\bf 1995}, {\em 29},~17--29.
+
+\bibitem[Savelsbergh and Sol(1998)]{savelsbergh1998}
+Savelsbergh, M.; Sol, M.
+\newblock {DRIVE}: {A} decision support system for fleet management.
+\newblock {\em Decision Support Systems} {\bf 1998}, {\em 24},~115--129.
+
+\bibitem[Kliewer et~al.(2006)Kliewer, Mellouli, and Suhl]{kliewer2007}
+Kliewer, N.; Mellouli, T.; Suhl, L.
+\newblock A time-space network based exact optimization model for multi-depot
+  bus scheduling.
+\newblock {\em European Journal of Operational Research} {\bf 2006}, {\em
+  175},~1616--1627.
+\newblock {\url{https://doi.org/10.1016/j.ejor.2005.02.030}}.
+
+\bibitem[Goel(2012)]{goel2012}
+Goel, A.
+\newblock The minimum duration truck driver scheduling problem.
+\newblock {\em EURO Journal on Transportation and Logistics} {\bf 2012}, {\em
+  1},~285--306.
+\newblock {\url{https://doi.org/10.1007/s13676-012-0014-9}}.
+
+\bibitem[Goel and Kok(2012)]{goel2009}
+Goel, A.; Kok, A.L.
+\newblock Truck driver scheduling in {Australia}.
+\newblock {\em Computers \& Operations Research} {\bf 2012}, {\em
+  39},~1122--1132.
+\newblock {\url{https://doi.org/10.1016/j.cor.2011.05.021}}.
+
+\bibitem[Aljohani et~al.(2025)Aljohani, Bhuiyan, and Medal]{aljohani2025}
+Aljohani, A.; Bhuiyan, T.H.; Medal, H.R.
+\newblock Optimising bus driver scheduling: {A} set-covering approach to
+  reducing transportation costs.
+\newblock {\em EURO Journal on Transportation and Logistics} {\bf 2025}, {\em
+  14},~100145.
+\newblock {\url{https://doi.org/10.1016/j.ejtl.2024.100145}}.
 
 \end{thebibliography}

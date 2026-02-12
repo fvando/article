@@ -1,4 +1,4 @@
-\documentclass[futuretransp,article,submit,moreauthors]{mdpi} 
+﻿\documentclass[futuretransp,article,submit,moreauthors]{mdpi} 
 \setlength{\headheight}{20pt}
 
 %------------------------------------------------------------------
@@ -188,81 +188,61 @@ The proposed approach solves the driver scheduling problem through a three-tiere
 
 \subsubsection{Objective Function and Lexicographic Optimization}
 
-To reflect real-world operational priorities, we employ a true lexicographic optimization strategy implemented through two sequential independent solves. Each phase has its own time budget, allowing proper convergence before advancing to the next hierarchical criterion. This approach ensures strict priority enforcement without relying on large weight calibration.
+To reflect real-world operational priorities, we employ a two-phase lexicographic optimization strategy. The primary objective (Phase 1) focuses on ensuring complete demand coverage and minimizing the number of drivers required. The secondary objective (Phase 2) refines the solution by improving resource balance and reducing schedule fragmentation without compromising the primary goals.
 
-\textbf{Phase 1 - Coverage Optimization (40\% of total time):}
-
-Phase 1 focuses exclusively on minimizing unsatisfied demand:
+\textbf{Phase 1 - Primary Objective:}
 \begin{equation}
-\min \; f_1 = \sum_{t \in T} \left(1 + \epsilon \cdot \frac{t}{|T|}\right) U_t + \delta \sum_{t \in T} Z_t
+\min \; f_1 = \alpha \sum_{t \in T} U_t + \beta \sum_{d \in D} U_d + \gamma \sum_{d \in D} \sum_{t \in T} Y_{d,t}
 \label{eq:obj_phase1}
 \end{equation}
 
 where:
 \begin{itemize}
-    \item $\epsilon = 0.0001$ provides subtle temporal weighting (favoring early coverage)
-    \item $\delta = 0.1$ provides moderate incentive for preliminary driver reduction
-    \item $U_t$ represents unsatisfied demand in period $t$
-    \item $Z_t$ counts active drivers in period $t$
+    \item The first term $\sum_{t \in T} U_t$ represents total demand deficit (unsatisfied demand across all periods)
+    \item The second term $\sum_{d \in D} U_d$ counts the number of distinct drivers utilized
+    \item The third term $\sum_{d \in D} \sum_{t \in T} Y_{d,t}$ measures total driver-period assignments (presence time)
 \end{itemize}
 
-After Phase 1 convergence, the optimal coverage level $U^* = \sum_{t \in T} U_t$ is recorded.
+\textbf{Weight Calibration Method:}
 
-\textbf{Phase 2 - Resource Optimization (60\% of total time):}
+The weights $\alpha$, $\beta$, and $\gamma$ are calibrated to establish a strict hierarchical priority structure, ensuring that lower-priority objectives cannot compromise higher-priority ones. The calibration follows these principles:
 
-Phase 2 fixes the coverage from Phase 1 and minimizes driver count:
+\begin{enumerate}
+    \item \textbf{Coverage Priority ($\alpha$):} Set to dominate all other terms even in worst-case scenarios:
+    \begin{equation}
+    \alpha \geq \beta \cdot |D| + \gamma \cdot |D| \cdot |T|
+    \end{equation}
+    Typically, we use $\alpha = 10^6$ to ensure that even a single unit of unsatisfied demand is more costly than any combination of other objectives.
+    
+    \item \textbf{Driver Count Priority ($\beta$):} Set to prioritize minimizing drivers over minimizing total presence time:
+    \begin{equation}
+    \beta \geq \gamma \cdot |T|
+    \end{equation}
+    Typically, $\beta = 10^3$, ensuring that using one fewer driver is preferred over marginal improvements in schedule compactness.
+    
+    \item \textbf{Balance/Compactness ($\gamma$):} Set to 1 as the base unit for tie-breaking among equivalent solutions in terms of coverage and driver count.
+\end{enumerate}
+
+This hierarchical structure ensures: Coverage $\succ$ Driver Minimization $\succ$ Schedule Compactness.
+
+\textbf{Phase 2 - Secondary Refinement:}
+
+After obtaining the optimal values $f_1^*$ from Phase 1, we fix the primary objectives and optimize secondary criteria:
 \begin{equation}
 \begin{aligned}
-\min \; f_2 = & \sum_{t \in T} Z_t - \theta \sum_{d \in D} \sum_{t \in T} X_{d,t} \\
-\text{s.t.} \; & \sum_{t \in T} U_t \leq U^* + \varepsilon_{tol}
+\min \; f_2 = & \sum_{d \in D} \text{Var}(\text{WorkLoad}_d) + \sum_{d \in D} \text{Fragmentation}_d \\
+\text{s.t.} \; & \sum_{t \in T} U_t = U_t^{*} \quad \text{(fix coverage)} \\
+& \sum_{d \in D} U_d = U_d^{*} \quad \text{(fix driver count)} \\
+& \text{(all other constraints)}
 \end{aligned}
 \label{eq:obj_phase2}
 \end{equation}
 
-where:
-\begin{itemize}
-    \item $\varepsilon_{tol} = 0.1$ provides numerical tolerance to avoid infeasibility
-    \item $\theta = 0.001$ acts as a tie-breaker favoring higher utilization
-    \item All Phase 1 constraints remain active
-\end{itemize}
-
-This two-solve approach guarantees strict hierarchical priority: Coverage $\succ$ Driver Minimization $\succ$ Utilization Maximization. Sequential solves prevent premature compromises between hierarchically distinct objectives and allow more effective exploration of the solution space in each phase.
-
-\textbf{Computational Strategy:}
-
-The sequential solve strategy is implemented with the following time allocation:
-\begin{itemize}
-    \item Total time limit: 300 seconds (5 minutes)
-    \item Phase 1 budget: 120 seconds (40\%)
-    \item Phase 2 budget: 180 seconds (60\%)
-    \item Optimality gap tolerance: 5\%
-\end{itemize}
-
-This division was empirically calibrated to balance solution quality with operational response time requirements.
+where $\text{WorkLoad}_d = \sum_{t \in T} X_{d,t}$ represents driver $d$'s total driving periods, and $\text{Fragmentation}_d$ measures the number of disjoint work segments for driver $d$.
 
 \subsection{Constraints}
 
 The model incorporates all mandatory requirements from EU Regulation (EC) No 561/2006. We organize constraints into six categories: demand coverage, linkage constraints, daily limits, breaks, rest periods, and cumulative limits.
-
-\subsubsection{Shift Continuity Constraints}
-
-To ensure each active driver has exactly one continuous shift, we introduce auxiliary binary variables $S_{d,t}$ (shift start) and $E_{d,t}$ (shift end):
-
-\begin{equation}
-\sum_{t \in T} S_{d,t} = Z_d, \quad \sum_{t \in T} E_{d,t} = Z_d \quad \forall d \in D
-\end{equation}
-
-Temporal consistency of presence:
-\begin{equation}
-Y_{d,t} - Y_{d,t-1} = S_{d,t} - E_{d,t} \quad \forall d \in D, \forall t > 1
-\end{equation}
-
-Minimum and maximum shift duration:
-\begin{equation}
-18 \cdot Z_d \leq \sum_{t \in T} Y_{d,t} \leq 52 \cdot Z_d \quad \forall d \in D
-\end{equation}
-
-where 18 periods (4.5 hours) represents the minimum viable shift duration, and 52 periods (13 hours) is the maximum considering breaks and realistic regulatory compliance.
 
 \subsubsection{Demand Coverage Constraints}
 
@@ -381,13 +361,6 @@ These sliding window constraints ensure compliance over any consecutive 7-day or
 To provide initial feasible solutions, especially for large instances, we implement a greedy constructive heuristic. The algorithm iteratively assigns drivers to periods with unsatisfied demand, prioritizing periods with highest deficit and respecting regulatory constraints. The complete algorithm  is presented below.
 
 The \texttt{AssignDriver($d$, $t$)} function checks all regulatory constraints in constant time by maintaining incremental state information for each driver (accumulated driving time, time since last break, rest status, etc.). The overall complexity is $O(|T| \cdot |D|)$, making it suitable for rapid initial solution generation even for large instances. This heuristic typically produces solutions within 1-2 seconds that serve as warm starts for the exact or LNS methods.
-
-\begin{figure}[h!]
-\centering
-\includegraphics[width=0.95\textwidth]{figures/schedule_gantt.pdf}
-\caption{Example driver schedule demonstrating EU Regulation 561/2006 compliance. Blue bars represent driving periods, orange segments indicate mandatory 45-minute breaks after 4.5 hours of continuous driving, and green blocks show 11-hour daily rest periods. Red dashed line marks the 9-hour daily driving limit.}
-\label{fig:gantt_schedule}
-\end{figure}
 
 \subsection{Hybrid Matheuristic:  Large Neighborhood Search}
 \label{sec:lns}
@@ -517,7 +490,7 @@ Table \ref{tab:benchmarks} summarizes the comprehensive results across all three
  & LNS & Viable & 2565.7 & 120 & 72.8\% & 88.3\% \\
  & Heuristic & Viable & 0.6 & 120 & 72.8\% & 88.3\% \\
 \midrule
-\textbf{15 Days} & Exact & Timeout & 1634.5 & -- & -- & -- \\
+\textbf{15 Days} & Exact & Timeout & 3600 & -- & -- & -- \\
  & LNS & Fallback & 635.8 & 120 & 46.5\% & 95.0\% \\
  & Heuristic & Viable & 0.3 & 120 & 46.5\% & 95.0\% \\
 \bottomrule
@@ -532,14 +505,7 @@ Table \ref{tab:benchmarks} summarizes the comprehensive results across all three
 
 \subsection{Scalability Analysis and Barrier Identification}
 
-\begin{figure}[h!]
-\centering
-\includegraphics[width=0.85\textwidth]{figures/scalability_analysis.pdf}
-\caption{Scalability comparison of three solution methods across varying planning horizons. The exact CP-SAT solver (red circles) exhibits exponential time growth and hits the 1-hour timeout at approximately 6 days. The LNS matheuristic (blue squares) demonstrates sub-linear scaling while maintaining solution quality. The greedy heuristic (green triangles) remains extremely fast but may sacrifice optimality. The shaded region (5-7 days) highlights the practical scalability barrier where exact methods become infeasible for operational use.}
-\label{fig:scalability}
-\end{figure}
-
-Figure \ref{fig:scalability} visualizes the scalability trends by plotting solution time versus problem size (measured in number of periods $|T|$) on logarithmic scales. The exact solver exhibits exponential growth, exceeding the 1-hour threshold around 500-600 periods (approximately 5-6 days). In contrast, the LNS method shows near-linear scaling, maintaining tractability up to 1000+ periods.
+Figure [to be added] visualizes the scalability trends by plotting solution time versus problem size (measured in number of periods $|T|$) on logarithmic scales. The exact solver exhibits exponential growth, exceeding the 1-hour threshold around 500-600 periods (approximately 5-6 days). In contrast, the LNS method shows near-linear scaling, maintaining tractability up to 1000+ periods.
 
 The root cause of the scalability barrier lies in the interaction between three factors: (i) the exponential growth of the feasible region with $O(2^{|D| \cdot |T|})$ binary assignments; (ii) the cumulative constraints (weekly and fortnightly) that create long-range dependencies, preventing effective decomposition; and (iii) the heterogeneity of regulatory rules (breaks, rests, extensions), which fragment the search space into many small feasible regions.
 
@@ -556,14 +522,7 @@ To assess solution quality beyond regulatory compliance, we analyzed schedule ch
 
 \subsection{Convergence Behavior of LNS}
 
-\begin{figure}[h!]
-\centering
-\includegraphics[width=0.85\textwidth]{figures/lns_convergence.pdf}
-\caption{LNS convergence trajectory for the 7-day planning instance. The gray circles show the objective value at each iteration, while the blue squares track the best solution found so far. Three distinct phases are visible: (1) discovery phase (iterations 0-15) with rapid improvement from the initial greedy solution, (2) exploitation phase (16-34) with gradual refinement and occasional uphill moves from simulated annealing, and (3) convergence phase (35-50) with no further improvement. The best solution (marked with red star) was discovered at iteration 34.}
-\label{fig:lns_convergence}
-\end{figure}
-
-Figure \ref{fig:lns_convergence} illustrates the LNS convergence trajectory for the 7-day instance, plotting objective function value against iteration number. The algorithm exhibits typical matheuristic behavior: rapid initial improvement in the first 10-15 iterations (discovery phase), followed by gradual refinement (exploitation phase), and occasional jumps from the simulated annealing acceptance mechanism (diversification). The best solution was found at iteration 34, with the remaining iterations failing to improve further, suggesting near-optimal convergence.
+Figure [to be added] illustrates the LNS convergence trajectory for the 7-day instance, plotting objective function value against iteration number. The algorithm exhibits typical matheuristic behavior: rapid initial improvement in the first 10-15 iterations (discovery phase), followed by gradual refinement (exploitation phase), and occasional jumps from the simulated annealing acceptance mechanism (diversification). The best solution was found at iteration 34, with the remaining iterations failing to improve further, suggesting near-optimal convergence.
 
 The adaptive operator selection mechanism (Section \ref{sec:lns}) proved effective: the temporal window destruction operator was selected in 58\% of iterations after the first 10, while random destruction dominated early exploration (65\% in iterations 1-10) and worst-regions destruction became more prominent in late-stage refinement (40\% in final 10 iterations).
 
@@ -676,3 +635,4 @@ In conclusion, this research demonstrates that while European driver scheduling 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
+

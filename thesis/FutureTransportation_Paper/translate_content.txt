@@ -1,0 +1,22 @@
+### Translation guide for main_pt.tex
+## This file contains translations to apply
+
+# Literature Review section
+OLD1: "The mathematical formulation of driver scheduling problems has evolved from simple assignment models to sophisticated formulations incorporating temporal, spatial, and regulatory dimensions."
+NEW1: "A formulação matemática de problemas de programação de motoristas evoluiu de modelos simples de atribuição para formulações sofisticadas incorporando dimensões temporais, espaciais e regulatórias."
+
+OLD2: "Savelsbergh and Sol \\cite{savelsbergh1995} laid the groundwork with their general pickup and delivery problem (GPDP) formulation, which serves as the basis for many vehicle routing problems with time windows."
+NEW2: "Savelsbergh e Sol \\cite{savelsbergh1995} estabeleceram as bases com sua formulação do problema geral de coleta e entrega (GPDP), que serve como base para muitos problemas de roteamento de veículos com janelas de tempo."
+
+# Methodology section formulation
+OLD_SETS: "\\subsubsection{Sets and Indices}"
+NEW_SETS: "\\subsubsection{Conjuntos e Índices}"
+
+OLD_PARAMS: "\\subsubsection{Parameters}"
+NEW_PARAMS: "\\subsubsection{Parâmetros}"
+
+OLD_VARS: "\\subsubsection{Decision Variables}"
+NEW_VARS: "\\subsubsection{Variáveis de Decisão}"
+
+OLD_OBJFUN: "\\subsubsection{Objective Function and Lexicographic Optimization}"
+NEW_OBJFUN: "\\subsubsection{Função Objetivo e Otimização Lexicográfica}"

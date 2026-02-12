@@ -105,6 +105,14 @@ X_{d,t} \in \mathbb{Z}_{+}, \quad 0 \le X_{d,t} \le \text{capacidade por slot}.
 U_d \ge 0.
 \]
 
+\subsection*{Início e fim do turno}
+\[
+S_{d,t}, E_{d,t} \in \{0,1\}, \quad \text{início e fim de turno do motorista } t \text{ no período } d.
+\]
+
+Essas variáveis auxiliares garantem que cada motorista tenha exatamente um
+início e um fim de turno, assegurando continuidade temporal da presença.
+
 \subsection*{Carga por motorista e carga máxima}
 \[
 L_t = \sum_{d \in D} X_{d,t}, \qquad L_{\max} \ge L_t.
@@ -115,56 +123,59 @@ consolidadas na literatura de escalonamento, permitindo representar de
 forma explícita decisões operacionais e restrições legais
 \cite{savelsbergh1995, pinheiro2007staffscheduling}.
 
-\section{Função Objetivo Lexicográfica}
+\section{Função Objetivo Lexicográfica}\footnote{A estratégia de otimização
+lexicográfica apresentada nesta seção representa a implementação final desenvolvida
+durante a pesquisa, incorporando refinamentos metodológicos realizados após a
+qualificação do projeto. A abordagem de solves sequenciais independentes demonstrou
+desempenho superior em testes comparativos, garantindo separação rigorosa entre
+prioridades hierárquicas dos objetivos conflitantes.}
 
-O modelo utiliza uma estrutura de otimização em duas fases, resolvidas
-sequencialmente pelo solver.
+O modelo implementa uma estrutura de otimização lexicográfica verdadeira,
+com duas fases resolvidas através de solves consecutivos independentes.
+Cada fase possui um orçamento temporal próprio, permitindo convergência
+adequada antes de avançar para o próximo critério hierárquico.
 
-\subsection{Fase 1 — Cobertura e Minimização de Motoristas}
+\subsection{Fase 1 — Cobertura da Demanda (40\% do tempo total)}
 
-A Fase 1 possui prioridade absoluta e busca:
-
-\begin{enumerate}
-    \item minimizar a demanda não atendida;
-    \item minimizar o número de motoristas ativados;
-    \item incentivar maior utilização dos motoristas ativos.
-\end{enumerate}
-
-A função objetivo é dada por:
+A Fase 1 possui prioridade absoluta e busca minimizar a demanda não atendida:
 \[
-\min \;
-\alpha \sum_{d \in D} U_d
-+ \beta \sum_{t \in T} Z_t
-- \gamma \sum_{d \in D} \sum_{t \in T} X_{d,t},
+\min \; \sum_{d \in D} \left(1 + \epsilon \cdot \frac{d}{|D|}\right) U_d
++ \delta \sum_{t \in T} Z_t,
 \]
-com $\alpha \gg \beta \gg \gamma$, garantindo prioridade lexicográfica.
+onde $\epsilon = 0.0001$ é um fator de desempate temporal (favorece atendimento
+em períodos iniciais) e $\delta = 0.1$ é um peso moderado para incentivo
+preliminar de redução de motoristas.
 
-Estruturas desse tipo são amplamente utilizadas quando múltiplos objetivos
-conflitantes precisam ser tratados de forma hierárquica
-\cite{pillac2013, erdman2022}.
+Após convergência da Fase 1, registra-se o valor ótimo $U^* = \sum_{d \in D} U_d$
+e procede-se para a Fase 2.
 
-\subsection{Fase 2 — Balanceamento e Refinamento}
+Estruturas lexicográficas com solves sequenciais são amplamente utilizadas
+quando múltiplos objetivos conflitantes devem ser tratados de forma estritamente
+hierárquica \cite{pillac2013, erdman2022}.
 
-Após fixar os valores ótimos de $\sum U_d$ e $\sum Z_t$, a Fase 2 refina
-a solução, buscando:
+\subsection{Fase 2 — Minimização de Recursos (60\% do tempo total)}
 
-\begin{itemize}
-    \item reduzir presença desnecessária;
-    \item penalizar excesso de carga acima de um limite suave;
-    \item suavizar picos de carga entre motoristas.
-\end{itemize}
-
-A função objetivo da Fase 2 é:
+Com a cobertura da demanda garantida pela Fase 1, a Fase 2 fixa o valor
+de demanda não atendida através da restrição:
 \[
-\min \;
-\omega_1 \sum_{d,t} Y_{d,t}
-+ \omega_2 \sum_{t} \max(0, L_t - L^{soft})
-+ \omega_3 L_{\max}.
+\sum_{d \in D} U_d \le U^* + \varepsilon_{tol},
 \]
+onde $\varepsilon_{tol} = 0.1$ é uma margem de tolerância numérica para
+evitar infactibilidade por erros de arredondamento.
 
-Esses critérios promovem maior equidade e robustez operacional, sendo
-frequentemente empregados como etapa de refinamento em problemas de
-escalonamento \cite{savelsbergh1995}.
+Com essa restrição ativa, a Fase 2 resolve um novo problema de otimização:
+\[
+\min \; \sum_{t \in T} Z_t - \theta \sum_{d \in D} \sum_{t \in T} X_{d,t},
+\]
+onde $\theta = 0.001$ é um peso de desempate que favorece maior utilização
+da capacidade dos motoristas ativados (critério terciário).
+
+Essa abordagem em duas etapas garante prioridade absoluta da cobertura
+da demanda, seguida de minimização rigorosa do número de motoristas,
+com critério de desempate baseado em maximização de atribuições.
+A separação em solves independentes evita compromissos prematuros entre
+objetivos hierarquicamente distintos, permitindo exploração mais efetiva
+do espaço de soluções em cada fase \cite{savelsbergh1995, erdman2022}.
 
 \section{Restrições do Modelo}
 
@@ -208,6 +219,31 @@ Y_{d,t} \le Z_t, \quad \forall d,t.
 X_{d,t} \le \text{capacidade} \cdot Y_{d,t}.
 \]
 
+\subsection{Continuidade do turno}
+
+Cada motorista ativo deve ter exatamente um início e um fim de turno:
+\[
+\sum_{d \in D} S_{d,t} = Z_t, \quad \sum_{d \in D} E_{d,t} = Z_t, \quad \forall t.
+\]
+
+A evolução temporal da presença deve ser consistente com início e fim:
+\[
+Y_{d,t} - Y_{d-1,t} = S_{d,t} - E_{d,t}, \quad \forall d > 1, \forall t.
+\]
+
+Essas restrições garantem turnos contínuos (sem interrupções intradiárias),
+fundamentais para modelar de forma realista a jornada de trabalho dos motoristas.
+
+\subsection{Duração mínima e máxima do turno}
+
+O turno de cada motorista ativo deve respeitar limites operacionais:
+\[
+18 \cdot Z_t \le \sum_{d \in D} Y_{d,t} \le 52 \cdot Z_t, \quad \forall t,
+\]
+onde 18 períodos (4,5 horas) representa a duração mínima viável para
+justificar ativação de um motorista, e 52 períodos (13 horas) é o limite
+máximo considerando pausas e conformidade regulatória realista.
+
 \subsection{Limites legais de condução}
 
 As restrições apresentadas a seguir são incluídas no modelo apenas quando
@@ -235,6 +271,51 @@ possui matriz esparsa e forte estrutura temporal. Solvers modernos, como
 o CP-SAT, exploram essas características de forma eficiente, permitindo
 resolver cenários reais em tempos compatíveis com uso operacional
 \cite{erdman2022, googleortools}.
+
+\subsection{Estratégia de Resolução Lexicográfica}
+
+A implementação computacional utiliza uma abordagem de otimização lexicográfica
+verdadeira, com dois solves independentes executados sequencialmente:
+
+\begin{enumerate}
+    \item \textbf{Fase 1 (Cobertura)}: Recebe 40\% do orçamento temporal total,
+          focando exclusivamente na minimização da demanda não atendida. Ao término,
+          registra-se o valor ótimo $U^*$ obtido.
+    
+    \item \textbf{Fase 2 (Recursos)}: Utiliza os 60\% restantes do tempo, com a
+          restrição $\sum U_d \le U^* + 0.1$ ativada. Minimiza o número de
+          motoristas ativados, garantindo que a cobertura da Fase 1 seja preservada
+          (tolerância numérica de 0.1 slot).
+\end{enumerate}
+
+Essa divisão temporal e estrutural evita compromissos prematuros entre objetivos
+hierarquicamente distintos, permitindo que cada fase explore adequadamente o
+espaço de soluções antes de fixar resultados parciais.
+
+\subsection{Parâmetros de Controle do Solver}
+
+A execução do solver SCIP (via OR-Tools) é configurada com os seguintes parâmetros:
+
+\begin{table}[H]
+\centering
+\caption{Parâmetros de controle do solver SCIP.}
+\label{tab:solver-params}
+\begin{tabular}{lll}
+\toprule
+\textbf{Parâmetro} & \textbf{Valor} & \textbf{Descrição} \\
+\midrule
+\texttt{limits/time} & 300s (total) & Tempo máximo de execução (5 minutos) \\
+\texttt{limits/gap}  & 0.05 (5\%)   & Gap de otimalidade aceitável \\
+Fase 1               & 120s (40\%)  & Orçamento temporal para cobertura \\
+Fase 2               & 180s (60\%)  & Orçamento temporal para recursos \\
+$\varepsilon_{tol}$  & 0.1          & Tolerância numérica entre fases \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Esses valores foram calibrados empiricamente para equilibrar qualidade da solução
+e tempo de resposta compatível com uso operacional. Instâncias de maior porte
+podem requerer ajustes proporcionais no limite temporal.
 
 
 \section{Metodologia de Implementação e Experimentação}
